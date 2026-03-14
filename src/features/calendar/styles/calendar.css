@@ -11,24 +11,26 @@
  * Uses CSS Grid so the gutter, header row, all-day row, and scrollable
  * body all share the same column template — guaranteeing alignment.
  * -------------------------------------------------------------------------- */
-.cal-week-grid {
-  display: grid;
-  grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr));
-}
-
-/* Header variant: trailing spacer column matching the scrollbar gutter */
-.cal-week-grid-header {
-  display: grid;
-  grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr)) var(--cal-scrollbar-w);
-}
-
-/* Mobile: narrower gutter + single day column, no spacer */
-@media (max-width: 767px) {
+@layer components {
   .cal-week-grid {
-    grid-template-columns: 3rem 1fr;
+    display: grid;
+    grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr));
   }
+
+  /* Header variant: trailing spacer column matching the scrollbar gutter */
   .cal-week-grid-header {
-    grid-template-columns: 3rem 1fr 0px;
+    display: grid;
+    grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr)) var(--cal-scrollbar-w);
+  }
+
+  /* Mobile: narrower gutter + single day column, no spacer */
+  @media (max-width: 767px) {
+    .cal-week-grid {
+      grid-template-columns: 3rem 1fr;
+    }
+    .cal-week-grid-header {
+      grid-template-columns: 3rem 1fr 0px;
+    }
   }
 }
 
