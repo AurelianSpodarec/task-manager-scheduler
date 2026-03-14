@@ -43,12 +43,20 @@ type PersonalTask = {
   activityType: PersonalActivityType
   label: string
 }
-const recurringPriorityBorderClass: Record<TaskPriority, string> = {
-  none: 'border-l-zinc-500',
-  low: 'border-l-blue-500',
-  medium: 'border-l-yellow-400',
-  high: 'border-l-orange-500',
-  critical: 'border-l-red-500',
+const priorityBadgeClass: Record<TaskPriority, string | null> = {
+  none: null,
+  low: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  medium: 'border-amber-200 bg-amber-50 text-amber-700',
+  high: 'border-orange-200 bg-orange-50 text-orange-700',
+  critical: 'border-red-200 bg-red-50 text-red-700',
+}
+
+const priorityBadgeLabel: Record<TaskPriority, string | null> = {
+  none: null,
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  critical: 'Critical',
 }
 
 const sidebarTasks: SidebarTask[] = [
@@ -131,11 +139,11 @@ const sidebarTasks: SidebarTask[] = [
 ]
 
 const personalTaskStyles: Record<PersonalActivityType, string> = {
-  schoolRun: 'border-[#fed7aa] bg-[#ffedd6] text-black',
-  lunch: 'border-[#fecdd3] bg-[#ffe4e6] text-black',
-  dentist: 'border-[#bbf7d0] bg-[#dcfce7] text-black',
-  driving: 'border-[#c7d2fe] bg-[#e0e7ff] text-black',
-  gym: 'border-[#e9d5ff] bg-[#f3e8ff] text-black',
+  schoolRun: 'border-orange-200 bg-orange-50 text-orange-950',
+  lunch: 'border-rose-200 bg-rose-50 text-rose-950',
+  dentist: 'border-emerald-200 bg-emerald-50 text-emerald-950',
+  driving: 'border-indigo-200 bg-indigo-50 text-indigo-950',
+  gym: 'border-violet-200 bg-violet-50 text-violet-950',
 }
 
 const personalTaskIcons: Record<PersonalActivityType, LucideIcon> = {
@@ -154,41 +162,56 @@ const personalTasks: PersonalTask[] = [
   { id: 'personal-gym', activityType: 'gym', label: 'Gym' },
 ]
 function SidebarTaskCard({ task }: { task: SidebarTask }) {
+  const priorityClass = priorityBadgeClass[task.priority]
+  const priorityLabel = priorityBadgeLabel[task.priority]
+  const hasDetailsRow = task.isRecurring || Boolean(priorityClass)
   return (
-    <article
-      className={cn(
-        'rounded-[4px] border border-zinc-200 bg-card px-3 py-2 shadow-sm',
-        (task.isRecurring || task.priority === 'none') && [
-          'border-l-4',
-          recurringPriorityBorderClass[task.priority],
-        ]
-      )}
-    >
+    <article className="rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="truncate text-sm font-medium text-card-foreground">
-          {task.title}
-        </h3>
-        <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+        <div className="min-w-0 space-y-1">
+          <h3 className="line-clamp-2 text-[14px] leading-5 font-semibold text-zinc-900">
+            {task.title}
+          </h3>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-4 text-zinc-500">
+            <span className="font-medium text-zinc-700">{task.clientName}</span>
+            {task.dueDateLabel && (
+              <>
+                <span aria-hidden="true">•</span>
+                <CalendarDays aria-hidden="true" className="size-3.5" />
+                <span>{task.dueDateLabel}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="mt-0.5 flex shrink-0 items-center gap-1 text-[11px] font-medium text-zinc-500">
           <Clock3 aria-hidden="true" className="size-3.5" />
           <span>{task.duration}</span>
-          {task.isRecurring &&
-            (task.recurringType === 'retainer' ? (
-              <Briefcase aria-hidden="true" className="size-3.5" />
-            ) : (
-              <Repeat2 aria-hidden="true" className="size-3.5" />
-            ))}
         </div>
       </div>
-      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-        <span className="font-semibold text-card-foreground">{task.clientName}</span>
-        {task.dueDateLabel && (
-          <>
-            <span aria-hidden="true">-</span>
-            <CalendarDays aria-hidden="true" className="size-3.5" />
-            <span>{task.dueDateLabel}</span>
-          </>
-        )}
-      </div>
+      {hasDetailsRow && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {task.isRecurring && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+              {task.recurringType === 'retainer' ? (
+                <Briefcase aria-hidden="true" className="size-3" />
+              ) : (
+                <Repeat2 aria-hidden="true" className="size-3" />
+              )}
+              <span>{task.recurringType === 'retainer' ? 'Retainer' : 'Recurring'}</span>
+            </span>
+          )}
+          {priorityClass && priorityLabel && (
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+                priorityClass
+              )}
+            >
+              {priorityLabel}
+            </span>
+          )}
+        </div>
+      )}
     </article>
   )
 }
@@ -198,17 +221,17 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
   return (
     <article
       className={cn(
-        'flex min-h-10 items-center gap-2 rounded-[4px] border px-2.5 py-2',
+        'flex min-h-11 items-center gap-2 rounded-[10px] border px-3 py-2.5',
         personalTaskStyles[task.activityType]
       )}
     >
       <span
         aria-hidden="true"
-        className="inline-flex size-4 items-center justify-center"
+        className="inline-flex size-4 shrink-0 items-center justify-center"
       >
         <ActivityIcon className="size-3.5" strokeWidth={2} />
       </span>
-      <span className="text-[12px] leading-none font-semibold tracking-[0.02em] uppercase">
+      <span className="text-[12px] leading-none font-semibold tracking-[0.03em] uppercase">
         {task.label}
       </span>
     </article>
@@ -216,17 +239,17 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
 }
 export function PlannerSidebar() {
   return (
-    <Tabs defaultValue="tasks" className="w-full">
-      <TabsList className="w-full rounded-[4px] p-0">
-        <TabsTrigger value="tasks" className="rounded-[3px] px-0 py-0">Tasks</TabsTrigger>
-        <TabsTrigger value="personal" className="rounded-[3px] px-0 py-0">Personal</TabsTrigger>
+    <Tabs defaultValue="tasks" className="w-full gap-3">
+      <TabsList className="w-full rounded-xl bg-zinc-100 p-1">
+        <TabsTrigger value="tasks" className="h-8 rounded-lg px-3 py-0 text-[13px] font-medium data-active:bg-white data-active:shadow-[0_1px_2px_rgba(16,24,40,0.08)]">Tasks</TabsTrigger>
+        <TabsTrigger value="personal" className="h-8 rounded-lg px-3 py-0 text-[13px] font-medium data-active:bg-white data-active:shadow-[0_1px_2px_rgba(16,24,40,0.08)]">Personal</TabsTrigger>
       </TabsList>
-      <TabsContent value="tasks" className="space-y-2">
+      <TabsContent value="tasks" className="space-y-2.5">
         {sidebarTasks.map((task) => (
           <SidebarTaskCard key={task.id} task={task} />
         ))}
       </TabsContent>
-      <TabsContent value="personal" className="space-y-1.5">
+      <TabsContent value="personal" className="space-y-2">
         {personalTasks.map((task) => (
           <PersonalTaskCard key={task.id} task={task} />
         ))}
@@ -239,7 +262,7 @@ function PlannerContent() {
   return (
     <>
       <h2 className="text-lg font-semibold text-card-foreground">Calendar</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 max-w-xl text-sm text-muted-foreground">
         Calendar view placeholder.
       </p>
     </>
@@ -249,11 +272,11 @@ function PlannerContent() {
 function PlannerPage() {
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch md:flex-row">
-      <aside className="h-full min-h-0 w-full border border-zinc-200/70 bg-card p-4 md:w-72 md:shrink-0 md:border-r">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch gap-2 md:flex-row md:gap-3">
+      <aside className="h-full min-h-0 w-full rounded-xl border border-zinc-200/80 bg-card p-4 md:w-[20.5rem] md:shrink-0">
         <PlannerSidebar />
       </aside>
-      <section className="h-full min-h-0 flex-1 border border-zinc-200/70 bg-card p-4 md:border-l-0 md:p-6">
+      <section className="h-full min-h-0 flex-1 rounded-xl border border-zinc-200/80 bg-card p-4 md:p-6">
         <PlannerContent />
       </section>
     </div>
