@@ -9,7 +9,7 @@ type DayHeaderRowProps = {
 
 export function DayHeaderRow({ weekDays }: DayHeaderRowProps) {
   return (
-    <div role="row" className="cal-week-grid hidden border-b border-cal-grid-line md:grid">
+    <div role="row" className="cal-week-grid-header hidden border-b border-cal-grid-line md:grid">
       {/* Gutter spacer */}
       <div className="border-r border-cal-grid-line" aria-hidden="true" />
 
@@ -23,7 +23,7 @@ export function DayHeaderRow({ weekDays }: DayHeaderRowProps) {
             role="columnheader"
             aria-label={FULL_DAY_NAMES[dayIndex]}
             aria-current={today ? 'date' : undefined}
-            className={`flex flex-col items-center justify-center border-r border-cal-grid-line py-1.5 last:border-r-0 ${
+            className={`flex flex-col items-center justify-center border-r border-cal-grid-line py-1.5 ${
               today ? 'bg-cal-today-bg' : ''
             }`}
           >
@@ -46,6 +46,9 @@ export function DayHeaderRow({ weekDays }: DayHeaderRowProps) {
           </div>
         )
       })}
+
+      {/* Scrollbar spacer */}
+      <div aria-hidden="true" />
     </div>
   )
 }

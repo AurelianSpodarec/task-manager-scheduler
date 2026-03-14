@@ -28,7 +28,7 @@ export function DayColumn({ day }: DayColumnProps) {
 
   return (
     <div
-      className="relative min-w-0"
+      className="relative min-w-0 border-r border-cal-grid-line"
       role="gridcell"
       data-date={isoDay}
       aria-current={today ? 'date' : undefined}

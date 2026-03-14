@@ -12,6 +12,7 @@ export function WeekView() {
   const activeDate = useActiveDate()
   const weekDays = getWeekDays(activeDate)
   const mobileFocus = useMobileFocusDay()
+  const rootRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -20,8 +21,17 @@ export function WeekView() {
     }
   }, [activeDate])
 
+  // Measure the actual scrollbar width and sync with the header spacer column
+  useEffect(() => {
+    const scroll = scrollRef.current
+    const root = rootRef.current
+    if (!scroll || !root) return
+    const w = scroll.offsetWidth - scroll.clientWidth
+    root.style.setProperty('--cal-scrollbar-w', `${w}px`)
+  }, [])
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col" role="grid" aria-colcount={7} aria-label="Week calendar view">
+    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col" role="grid" aria-colcount={7} aria-label="Week calendar view">
       {/* Mobile: day strip selector */}
       <DayStripNav weekDays={weekDays} />
 

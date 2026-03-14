@@ -16,9 +16,19 @@
   grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr));
 }
 
-/* Mobile: narrower gutter + single day column */
+/* Header variant: trailing spacer column matching the scrollbar gutter */
+.cal-week-grid-header {
+  display: grid;
+  grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr)) var(--cal-scrollbar-w);
+}
+
+/* Mobile: narrower gutter + single day column, no spacer */
 @media (max-width: 767px) {
   .cal-week-grid {
     grid-template-columns: 3rem 1fr;
   }
+  .cal-week-grid-header {
+    grid-template-columns: 3rem 1fr 0px;
+  }
 }
+
