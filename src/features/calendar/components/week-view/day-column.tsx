@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState } from 'react'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useEventsForDay, useSlotDuration } from '../../calendar-store'
-import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, WEEK_DAY_LABELS } from '../../constants'
-import { isToday, formatDayHeader } from '../../utils/date'
+import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX } from '../../constants'
+import { isToday } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
 import { EventBlock } from '../event-block'
@@ -16,11 +16,9 @@ export function DayColumn({ day }: DayColumnProps) {
   const events = useEventsForDay(day)
   const layouts = layoutEventsForDay(events, HOUR_HEIGHT_PX)
   const today = isToday(day)
-  const dayIndex = day.getDay()
   const slotDuration = useSlotDuration()
   const isoDay = day.toISOString().split('T')[0]
 
-  // Build slot entries: each hour is split by slotDuration
   const slots: { hour: number; minute: number }[] = []
   for (let h = DAY_START_HOUR; h < DAY_END_HOUR; h++) {
     for (let m = 0; m < 60; m += slotDuration) {
@@ -30,26 +28,12 @@ export function DayColumn({ day }: DayColumnProps) {
 
   return (
     <div
-      className="relative flex min-w-0 flex-1 flex-col"
+      className="relative min-w-0"
       role="gridcell"
-      aria-label={`${WEEK_DAY_LABELS[dayIndex]} ${formatDayHeader(day)}`}
+      data-date={isoDay}
+      aria-current={today ? 'date' : undefined}
     >
-      {/* Day header */}
-      <div
-        className={`flex h-cal-day-header shrink-0 flex-col items-center justify-center border-b border-cal-grid-line ${
-          today ? 'bg-cal-today-bg' : ''
-        }`}
-      >
-        <span className={`text-[var(--cal-text-2xs)] font-semibold uppercase tracking-wider ${today ? 'text-cal-today-text' : 'text-cal-text-muted'}`}>
-          {WEEK_DAY_LABELS[dayIndex]}
-        </span>
-        <span className={`text-[var(--cal-text-base)] font-bold leading-none ${today ? 'text-cal-today-text' : 'text-cal-text'}`}>
-          {formatDayHeader(day)}
-        </span>
-      </div>
-
-      {/* Hourly grid + events */}
-      <div className={`relative flex-1 ${today ? 'bg-cal-today-bg/30' : ''}`}>
+      <div className={`relative ${today ? 'bg-cal-today-bg/30' : ''}`}>
         {slots.map(({ hour, minute }) => (
           <DroppableSlot
             key={`${hour}-${minute}`}
@@ -72,6 +56,8 @@ export function DayColumn({ day }: DayColumnProps) {
     </div>
   )
 }
+
+export default DayColumn
 
 function DroppableSlot({
   isoDay,

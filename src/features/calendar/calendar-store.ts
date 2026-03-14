@@ -13,6 +13,7 @@ type CalendarState = {
   activeDate: Date
   slotDuration: SlotDuration
   dragState: DragPayload | null
+  mobileFocusDay: number
 }
 
 // ---------------------------------------------------------------------------
@@ -24,6 +25,7 @@ let state: CalendarState = {
   activeDate: new Date(),
   slotDuration: DEFAULT_SLOT_DURATION,
   dragState: null,
+  mobileFocusDay: new Date().getDay(),
 }
 
 const listeners = new Set<() => void>()
@@ -72,6 +74,10 @@ export function setSlotDuration(duration: SlotDuration) {
 
 export function setDragState(drag: DragPayload | null) {
   setState({ dragState: drag })
+}
+
+export function setMobileFocusDay(index: number) {
+  setState({ mobileFocusDay: index })
 }
 
 // ---------------------------------------------------------------------------
@@ -175,4 +181,8 @@ export function useSlotDuration(): SlotDuration {
 
 export function useDragState(): DragPayload | null {
   return useStoreSelector((s) => s.dragState)
+}
+
+export function useMobileFocusDay(): number {
+  return useStoreSelector((s) => s.mobileFocusDay)
 }

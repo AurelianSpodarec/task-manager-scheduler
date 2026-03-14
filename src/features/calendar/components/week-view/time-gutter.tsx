@@ -9,7 +9,7 @@ export function TimeGutter() {
 
   return (
     <div
-      className="relative w-cal-gutter shrink-0 select-none border-r border-cal-grid-line"
+      className="relative select-none border-r border-cal-grid-line"
       aria-hidden="true"
     >
       {hours.map((hour) => (
@@ -19,7 +19,7 @@ export function TimeGutter() {
           style={{ height: `${HOUR_HEIGHT_PX}px` }}
         >
           {hour > 0 && (
-            <span className="absolute -top-2 right-2 text-[var(--cal-text-2xs)] font-medium text-cal-text-muted">
+            <span className="absolute -top-2 right-1 text-[var(--cal-text-2xs)] font-medium text-cal-text-muted md:right-2">
               {formatHour(hour)}
             </span>
           )}
