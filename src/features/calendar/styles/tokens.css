@@ -1,0 +1,136 @@
+/* ============================================================================
+ * # Calendar Design Tokens
+ *
+ * 4-tier architecture: Brand → Primitive → Semantic → Component
+ * Override any tier to re-theme the entire calendar.
+ * ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+ * Layer 1 — Brand
+ * Raw palette values. Extend the app's existing brand with calendar-specific
+ * event category colors.
+ * -------------------------------------------------------------------------- */
+:root {
+  --cal-brand-blue: oklch(0.623 0.214 259.815);
+  --cal-brand-teal: oklch(0.55 0.17 195);
+  --cal-brand-purple: oklch(0.55 0.2 300);
+  --cal-brand-rose: oklch(0.6 0.19 15);
+  --cal-brand-amber: oklch(0.75 0.15 75);
+  --cal-brand-emerald: oklch(0.6 0.17 155);
+  --cal-brand-indigo: oklch(0.55 0.2 270);
+  --cal-brand-zinc-50: oklch(0.985 0 0);
+  --cal-brand-zinc-100: oklch(0.97 0 0);
+  --cal-brand-zinc-200: oklch(0.922 0 0);
+  --cal-brand-zinc-400: oklch(0.708 0 0);
+  --cal-brand-zinc-500: oklch(0.556 0 0);
+  --cal-brand-zinc-700: oklch(0.37 0 0);
+  --cal-brand-zinc-900: oklch(0.205 0 0);
+  --cal-brand-white: oklch(1 0 0);
+}
+
+.dark {
+  --cal-brand-blue: oklch(0.7 0.18 255);
+  --cal-brand-teal: oklch(0.65 0.14 190);
+  --cal-brand-purple: oklch(0.65 0.17 295);
+  --cal-brand-rose: oklch(0.7 0.16 15);
+  --cal-brand-amber: oklch(0.8 0.12 75);
+  --cal-brand-emerald: oklch(0.7 0.14 155);
+  --cal-brand-indigo: oklch(0.65 0.17 265);
+  --cal-brand-zinc-50: oklch(0.205 0 0);
+  --cal-brand-zinc-100: oklch(0.269 0 0);
+  --cal-brand-zinc-200: oklch(1 0 0 / 10%);
+  --cal-brand-zinc-400: oklch(0.556 0 0);
+  --cal-brand-zinc-500: oklch(0.708 0 0);
+  --cal-brand-zinc-700: oklch(0.87 0 0);
+  --cal-brand-zinc-900: oklch(0.985 0 0);
+  --cal-brand-white: oklch(0.205 0 0);
+}
+
+/* ----------------------------------------------------------------------------
+ * Layer 2 — Primitive
+ * Context-free raw values: spacing, radii, typography, sizing.
+ * -------------------------------------------------------------------------- */
+:root {
+  --cal-slot-h: 3.5rem;
+  --cal-slot-h-half: 1.75rem;
+  --cal-gutter-w: 4rem;
+  --cal-radius-event: 6px;
+  --cal-radius-pill: 4px;
+  --cal-text-2xs: 0.625rem;
+  --cal-text-xs: 0.6875rem;
+  --cal-text-sm: 0.75rem;
+  --cal-text-base: 0.8125rem;
+  --cal-font-medium: 500;
+  --cal-font-semibold: 600;
+  --cal-shadow-event: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* ----------------------------------------------------------------------------
+ * Layer 3 — Semantic
+ * Context-dependent tokens referencing brand/primitive. These flip in dark mode.
+ * -------------------------------------------------------------------------- */
+:root {
+  --cal-bg: var(--cal-brand-white);
+  --cal-bg-subtle: var(--cal-brand-zinc-50);
+  --cal-text: var(--cal-brand-zinc-900);
+  --cal-text-muted: var(--cal-brand-zinc-500);
+  --cal-text-dimmed: var(--cal-brand-zinc-400);
+  --cal-grid-line: var(--cal-brand-zinc-200);
+  --cal-grid-line-strong: var(--cal-brand-zinc-200);
+  --cal-today-bg: oklch(0.95 0.02 250);
+  --cal-today-text: var(--cal-brand-blue);
+  --cal-time-indicator: var(--cal-brand-blue);
+  --cal-time-indicator-dot: var(--cal-brand-blue);
+  --cal-event-text: var(--cal-brand-white);
+  --cal-event-bg-default: var(--cal-brand-teal);
+  --cal-event-bg-completed: var(--cal-brand-teal);
+  --cal-hover-bg: oklch(0.97 0 0);
+  --cal-focus-ring: var(--cal-brand-blue);
+}
+
+.dark {
+  --cal-today-bg: oklch(0.25 0.02 250);
+  --cal-hover-bg: oklch(0.25 0 0);
+}
+
+/* ----------------------------------------------------------------------------
+ * Layer 4 — Component
+ * Scoped to specific calendar components.
+ * -------------------------------------------------------------------------- */
+:root {
+  --cal-header-h: 3.25rem;
+  --cal-allday-row-min-h: 2rem;
+  --cal-day-header-h: 2.75rem;
+  --cal-event-min-h: 1.25rem;
+  --cal-event-padding-x: 0.375rem;
+  --cal-event-padding-y: 0.125rem;
+  --cal-time-indicator-size: 0.5rem;
+  --cal-month-cell-min-h: 6.5rem;
+}
+
+/* ----------------------------------------------------------------------------
+ * Tailwind v4 @theme inline registration
+ * Exposes tokens as Tailwind utility values.
+ * -------------------------------------------------------------------------- */
+@theme inline {
+  --spacing-cal-slot: var(--cal-slot-h);
+  --spacing-cal-slot-half: var(--cal-slot-h-half);
+  --spacing-cal-gutter: var(--cal-gutter-w);
+  --spacing-cal-header: var(--cal-header-h);
+  --spacing-cal-day-header: var(--cal-day-header-h);
+  --spacing-cal-allday: var(--cal-allday-row-min-h);
+  --spacing-cal-month-cell: var(--cal-month-cell-min-h);
+
+  --color-cal-bg: var(--cal-bg);
+  --color-cal-bg-subtle: var(--cal-bg-subtle);
+  --color-cal-text: var(--cal-text);
+  --color-cal-text-muted: var(--cal-text-muted);
+  --color-cal-text-dimmed: var(--cal-text-dimmed);
+  --color-cal-grid-line: var(--cal-grid-line);
+  --color-cal-today-bg: var(--cal-today-bg);
+  --color-cal-today-text: var(--cal-today-text);
+  --color-cal-time-indicator: var(--cal-time-indicator);
+  --color-cal-event-text: var(--cal-event-text);
+  --color-cal-hover-bg: var(--cal-hover-bg);
+  --color-cal-focus-ring: var(--cal-focus-ring);
+}

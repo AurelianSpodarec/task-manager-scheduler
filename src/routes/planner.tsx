@@ -1,4 +1,8 @@
+import { useRef, useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { CalendarShell } from '@/features/calendar/components/calendar-shell'
+import { makeSidebarDragData } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
   AlertTriangle,
   ArrowDown,
@@ -173,14 +177,38 @@ const personalTasks: PersonalTask[] = [
   { id: 'personal-driving', activityType: 'driving', label: 'Driving' },
   { id: 'personal-gym', activityType: 'gym', label: 'Gym' },
 ]
+/** Parse duration string like "2:05h" into minutes. */
+function parseDurationMinutes(dur: string): number {
+  const match = dur.match(/(\d+):(\d+)/)
+  if (!match) return 60
+  return parseInt(match[1], 10) * 60 + parseInt(match[2], 10)
+}
+
 function SidebarTaskCard({ task }: { task: SidebarTask }) {
   const priorityClass = priorityBadgeClass[task.priority]
   const priorityLabel = priorityBadgeLabel[task.priority]
   const PriorityIcon = priorityBadgeIcon[task.priority]
   const hasStatusBadges = task.isRecurring || Boolean(priorityClass)
   const metaToggleId = `compact-meta-${task.id}`
+  const ref = useRef<HTMLElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    return draggable({
+      element: el,
+      getInitialData: () => makeSidebarDragData(task.id, task.title, parseDurationMinutes(task.duration)),
+      onDragStart: () => setIsDragging(true),
+      onDrop: () => setIsDragging(false),
+    })
+  }, [task.id, task.title, task.duration])
+
   return (
-    <article className="rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300">
+    <article
+      ref={ref}
+      className={`cursor-grab rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-[14px] leading-5 font-semibold text-zinc-900">
@@ -295,24 +323,16 @@ export function PlannerSidebar() {
 }
 
 function PlannerContent() {
-  return (
-    <>
-      <h2 className="text-lg font-semibold text-card-foreground">Calendar</h2>
-      <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-        Calendar view placeholder.
-      </p>
-    </>
-  )
+  return <CalendarShell />
 }
 
 function PlannerPage() {
-
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200/80 bg-card md:flex-row">
       <aside className="flex h-full min-h-0 w-full overflow-hidden p-4 md:w-[20.5rem] md:shrink-0">
         <PlannerSidebar />
       </aside>
-      <section className="h-full min-h-0 flex-1 overflow-auto border-t border-zinc-200/80 p-4 md:border-t-0 md:border-l md:p-6">
+      <section className="h-full min-h-0 flex-1 overflow-hidden border-t border-zinc-200/80 md:border-t-0 md:border-l">
         <PlannerContent />
       </section>
     </div>
