@@ -100,8 +100,8 @@ function StatusIcon({ status }: { status: string }) {
   if (status === 'completed') {
     return (
       <span
-      className="flex size-3.5 shrink-0 items-center justify-center rounded-[5px]"
-        style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}
+        className="flex size-3.5 shrink-0 items-center justify-center"
+        style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill, borderRadius: 4 }}
       >
         <Check className="size-2 text-white" strokeWidth={3} />
       </span>
@@ -109,8 +109,8 @@ function StatusIcon({ status }: { status: string }) {
   }
   return (
     <span
-      className="size-3.5 shrink-0 rounded-[5px] opacity-60"
-      style={{ border: `1px solid ${EVENT_STATUS_INDICATOR_COLORS.pendingBorder}` }}
+      className="size-3.5 shrink-0 opacity-60"
+      style={{ border: `1px solid ${EVENT_STATUS_INDICATOR_COLORS.pendingBorder}`, borderRadius: 4 }}
     />
   )
 }
