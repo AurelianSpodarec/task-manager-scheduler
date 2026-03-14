@@ -25,6 +25,8 @@ type CalendarState = {
   dragState: DragPayload | null
   dragRender: DragRenderState | null
   mobileFocusDay: number
+  timeChevronHovered: boolean
+  timeGuidePinned: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -39,6 +41,8 @@ let state: CalendarState = {
   dragState: null,
   dragRender: null,
   mobileFocusDay: new Date().getDay(),
+  timeChevronHovered: false,
+  timeGuidePinned: false,
 }
 
 const listeners = new Set<() => void>()
@@ -136,6 +140,15 @@ export function setMobileFocusDay(index: number) {
 
 export function setWorkHours(config: WorkHoursConfig) {
   setState({ workHours: config })
+}
+
+export function setTimeChevronHovered(hovered: boolean) {
+  if (state.timeChevronHovered === hovered) return
+  setState({ timeChevronHovered: hovered })
+}
+
+export function toggleTimeGuidePinned() {
+  setState({ timeGuidePinned: !state.timeGuidePinned })
 }
 
 /** Pure check — slot falls within configured work hours for the given day */
@@ -261,4 +274,12 @@ export function useMobileFocusDay(): number {
 
 export function useWorkHours(): WorkHoursConfig {
   return useStoreSelector((s) => s.workHours)
+}
+
+export function useTimeGuideVisible(): boolean {
+  return useStoreSelector((s) => s.timeChevronHovered || s.timeGuidePinned)
+}
+
+export function useTimeGuidePinned(): boolean {
+  return useStoreSelector((s) => s.timeGuidePinned)
 }

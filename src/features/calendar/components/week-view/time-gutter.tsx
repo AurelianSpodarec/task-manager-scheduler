@@ -1,7 +1,12 @@
 import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX } from '../../constants'
-import { formatHour } from '../../utils/date'
+import { dateToPixelOffset, formatHour } from '../../utils/date'
+import { useCurrentTime } from '../../hooks/use-current-time'
+import { setTimeChevronHovered, toggleTimeGuidePinned } from '../../calendar-store'
 
 export function TimeGutter() {
+  const now = useCurrentTime()
+  const chevronTop = dateToPixelOffset(now, HOUR_HEIGHT_PX)
+
   const hours: number[] = []
   for (let h = DAY_START_HOUR; h < DAY_END_HOUR; h++) {
     hours.push(h)
@@ -29,6 +34,20 @@ export function TimeGutter() {
           </div>
         </div>
       ))}
+
+      {/* Filled triangle at current time — triggers dashed guide line on hover */}
+      <button
+        type="button"
+        className="absolute left-0 z-20 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-start"
+        style={{ top: `${chevronTop}px` }}
+        onClick={() => toggleTimeGuidePinned()}
+        onMouseEnter={() => setTimeChevronHovered(true)}
+        onMouseLeave={() => setTimeChevronHovered(false)}
+      >
+        <svg width="10" height="12" viewBox="0 0 10 12" style={{ fill: 'var(--cal-time-indicator)' }}>
+          <path d="M0 0 L10 6 L0 12Z" />
+        </svg>
+      </button>
     </div>
   )
 }

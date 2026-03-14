@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react'
-import { useActiveDate, useMobileFocusDay } from '../../calendar-store'
-import { getWeekDays, formatWeekOfYear } from '../../utils/date'
+import { useActiveDate, useMobileFocusDay, useTimeGuideVisible } from '../../calendar-store'
+import { getWeekDays, formatWeekOfYear, dateToPixelOffset } from '../../utils/date'
 import { VISIBLE_START_HOUR, HOUR_HEIGHT_PX } from '../../constants'
+import { useCurrentTime } from '../../hooks/use-current-time'
 import { TimeGutter } from './time-gutter'
 import { DayColumn } from './day-column'
 import { AllDayRow } from './all-day-row'
@@ -48,7 +49,7 @@ export function WeekView() {
       </div>
 
       {/* Scrollable time grid */}
-      <div ref={scrollRef} role="rowgroup" className="sidebar-scrollbar min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} role="rowgroup" className="sidebar-scrollbar relative min-h-0 flex-1 overflow-y-auto">
         {/* Desktop: full 7-day grid */}
         <div role="row" className="cal-week-grid hidden md:grid">
           <TimeGutter />
@@ -57,6 +58,8 @@ export function WeekView() {
           ))}
         </div>
 
+        <CurrentTimeHoverGuide />
+
         {/* Mobile: gutter + single active day */}
         <div role="row" className="cal-week-grid grid md:hidden">
           <TimeGutter />
@@ -64,6 +67,26 @@ export function WeekView() {
         </div>
       </div>
       <CalendarDragLayer />
+    </div>
+  )
+}
+
+/** Dashed horizontal guide line shown at the current time when the gutter chevron is hovered. */
+function CurrentTimeHoverGuide() {
+  const visible = useTimeGuideVisible()
+  const now = useCurrentTime()
+
+  if (!visible) return null
+
+  const top = dateToPixelOffset(now, HOUR_HEIGHT_PX)
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 z-30"
+      style={{ top: `${top}px` }}
+      aria-hidden="true"
+    >
+      <div className="h-0 w-full border-t border-dashed" style={{ borderColor: 'var(--cal-time-indicator)' }} />
     </div>
   )
 }
