@@ -298,11 +298,11 @@ function PlannerContent() {
 function PlannerPage() {
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch gap-2 overflow-hidden md:flex-row md:gap-3">
-      <aside className="flex h-full min-h-0 w-full overflow-hidden rounded-xl border border-zinc-200/80 bg-card p-4 md:w-[20.5rem] md:shrink-0">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200/80 bg-card md:flex-row">
+      <aside className="flex h-full min-h-0 w-full overflow-hidden p-4 md:w-[20.5rem] md:shrink-0">
         <PlannerSidebar />
       </aside>
-      <section className="h-full min-h-0 flex-1 overflow-auto rounded-xl border border-zinc-200/80 bg-card p-4 md:p-6">
+      <section className="h-full min-h-0 flex-1 overflow-auto border-t border-zinc-200/80 p-4 md:border-t-0 md:border-l md:p-6">
         <PlannerContent />
       </section>
     </div>

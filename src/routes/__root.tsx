@@ -25,7 +25,7 @@ function RootLayout() {
   return (
     <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-100/70">
       <header className="h-[42px] shrink-0">
-        <nav className="h-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-sm">
+        <nav className="h-full bg-zinc-100/70 backdrop-blur-sm">
           <div className="h-full w-full px-3 sm:px-4 lg:px-6">
             <div className="flex h-full items-center justify-between">
               <div className="flex items-center gap-2.5">
