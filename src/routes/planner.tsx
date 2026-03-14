@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import {
+  Briefcase,
   Backpack,
   CalendarDays,
   Car,
@@ -31,8 +32,9 @@ type SidebarTask = {
   title: string
   duration: string
   clientName: string
-  dueDateLabel: string
+  dueDateLabel?: string | null
   isRecurring: boolean
+  recurringType?: 'standard' | 'retainer'
   priority: TaskPriority
 }
 
@@ -42,7 +44,7 @@ type PersonalTask = {
   label: string
 }
 const recurringPriorityBorderClass: Record<TaskPriority, string> = {
-  none: 'border-l-zinc-300',
+  none: 'border-l-zinc-500',
   low: 'border-l-blue-500',
   medium: 'border-l-yellow-400',
   high: 'border-l-orange-500',
@@ -51,22 +53,80 @@ const recurringPriorityBorderClass: Record<TaskPriority, string> = {
 
 const sidebarTasks: SidebarTask[] = [
   {
-    id: 'task-graphic-design-edits',
-    title: 'Graphic Design Edits',
-    duration: '2:10h',
-    clientName: 'Client name',
-    dueDateLabel: 'Aug 27',
+    id: 'task-brand-refresh-workshop',
+    title: 'Brand Refresh Workshop',
+    duration: '2:05h',
+    clientName: 'Laser Red',
+    dueDateLabel: 'Mar 18',
     isRecurring: true,
+    recurringType: 'retainer',
+    priority: 'medium',
+  },
+  {
+    id: 'task-dashboard-qa-pass',
+    title: 'Dashboard QA Pass',
+    duration: '1:20h',
+    clientName: 'MyEnergi Ltd',
+    dueDateLabel: null,
+    isRecurring: false,
+    priority: 'none',
+  },
+  {
+    id: 'task-weekly-insights-sync',
+    title: 'Weekly Insights Sync',
+    duration: '0:45h',
+    clientName: 'FiveCast',
+    dueDateLabel: 'Mar 15',
+    isRecurring: true,
+    recurringType: 'standard',
     priority: 'high',
   },
   {
-    id: 'task-invoice-review',
-    title: 'Invoice Review',
-    duration: '1:00h',
-    clientName: 'Finance',
-    dueDateLabel: 'Aug 29',
+    id: 'task-campaign-copy-review',
+    title: 'Campaign Copy Review',
+    duration: '1:35h',
+    clientName: 'Bush Tyres',
+    dueDateLabel: 'Mar 22',
     isRecurring: false,
-    priority: 'medium',
+    priority: 'none',
+  },
+  {
+    id: 'task-donation-form-audit',
+    title: 'Donation Form Audit',
+    duration: '2:40h',
+    clientName: 'St Barbans Hospice',
+    dueDateLabel: null,
+    isRecurring: false,
+    priority: 'none',
+  },
+  {
+    id: 'task-mobile-nav-hotfix',
+    title: 'Mobile Nav Hotfix',
+    duration: '0:55h',
+    clientName: 'Smartev Limited',
+    dueDateLabel: 'Mar 16',
+    isRecurring: true,
+    recurringType: 'standard',
+    priority: 'critical',
+  },
+  {
+    id: 'task-seo-content-batch',
+    title: 'SEO Content Batch',
+    duration: '3:10h',
+    clientName: 'National Education Union',
+    dueDateLabel: 'Mar 29',
+    isRecurring: false,
+    priority: 'none',
+  },
+  {
+    id: 'task-api-contract-check',
+    title: 'API Contract Check',
+    duration: '1:50h',
+    clientName: 'Synapsys Solutions',
+    dueDateLabel: null,
+    isRecurring: true,
+    recurringType: 'standard',
+    priority: 'high',
   },
 ]
 
@@ -98,7 +158,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     <article
       className={cn(
         'rounded-[4px] border border-zinc-200 bg-card px-3 py-2 shadow-sm',
-        task.isRecurring && [
+        (task.isRecurring || task.priority === 'none') && [
           'border-l-4',
           recurringPriorityBorderClass[task.priority],
         ]
@@ -111,14 +171,23 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
         <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
           <Clock3 aria-hidden="true" className="size-3.5" />
           <span>{task.duration}</span>
-          {task.isRecurring && <Repeat2 aria-hidden="true" className="size-3.5" />}
+          {task.isRecurring &&
+            (task.recurringType === 'retainer' ? (
+              <Briefcase aria-hidden="true" className="size-3.5" />
+            ) : (
+              <Repeat2 aria-hidden="true" className="size-3.5" />
+            ))}
         </div>
       </div>
       <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
         <span className="font-semibold text-card-foreground">{task.clientName}</span>
-        <span aria-hidden="true">-</span>
-        <CalendarDays aria-hidden="true" className="size-3.5" />
-        <span>{task.dueDateLabel}</span>
+        {task.dueDateLabel && (
+          <>
+            <span aria-hidden="true">-</span>
+            <CalendarDays aria-hidden="true" className="size-3.5" />
+            <span>{task.dueDateLabel}</span>
+          </>
+        )}
       </div>
     </article>
   )
