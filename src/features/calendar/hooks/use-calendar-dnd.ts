@@ -305,7 +305,15 @@ export function startPointerDrag(
 ) {
   const startX = e.clientX
   const startY = e.clientY
+  const pointerId = e.pointerId
   let active = false
+
+  // RAF batching — store latest coords, flush once per frame
+  let pendingX = startX
+  let pendingY = startY
+  let rafId: number | null = null
+
+  element.setPointerCapture(pointerId)
 
   function activate() {
     active = true
@@ -337,19 +345,28 @@ export function startPointerDrag(
     callbacks.onDragStart?.()
   }
 
+  function flushMove() {
+    rafId = null
+    const slot = resolveSlotFromPointer(pendingX, pendingY)
+    updateDragRenderFrame({ clientX: pendingX, clientY: pendingY }, slot)
+  }
+
   function onMove(ev: PointerEvent) {
     if (!active) {
       if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < DRAG_THRESHOLD) return
       activate()
     }
-    const slot = resolveSlotFromPointer(ev.clientX, ev.clientY)
-    updateDragRenderFrame({ clientX: ev.clientX, clientY: ev.clientY }, slot)
+    pendingX = ev.clientX
+    pendingY = ev.clientY
+    if (rafId == null) rafId = requestAnimationFrame(flushMove)
   }
 
   function onUp(ev: PointerEvent) {
     cleanup()
     if (!active) return
 
+    // Flush any pending RAF so drop uses the latest position
+    if (rafId != null) { cancelAnimationFrame(rafId); rafId = null }
     const slot = resolveSlotFromPointer(ev.clientX, ev.clientY)
     executeDrop(dragData, slot)
 
@@ -361,6 +378,8 @@ export function startPointerDrag(
   }
 
   function cleanup() {
+    if (rafId != null) { cancelAnimationFrame(rafId); rafId = null }
+    if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId)
     window.removeEventListener('pointermove', onMove)
     window.removeEventListener('pointerup', onUp)
     window.removeEventListener('pointercancel', onUp)
