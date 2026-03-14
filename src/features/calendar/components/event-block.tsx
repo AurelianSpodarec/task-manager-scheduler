@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
-import { Check, Clock3 } from 'lucide-react'
+import { Check } from 'lucide-react'
 import type { EventLayoutRect } from '../types'
 import { EVENT_COLOR_MAP } from '../constants'
 import { formatEventTime } from '../utils/date'
@@ -64,7 +64,7 @@ export function EventBlock({ layout }: EventBlockProps) {
       }}
       aria-label={`${event.title}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
     >
-      {/* Row 1: checkbox + title + duration */}
+      {/* Row 1: checkbox + title */}
       <div className="flex min-w-0 items-center gap-1.5">
         <StatusIcon status={event.status} color={colors.border} />
         <span
@@ -72,24 +72,18 @@ export function EventBlock({ layout }: EventBlockProps) {
         >
           {event.title}
         </span>
-        {!isCompact && (
-          <span className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-zinc-50 px-1 py-0.5 text-[10px] font-medium text-zinc-500">
-            <Clock3 aria-hidden="true" className="size-2.5" />
-            <span className="tabular-nums">{formatDuration(event.start, event.end)}</span>
+        {!isCompact && pClass && PIcon && (
+          <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
+            <PIcon aria-hidden="true" className="size-2.5" />
           </span>
         )}
       </div>
 
-      {/* Row 2: priority pill (only when enough height) */}
-      {!isCompact && pClass && pLabel && PIcon && (
-        <div className="mt-auto flex items-center pt-0.5">
-          <span
-            className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}
-          >
-            <PIcon aria-hidden="true" className="size-2.5" />
-            {height >= 52 && <span>{pLabel}</span>}
-          </span>
-        </div>
+      {/* Row 2: time range */}
+      {!isCompact && (
+        <span className="mt-auto text-[10px] leading-tight text-zinc-500">
+          {formatEventTime(event.start)} – {formatEventTime(event.end)}
+        </span>
       )}
     </button>
   )

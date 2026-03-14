@@ -145,19 +145,20 @@ function PersonalPreview({ drag, meta, width }: { drag: DragRenderState; meta: P
   )
 }
 
-/** Calendar event card — 1:1 clone of EventBlock */
+/** Calendar event card — 1:1 clone of resting EventBlock */
 function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; meta: EventDragMeta; width: number; height: number }) {
   const colors = EVENT_COLOR_MAP[drag.color]
   const pClass = priorityBadgeClass[meta.priority]
-  const pLabel = priorityBadgeLabel[meta.priority]
   const PIcon = priorityBadgeIcon[meta.priority]
-  const duration = drag.durationMinutes ?? 60
+  const start = drag.originalStart ? new Date(drag.originalStart) : null
+  const end = drag.originalEnd ? new Date(drag.originalEnd) : null
 
   return (
     <div
       className="flex flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
       style={{ width, height, borderLeftColor: colors.border }}
     >
+      {/* Row 1: checkbox + title + priority icon */}
       <div className="flex min-w-0 items-center gap-1.5">
         {meta.status === 'completed' ? (
           <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: colors.border }}>
@@ -169,28 +170,23 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-tight text-zinc-900">
           {drag.title}
         </span>
-        <span className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-zinc-50 px-1 py-0.5 text-[10px] font-medium text-zinc-500">
-          <Clock3 aria-hidden="true" className="size-2.5" />
-          <span className="tabular-nums">{formatDurationMinutes(duration)}</span>
-        </span>
-      </div>
-      {pClass && pLabel && PIcon && (
-        <div className="mt-auto flex items-center pt-0.5">
-          <span className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
+        {pClass && PIcon && (
+          <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
             <PIcon aria-hidden="true" className="size-2.5" />
-            <span>{pLabel}</span>
           </span>
-        </div>
+        )}
+      </div>
+
+      {/* Row 2: time range */}
+      {start && end && (
+        <span className="mt-auto text-[10px] leading-tight text-zinc-500">
+          {formatTime(start)} – {formatTime(end)}
+        </span>
       )}
     </div>
   )
 }
 
-function formatDurationMinutes(minutes: number): string {
-  const m = Math.max(1, Math.round(minutes))
-  const h = Math.floor(m / 60)
-  const r = m % 60
-  if (!h) return `${r}m`
-  if (!r) return `${h}h`
-  return `${h}:${String(r).padStart(2, '0')}h`
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }

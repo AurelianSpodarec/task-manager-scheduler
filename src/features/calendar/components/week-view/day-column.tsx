@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from 'react'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
-import { Check, Clock3 } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useEventsForDay, useSlotDuration, useDragRender } from '../../calendar-store'
 import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_COLOR_MAP } from '../../constants'
-import { isToday, startOfDay, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
+import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
 import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from '@/lib/priority'
@@ -118,15 +118,6 @@ function DroppableSlot({
   )
 }
 
-function formatDuration(start: Date, end: Date): string {
-  const mins = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
-  const h = Math.floor(mins / 60)
-  const m = mins % 60
-  if (!h) return `${m}m`
-  if (!m) return `${h}h`
-  return `${h}:${String(m).padStart(2, '0')}h`
-}
-
 type ProjectedCard = {
   title: string
   start: Date
@@ -156,6 +147,7 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
       }}
       aria-hidden="true"
     >
+      {/* Row 1: checkbox + title + priority icon */}
       <div className="flex min-w-0 items-center gap-1.5">
         {projected.status === 'completed' ? (
           <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: projected.border }}>
@@ -167,20 +159,18 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
         <span className={`min-w-0 flex-1 truncate font-semibold leading-tight text-zinc-900 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
           {projected.title}
         </span>
-        {!isCompact && (
-          <span className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-zinc-50 px-1 py-0.5 text-[10px] font-medium text-zinc-500">
-            <Clock3 aria-hidden="true" className="size-2.5" />
-            <span className="tabular-nums">{formatDuration(projected.start, projected.end)}</span>
+        {!isCompact && pClass && PIcon && (
+          <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
+            <PIcon aria-hidden="true" className="size-2.5" />
           </span>
         )}
       </div>
-      {!isCompact && pClass && pLabel && PIcon && (
-        <div className="mt-auto flex items-center pt-0.5">
-          <span className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
-            <PIcon aria-hidden="true" className="size-2.5" />
-            {projected.height >= 52 && <span>{pLabel}</span>}
-          </span>
-        </div>
+
+      {/* Row 2: time range */}
+      {!isCompact && (
+        <span className="mt-auto text-[10px] leading-tight text-zinc-500">
+          {formatEventTime(projected.start)} – {formatEventTime(projected.end)}
+        </span>
       )}
     </div>
   )
