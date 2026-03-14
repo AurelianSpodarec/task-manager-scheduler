@@ -34,17 +34,20 @@ export function DayColumn({ day }: DayColumnProps) {
       aria-current={today ? 'date' : undefined}
     >
       <div className={`relative ${today ? 'bg-cal-today-bg/30' : ''}`}>
-        {slots.map(({ hour, minute }) => (
-          <DroppableSlot
-            key={`${hour}-${minute}`}
-            isoDay={isoDay}
-            hour={hour}
-            minute={minute}
-            height={(HOUR_HEIGHT_PX / 60) * slotDuration}
-            showHourBorder={minute === 0}
-            showHalfBorder={minute === 30}
-          />
-        ))}
+        {slots.map(({ hour, minute }) => {
+          const slotEnd = minute + slotDuration
+          return (
+            <DroppableSlot
+              key={`${hour}-${minute}`}
+              isoDay={isoDay}
+              hour={hour}
+              minute={minute}
+              height={(HOUR_HEIGHT_PX / 60) * slotDuration}
+              showHourBorder={slotEnd >= 60}
+              showHalfBorder={slotEnd === 30}
+            />
+          )
+        })}
 
         {/* Event blocks */}
         {layouts.map((layout) => (
@@ -94,7 +97,7 @@ function DroppableSlot({
     <div
       ref={ref}
       className={`transition-colors ${
-        showHourBorder ? 'border-b border-cal-grid-line' : showHalfBorder ? 'border-b border-cal-grid-line/40' : ''
+        showHourBorder ? 'border-b border-cal-grid-line' : showHalfBorder ? 'border-b border-dashed border-cal-grid-line/40' : ''
       } ${isOver ? 'bg-cal-hover-bg' : ''}`}
       style={{ height: `${height}px` }}
     />

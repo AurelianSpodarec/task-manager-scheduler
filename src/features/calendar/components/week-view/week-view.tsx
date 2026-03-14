@@ -25,8 +25,8 @@ export function WeekView() {
       {/* Mobile: day strip selector */}
       <DayStripNav weekDays={weekDays} />
 
-      {/* Desktop: all-day row (shares grid template) */}
-      <div className="hidden md:block">
+      {/* Desktop: all-day row */}
+      <div role="rowgroup" className="hidden md:block">
         <AllDayRow weekDays={weekDays} />
       </div>
 
@@ -38,7 +38,7 @@ export function WeekView() {
       {/* Scrollable time grid */}
       <div ref={scrollRef} role="rowgroup" className="sidebar-scrollbar min-h-0 flex-1 overflow-y-auto">
         {/* Desktop: full 7-day grid */}
-        <div className="cal-week-grid hidden md:grid">
+        <div role="row" className="cal-week-grid hidden md:grid">
           <TimeGutter />
           {weekDays.map((day) => (
             <DayColumn key={day.toISOString()} day={day} />
@@ -46,7 +46,7 @@ export function WeekView() {
         </div>
 
         {/* Mobile: gutter + single active day */}
-        <div className="cal-week-grid grid md:hidden">
+        <div role="row" className="cal-week-grid grid md:hidden">
           <TimeGutter />
           <DayColumn day={weekDays[mobileFocus] ?? weekDays[0]} />
         </div>
