@@ -100,6 +100,7 @@ export type DragRenderState = {
   pointerOffset: { x: number; y: number }
   elementSize: { width: number; height: number }
   slot: DragSlotCandidate | null
+  personalActivityType?: string
   taskMeta?: TaskDragMeta
   personalMeta?: PersonalDragMeta
   eventMeta?: EventDragMeta

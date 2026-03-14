@@ -1,36 +1,19 @@
 import {
   Briefcase,
-  Backpack,
   CalendarDays,
-  Car,
   Check,
   Clock3,
-  Dumbbell,
   Repeat2,
-  Stethoscope,
-  Utensils,
-  type LucideIcon,
 } from 'lucide-react'
 import { useDragRender } from '../../calendar-store'
 import { EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
 import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
+import {
+  personalActivityStyles,
+  personalActivityIcons,
+  type PersonalActivityType,
+} from '@/lib/personal-activity'
 import type { DragRenderState, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../../types'
-
-const personalStyleMap: Record<string, string> = {
-  schoolRun: 'border-orange-200 bg-orange-50 text-orange-950',
-  lunch: 'border-rose-200 bg-rose-50 text-rose-950',
-  dentist: 'border-emerald-200 bg-emerald-50 text-emerald-950',
-  driving: 'border-indigo-200 bg-indigo-50 text-indigo-950',
-  gym: 'border-violet-200 bg-violet-50 text-violet-950',
-}
-
-const personalIconMap: Record<string, LucideIcon> = {
-  schoolRun: Backpack,
-  lunch: Utensils,
-  dentist: Stethoscope,
-  driving: Car,
-  gym: Dumbbell,
-}
 
 export function CalendarDragLayer() {
   const dragRender = useDragRender()
@@ -124,8 +107,9 @@ function TaskPreview({ drag, meta, width }: { drag: DragRenderState; meta: TaskD
 
 /** Personal task pill — 1:1 clone of PersonalTaskCard */
 function PersonalPreview({ drag, meta, width }: { drag: DragRenderState; meta: PersonalDragMeta; width: number; height: number }) {
-  const ActivityIcon = personalIconMap[meta.activityType] ?? Utensils
-  const style = personalStyleMap[meta.activityType] ?? ''
+  const activityType = (drag.personalActivityType ?? meta.activityType) as PersonalActivityType
+  const ActivityIcon = personalActivityIcons[activityType]
+  const style = personalActivityStyles[activityType] ?? ''
 
   return (
     <div
@@ -148,6 +132,11 @@ function PersonalPreview({ drag, meta, width }: { drag: DragRenderState; meta: P
 
 /** Calendar event card — 1:1 clone of resting EventBlock */
 function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; meta: EventDragMeta; width: number; height: number }) {
+  const isPersonal = drag.personalActivityType != null
+  const activityType = drag.personalActivityType as PersonalActivityType | undefined
+  const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
+  const activityClasses = activityType ? personalActivityStyles[activityType] : ''
+
   const pClass = priorityBadgeClass[meta.priority]
   const PIcon = priorityBadgeIcon[meta.priority]
   const priorityBorderColor = priorityLeftBorderColor[meta.priority]
@@ -156,22 +145,26 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
 
   return (
     <div
-      className="flex flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
-      style={{ width, height, borderLeftColor: priorityBorderColor }}
+      className={`flex flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)] ${
+        isPersonal ? activityClasses : 'border-l-[3px] border-zinc-200 bg-white'
+      }`}
+      style={{ width, height, ...(!isPersonal && { borderLeftColor: priorityBorderColor }) }}
     >
-      {/* Row 1: checkbox + title + priority icon */}
+      {/* Row 1: icon + title */}
       <div className="flex min-w-0 items-center gap-1.5">
-        {meta.status === 'completed' ? (
+        {isPersonal && ActivityIcon ? (
+          <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
+        ) : meta.status === 'completed' ? (
           <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}>
             <Check className="size-2 text-white" strokeWidth={3} />
           </span>
         ) : (
           <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }} />
         )}
-        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-tight text-zinc-900">
+        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-tight">
           {drag.title}
         </span>
-        {pClass && PIcon && (
+        {!isPersonal && pClass && PIcon && (
           <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
             <PIcon aria-hidden="true" className="size-2.5" />
           </span>
@@ -180,7 +173,7 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
 
       {/* Row 2: time range */}
       {start && end && (
-        <span className="mt-auto text-[10px] leading-tight text-zinc-500">
+        <span className={`mt-0.5 text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
           {formatTime(start)} – {formatTime(end)}
         </span>
       )}

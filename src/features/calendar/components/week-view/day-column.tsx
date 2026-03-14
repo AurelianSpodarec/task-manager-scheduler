@@ -7,7 +7,6 @@ import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_STATUS_INDICATOR_CO
 import {
   personalActivityStyles,
   personalActivityIcons,
-  personalActivityLeftBorder,
   type PersonalActivityType,
 } from '@/lib/personal-activity'
 import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
@@ -150,7 +149,6 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
   const activityType = projected.personalActivityType as PersonalActivityType | undefined
   const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
   const activityClasses = activityType ? personalActivityStyles[activityType] : ''
-  const activityBorder = activityType ? personalActivityLeftBorder[activityType] : ''
 
   return (
     <div
@@ -231,6 +229,6 @@ function getProjectedCard(
     height: durationToPixelHeight(start, end, HOUR_HEIGHT_PX),
     status,
     priority,
-    personalActivityType: dragRender.personalMeta?.activityType,
+    personalActivityType: dragRender.personalActivityType ?? dragRender.personalMeta?.activityType,
   }
 }

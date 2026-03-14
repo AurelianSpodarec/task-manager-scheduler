@@ -165,6 +165,7 @@ export function useCalendarDropMonitor() {
           durationMinutes: d.durationMinutes,
           originalStart: d.originalStart,
           originalEnd: d.originalEnd,
+          personalActivityType: d.personalActivityType,
           pointer: {
             clientX: input.clientX,
             clientY: input.clientY,

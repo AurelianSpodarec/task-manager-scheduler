@@ -10,7 +10,6 @@ import { priorityBadgeClass, priorityBadgeIcon, priorityLeftBorderColor } from '
 import {
   personalActivityStyles,
   personalActivityIcons,
-  personalActivityLeftBorder,
   type PersonalActivityType,
 } from '@/lib/personal-activity'
 
@@ -34,7 +33,6 @@ export function EventBlock({ layout }: EventBlockProps) {
   // Personal activity styling
   const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
   const activityClasses = activityType ? personalActivityStyles[activityType] : ''
-  const activityBorder = activityType ? personalActivityLeftBorder[activityType] : ''
 
   useEffect(() => {
     const el = ref.current
