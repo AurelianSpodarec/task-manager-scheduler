@@ -188,9 +188,13 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     <article
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`cursor-grab rounded-[10px] border border-zinc-200 border-l-[3px] bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
-      style={{ borderLeftColor: priorityBorderColor }}
+      className={`relative cursor-grab overflow-hidden rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute"
+        style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-[14px] leading-5 font-semibold text-zinc-900">

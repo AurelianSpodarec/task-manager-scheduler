@@ -54,9 +54,14 @@ function TaskPreview({ drag, meta, width }: { drag: DragRenderState; meta: TaskD
 
   return (
     <div
-      className="rounded-[10px] border border-zinc-200 border-l-[3px] bg-white px-3 py-3 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
-      style={{ width, borderLeftColor: priorityBorderColor }}
+      className="relative overflow-hidden rounded-[10px] border border-zinc-200 bg-white px-3 py-3 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
+      style={{ width }}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute"
+        style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-[14px] leading-5 font-semibold text-zinc-900">
@@ -134,11 +139,18 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
 
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)] ${
-        isPersonal ? activityClasses : 'border-l-[3px] border-zinc-200 bg-white'
+      className={`relative flex flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)] ${
+        isPersonal ? activityClasses : 'border-zinc-200 bg-white'
       }`}
-      style={{ width, height, ...(!isPersonal && { borderLeftColor: priorityBorderColor }) }}
+      style={{ width, height }}
     >
+      {!isPersonal && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
+        />
+      )}
       {/* Row 1: icon + title */}
       <div className="flex min-w-0 items-center gap-1.5">
         {isPersonal && ActivityIcon ? (

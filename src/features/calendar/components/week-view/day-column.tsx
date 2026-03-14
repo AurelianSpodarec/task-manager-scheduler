@@ -153,17 +153,23 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
   return (
     <div
       className={`pointer-events-none absolute z-20 flex min-h-4 flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50 ${
-        isPersonal ? activityClasses : 'border-l-[3px] border-zinc-200 bg-white'
+        isPersonal ? activityClasses : 'border-zinc-200 bg-white'
       }`}
       style={{
         top: `${projected.top + verticalInsetPx}px`,
         height: `${renderedHeightPx}px`,
         left: '2px',
         right: '2px',
-        ...(!isPersonal && { borderLeftColor: priorityBorderColor }),
       }}
       aria-hidden="true"
     >
+      {!isPersonal && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
+        />
+      )}
       {/* Row 1: icon + title */}
       <div className="flex min-w-0 items-center gap-1.5">
         {isPersonal && ActivityIcon ? (

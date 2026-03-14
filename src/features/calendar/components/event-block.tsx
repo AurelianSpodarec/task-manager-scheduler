@@ -58,17 +58,23 @@ export function EventBlock({ layout }: EventBlockProps) {
       className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${
         isPersonal
           ? activityClasses
-          : 'border-l-[3px] border-zinc-200 bg-white hover:border-zinc-300'
+          : 'border-zinc-200 bg-white hover:border-zinc-300'
       } ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
       style={{
         top: `${top + verticalInsetPx}px`,
         height: `${renderedHeightPx}px`,
         width: `calc(${widthPercent}% - ${horizontalInsetPx * 2}px)`,
         left: `calc(${leftPercent}% + ${horizontalInsetPx}px)`,
-        ...(!isPersonal && { borderLeftColor: priorityBorderColor }),
       }}
       aria-label={`${event.title}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
     >
+      {!isPersonal && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
+        />
+      )}
       {/* Row 1: icon + title */}
       <div className="flex min-w-0 items-center gap-1.5">
         {isPersonal && ActivityIcon ? (
