@@ -34,3 +34,8 @@
   }
 }
 
+body.cal-dragging,
+body.cal-dragging * {
+  cursor: grabbing !important;
+}
+

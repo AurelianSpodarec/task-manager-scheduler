@@ -24,7 +24,7 @@ export function DayColumn({ day }: DayColumnProps) {
   const dragRender = useDragRender()
   const isoDay = day.toISOString().split('T')[0]
   const isDragging = dragRender != null
-  const projected = getProjectedCard(dragRender, isoDay)
+  const projected = getProjectedCard(dragRender, isoDay, slotDuration)
 
   const slots: { hour: number; minute: number }[] = []
   for (let h = DAY_START_HOUR; h < DAY_END_HOUR; h++) {
@@ -179,13 +179,21 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
 function getProjectedCard(
   dragRender: DragRenderState | null,
   isoDay: string,
+  slotDuration: number,
 ): ProjectedCard | null {
   if (!dragRender?.slot) return null
   if (dragRender.slot.isAllDay) return null
   if (dragRender.slot.isoDay !== isoDay) return null
 
   const day = new Date(dragRender.slot.isoDay)
-  const start = setMinutes(setHours(startOfDay(day), dragRender.slot.hour), dragRender.slot.minute)
+  const slotStart = setMinutes(setHours(startOfDay(day), dragRender.slot.hour), dragRender.slot.minute)
+
+  // Offset so the card stays anchored at the grab point, not the top
+  const grabOffsetMin = dragRender.source === 'calendar'
+    ? Math.round(((dragRender.pointerOffset.y / HOUR_HEIGHT_PX) * 60) / slotDuration) * slotDuration
+    : 0
+  const start = addMinutes(slotStart, -grabOffsetMin)
+
   const durationMinutes = dragRender.durationMinutes ?? 60
   const end = addMinutes(start, durationMinutes)
   const colors = EVENT_COLOR_MAP[dragRender.color]

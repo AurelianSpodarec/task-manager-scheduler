@@ -38,7 +38,10 @@ export function EventBlock({ layout }: EventBlockProps) {
     if (!el) return
     return draggable({
       element: el,
-      getInitialData: () => makeEventDragData(event),
+      getInitialData: ({ input, element }) => ({
+        ...makeEventDragData(event),
+        grabOffsetY: Math.max(0, input.clientY - element.getBoundingClientRect().top),
+      }),
       onGenerateDragPreview: ({ nativeSetDragImage }) => {
         disableNativeDragPreview({ nativeSetDragImage })
       },
@@ -54,7 +57,7 @@ export function EventBlock({ layout }: EventBlockProps) {
   return (
     <button
       ref={ref}
-      className={`group/event absolute z-10 flex cursor-grab flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:border-zinc-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${isDragging ? 'opacity-10' : ''}`}
+      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:border-zinc-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
       style={{
         top: `${top}px`,
         height: `${Math.max(height, 20)}px`,

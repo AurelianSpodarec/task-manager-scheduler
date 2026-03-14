@@ -4,6 +4,7 @@
  */
 import { useEffect } from 'react'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled'
 import {
   addEvent,
   updateEvent,
@@ -11,9 +12,11 @@ import {
   setDragRender,
   clearDragRender,
   updateDragRenderFrame,
+  getSlotDuration,
 } from '../calendar-store'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
+import { HOUR_HEIGHT_PX } from '../constants'
 import type { CalendarEvent, EventColor, EventPriority, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../types'
 
 let idCounter = Date.now()
@@ -39,6 +42,7 @@ export type CalendarDragData = {
   taskMeta?: TaskDragMeta
   personalMeta?: PersonalDragMeta
   eventMeta?: EventDragMeta
+  grabOffsetY?: number
 }
 
 export type SlotDropData = {
@@ -129,6 +133,8 @@ export function useCalendarDropMonitor() {
       onDragStart: ({ source, location }) => {
         const d = source.data as CalendarDragData
         setDragState({ source: d.source, eventId: d.eventId, title: d.title })
+        document.body.classList.add('cal-dragging')
+        preventUnhandled.start()
 
         const rect = source.element.getBoundingClientRect()
         const input = location.initial.input
@@ -176,6 +182,8 @@ export function useCalendarDropMonitor() {
       onDrop: ({ source, location }) => {
         setDragState(null)
         clearDragRender()
+        document.body.classList.remove('cal-dragging')
+        preventUnhandled.stop()
 
         const slot = extractSlotTarget(location.current.dropTargets)
         if (!slot) return
@@ -183,7 +191,14 @@ export function useCalendarDropMonitor() {
         const drag = source.data as CalendarDragData
         const day = new Date(slot.isoDay)
         const isAllDayDrop = Boolean(slot.isAllDay)
-        const targetStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
+        const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
+
+        // Snap grab offset so the event lands on a slot boundary
+        const slotDur = getSlotDuration()
+        const grabOffsetMin = drag.source === 'calendar' && drag.grabOffsetY != null
+          ? Math.round(((drag.grabOffsetY / HOUR_HEIGHT_PX) * 60) / slotDur) * slotDur
+          : 0
+        const targetStart = addMinutes(slotStart, -grabOffsetMin)
 
         if (drag.source === 'sidebar') {
           const mins = drag.durationMinutes ?? 60

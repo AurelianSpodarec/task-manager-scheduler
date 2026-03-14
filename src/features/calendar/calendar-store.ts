@@ -82,6 +82,10 @@ export function setSlotDuration(duration: SlotDuration) {
   setState({ slotDuration: duration })
 }
 
+export function getSlotDuration(): SlotDuration {
+  return state.slotDuration
+}
+
 export function setDragState(drag: DragPayload | null) {
   setState({ dragState: drag })
 }
