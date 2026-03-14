@@ -55,7 +55,7 @@ export function EventBlock({ layout }: EventBlockProps) {
     <button
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${
+    className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${
         isPersonal
           ? activityClasses
           : 'border-zinc-200 bg-white hover:border-zinc-300'
@@ -75,26 +75,23 @@ export function EventBlock({ layout }: EventBlockProps) {
           style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
         />
       )}
-      {/* Row 1: icon + title */}
-      <div className="flex min-w-0 items-center gap-1.5">
-        {isPersonal && ActivityIcon ? (
-          <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
-        ) : (
-          <StatusIcon status={event.status} />
-        )}
+      {isPersonal && ActivityIcon ? (
+        <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
+      ) : (
+        <StatusIcon status={event.status} />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col">
         <span
-          className={`min-w-0 flex-1 truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
+          className={`block truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
         >
           {event.title}
         </span>
+        {!isCompact && (
+          <span className={`block text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
+            {formatEventTime(event.start)} – {formatEventTime(event.end)}
+          </span>
+        )}
       </div>
-
-      {/* Row 2: time range */}
-      {!isCompact && (
-        <span className={`mt-0.5 text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
-          {formatEventTime(event.start)} – {formatEventTime(event.end)}
-        </span>
-      )}
     </button>
   )
 }
@@ -103,7 +100,7 @@ function StatusIcon({ status }: { status: string }) {
   if (status === 'completed') {
     return (
       <span
-        className="flex size-3.5 shrink-0 items-center justify-center rounded-full"
+      className="flex size-3.5 shrink-0 items-center justify-center rounded-[5px]"
         style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}
       >
         <Check className="size-2 text-white" strokeWidth={3} />
@@ -112,8 +109,8 @@ function StatusIcon({ status }: { status: string }) {
   }
   return (
     <span
-      className="size-3.5 shrink-0 rounded-full border-2"
-      style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }}
+      className="size-3.5 shrink-0 rounded-[5px] opacity-60"
+      style={{ border: `1px solid ${EVENT_STATUS_INDICATOR_COLORS.pendingBorder}` }}
     />
   )
 }

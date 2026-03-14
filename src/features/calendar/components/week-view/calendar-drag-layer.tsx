@@ -139,7 +139,7 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)] ${
+      className={`relative flex flex-row items-start gap-1.5 overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)] ${
         isPersonal ? activityClasses : 'border-zinc-200 bg-white'
       }`}
       style={{ width, height }}
@@ -151,28 +151,25 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
           style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
         />
       )}
-      {/* Row 1: icon + title */}
-      <div className="flex min-w-0 items-center gap-1.5">
-        {isPersonal && ActivityIcon ? (
-          <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
-        ) : meta.status === 'completed' ? (
-          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}>
-            <Check className="size-2 text-white" strokeWidth={3} />
-          </span>
-        ) : (
-          <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }} />
-        )}
-        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-tight">
+      {isPersonal && ActivityIcon ? (
+        <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
+      ) : meta.status === 'completed' ? (
+        <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}>
+          <Check className="size-2 text-white" strokeWidth={3} />
+        </span>
+      ) : (
+        <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }} />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="block truncate text-[12px] font-semibold leading-tight">
           {drag.title}
         </span>
+        {start && end && (
+          <span className={`block text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
+            {formatTime(start)} – {formatTime(end)}
+          </span>
+        )}
       </div>
-
-      {/* Row 2: time range */}
-      {start && end && (
-        <span className={`mt-0.5 text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
-          {formatTime(start)} – {formatTime(end)}
-        </span>
-      )}
     </div>
   )
 }
