@@ -10,6 +10,12 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
   }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
 }
 
 

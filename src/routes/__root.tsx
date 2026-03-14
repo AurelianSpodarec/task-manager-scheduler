@@ -39,8 +39,8 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header>
+    <div className="flex h-dvh min-h-0 flex-col">
+      <header className="shrink-0">
         <nav className="border-b border-gray-200 bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <input id="mobile-menu-toggle" type="checkbox" className="peer sr-only" />

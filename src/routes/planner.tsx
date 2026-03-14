@@ -23,65 +23,34 @@ import {
 
 export function TabsDemo() {
   return (
-    <Tabs defaultValue="overview" className="w-full">
+    <Tabs defaultValue="tasks" className="w-full">
       <TabsList className="w-full">
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsTrigger value="tasks">Tasks</TabsTrigger>
+        <TabsTrigger value="personal">Personal</TabsTrigger>
       </TabsList>
-      <TabsContent value="overview">
+      <TabsContent value="tasks">
         <Card>
           <CardHeader>
-            <CardTitle>Overview</CardTitle>
+            <CardTitle>Tasks</CardTitle>
             <CardDescription>
-              View your key metrics and recent project activity. Track progress
-              across all your active projects.
+              Track your work items and monitor progress across ongoing tasks.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            You have 12 active projects and 3 pending tasks.
+            You have 3 priority tasks due today.
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="analytics">
+      <TabsContent value="personal">
         <Card>
           <CardHeader>
-            <CardTitle>Analytics</CardTitle>
+            <CardTitle>Personal</CardTitle>
             <CardDescription>
-              Track performance and user engagement metrics. Monitor trends and
-              identify growth opportunities.
+              Keep personal reminders, notes, and routines in one place.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Page views are up 25% compared to last month.
-          </CardContent>
-        </Card>
-      </TabsContent>
-      <TabsContent value="reports">
-        <Card>
-          <CardHeader>
-            <CardTitle>Reports</CardTitle>
-            <CardDescription>
-              Generate and download your detailed reports. Export data in
-              multiple formats for analysis.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            You have 5 reports ready and available to export.
-          </CardContent>
-        </Card>
-      </TabsContent>
-      <TabsContent value="settings">
-        <Card>
-          <CardHeader>
-            <CardTitle>Settings</CardTitle>
-            <CardDescription>
-              Manage your account preferences and options. Customize your
-              experience to fit your needs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Configure notifications, security, and themes.
+            You have 2 personal reminders this week.
           </CardContent>
         </Card>
       </TabsContent>
@@ -94,11 +63,11 @@ export function TabsDemo() {
 function PlannerPage() {
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-7xl flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
-      <aside className="w-full rounded-lg border bg-card p-4 md:w-72 md:shrink-0">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col items-stretch gap-4 p-4 md:flex-row md:gap-6 md:p-6">
+      <aside className="h-full min-h-0 w-full rounded-lg border bg-card p-4 md:w-72 md:shrink-0">
         <TabsDemo />
       </aside>
-      <section className="h-full flex-1 rounded-lg border bg-card p-4 md:p-6">
+      <section className="h-full min-h-0 flex-1 rounded-lg border bg-card p-4 md:p-6">
         <h2 className="text-lg font-semibold text-card-foreground">Calendar</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Calendar view placeholder.
