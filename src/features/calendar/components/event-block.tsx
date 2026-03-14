@@ -7,6 +7,12 @@ import { EVENT_STATUS_INDICATOR_COLORS } from '../constants'
 import { formatEventTime } from '../utils/date'
 import { makeEventDragData } from '../hooks/use-calendar-dnd'
 import { priorityBadgeClass, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
+import {
+  personalActivityStyles,
+  personalActivityIcons,
+  personalActivityLeftBorder,
+  type PersonalActivityType,
+} from '@/lib/personal-activity'
 
 type EventBlockProps = {
   layout: EventLayoutRect
@@ -18,10 +24,17 @@ export function EventBlock({ layout }: EventBlockProps) {
   const isCompact = height < 40
   const ref = useRef<HTMLButtonElement>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const isPersonal = event.personalActivityType != null
+  const activityType = event.personalActivityType as PersonalActivityType | undefined
 
   const pClass = priorityBadgeClass[event.priority]
   const PIcon = priorityBadgeIcon[event.priority]
   const priorityBorderColor = priorityLeftBorderColor[event.priority]
+
+  // Personal activity styling
+  const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
+  const activityClasses = activityType ? personalActivityStyles[activityType] : ''
+  const activityBorder = activityType ? personalActivityLeftBorder[activityType] : ''
 
   useEffect(() => {
     const el = ref.current
@@ -47,25 +60,33 @@ export function EventBlock({ layout }: EventBlockProps) {
   return (
     <button
       ref={ref}
-      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:border-zinc-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
+      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${
+        isPersonal
+          ? activityClasses
+          : 'border-l-[3px] border-zinc-200 bg-white hover:border-zinc-300'
+      } ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
       style={{
         top: `${top}px`,
         height: `${Math.max(height, 20)}px`,
         width: `calc(${widthPercent}% - ${insetPx * 2}px)`,
         left: `calc(${leftPercent}% + ${insetPx}px)`,
-        borderLeftColor: priorityBorderColor,
+        ...(!isPersonal && { borderLeftColor: priorityBorderColor }),
       }}
       aria-label={`${event.title}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
     >
-      {/* Row 1: checkbox + title */}
+      {/* Row 1: icon + title */}
       <div className="flex min-w-0 items-center gap-1.5">
-        <StatusIcon status={event.status} />
+        {isPersonal && ActivityIcon ? (
+          <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
+        ) : (
+          <StatusIcon status={event.status} />
+        )}
         <span
-          className={`min-w-0 flex-1 truncate font-semibold leading-tight text-zinc-900 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
+          className={`min-w-0 flex-1 truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
         >
           {event.title}
         </span>
-        {!isCompact && pClass && PIcon && (
+        {!isPersonal && !isCompact && pClass && PIcon && (
           <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
             <PIcon aria-hidden="true" className="size-2.5" />
           </span>
@@ -74,7 +95,7 @@ export function EventBlock({ layout }: EventBlockProps) {
 
       {/* Row 2: time range */}
       {!isCompact && (
-        <span className="mt-0.5 text-[10px] leading-tight text-zinc-500">
+        <span className={`mt-0.5 text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
           {formatEventTime(event.start)} – {formatEventTime(event.end)}
         </span>
       )}

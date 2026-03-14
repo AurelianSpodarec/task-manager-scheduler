@@ -41,6 +41,8 @@ export type CalendarEvent = {
   participants?: Participant[]
   /** Source sidebar task ID — links back to the task pool */
   sourceTaskId?: string
+  /** Set for personal activities — drives icon + colored styling on the calendar */
+  personalActivityType?: string
 }
 
 export type DragSource = 'sidebar' | 'calendar'

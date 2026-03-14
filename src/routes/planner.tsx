@@ -7,15 +7,9 @@ import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
 import { makeSidebarDragData } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
   Briefcase,
-  Backpack,
   CalendarDays,
-  Car,
   Clock3,
-  Dumbbell,
   Repeat2,
-  Stethoscope,
-  Utensils,
-  type LucideIcon,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/planner')({
@@ -31,8 +25,12 @@ import {
 import { cn } from "@/lib/utils"
 import type { TaskPriority } from "@/lib/priority"
 import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon, priorityLeftBorderColor } from "@/lib/priority"
-
-type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving' | 'gym'
+import {
+  personalActivityStyles,
+  personalActivityIcons,
+  personalActivityEventColor,
+  type PersonalActivityType,
+} from '@/lib/personal-activity'
 
 type SidebarTask = {
   id: string
@@ -131,21 +129,6 @@ const sidebarTasks: SidebarTask[] = [
   },
 ]
 
-const personalTaskStyles: Record<PersonalActivityType, string> = {
-  schoolRun: 'border-orange-200 bg-orange-50 text-orange-950',
-  lunch: 'border-rose-200 bg-rose-50 text-rose-950',
-  dentist: 'border-emerald-200 bg-emerald-50 text-emerald-950',
-  driving: 'border-indigo-200 bg-indigo-50 text-indigo-950',
-  gym: 'border-violet-200 bg-violet-50 text-violet-950',
-}
-
-const personalTaskIcons: Record<PersonalActivityType, LucideIcon> = {
-  schoolRun: Backpack,
-  lunch: Utensils,
-  dentist: Stethoscope,
-  driving: Car,
-  gym: Dumbbell,
-}
 
 const personalTasks: PersonalTask[] = [
   { id: 'personal-school-run', activityType: 'schoolRun', label: 'School Run', duration: '1:00h' },
@@ -278,7 +261,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
 function PersonalTaskCard({ task }: { task: PersonalTask }) {
   const roundedDurationMinutes = parseDurationMinutes(task.duration)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
-  const ActivityIcon = personalTaskIcons[task.activityType]
+  const ActivityIcon = personalActivityIcons[task.activityType]
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -288,6 +271,8 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
     return draggable({
       element: el,
       getInitialData: () => makeSidebarDragData(task.id, task.label, roundedDurationMinutes, 'none', {
+        color: personalActivityEventColor[task.activityType],
+        personalActivityType: task.activityType,
         personalMeta: {
           activityType: task.activityType,
           durationLabel: roundedDurationLabel,
@@ -306,7 +291,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       ref={ref}
       className={cn(
         'flex min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
-        personalTaskStyles[task.activityType],
+        personalActivityStyles[task.activityType],
         isDragging && 'opacity-40'
       )}
     >

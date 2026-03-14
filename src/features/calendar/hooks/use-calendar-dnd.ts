@@ -44,6 +44,7 @@ export type CalendarDragData = {
   originalEnd?: number
   isAllDay?: boolean
   priority?: EventPriority
+  personalActivityType?: string
   taskMeta?: TaskDragMeta
   personalMeta?: PersonalDragMeta
   eventMeta?: EventDragMeta
@@ -82,6 +83,7 @@ export function makeEventDragData(event: CalendarEvent): CalendarDragData {
     originalEnd: event.end.getTime(),
     isAllDay: event.isAllDay,
     priority: event.priority,
+    personalActivityType: event.personalActivityType,
     eventMeta: { status: event.status, priority: event.priority },
   }
 }
@@ -92,7 +94,12 @@ export function makeSidebarDragData(
   title: string,
   durationMinutes: number,
   priority: EventPriority = 'none',
-  meta?: { taskMeta?: TaskDragMeta; personalMeta?: PersonalDragMeta },
+  meta?: {
+    taskMeta?: TaskDragMeta
+    personalMeta?: PersonalDragMeta
+    color?: EventColor
+    personalActivityType?: string
+  },
 ): CalendarDragData {
   const slotDuration = getSlotDuration()
   const snappedDurationMinutes = roundUpToIncrement(durationMinutes, slotDuration)
@@ -101,9 +108,10 @@ export function makeSidebarDragData(
     source: 'sidebar',
     eventId: taskId,
     title,
-    color: 'teal',
+    color: meta?.color ?? 'teal',
     durationMinutes: snappedDurationMinutes,
     priority,
+    personalActivityType: meta?.personalActivityType,
     taskMeta: meta?.taskMeta,
     personalMeta: meta?.personalMeta,
   }
@@ -218,10 +226,11 @@ export function useCalendarDropMonitor() {
             start: targetStart,
             end,
             isAllDay: isAllDayDrop || mins >= 1440,
-            color: 'teal',
+            color: drag.color ?? 'teal',
             status: 'pending',
             priority: drag.priority ?? 'none',
             sourceTaskId: drag.eventId,
+            personalActivityType: drag.personalActivityType,
           }
           addEvent(newEvent)
         } else if (drag.source === 'calendar' && drag.eventId) {

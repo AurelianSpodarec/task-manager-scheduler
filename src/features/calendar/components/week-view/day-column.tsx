@@ -4,6 +4,12 @@ import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { Check } from 'lucide-react'
 import { useEventsForDay, useSlotDuration, useDragRender, useWorkHours, isWithinWorkHours } from '../../calendar-store'
 import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
+import {
+  personalActivityStyles,
+  personalActivityIcons,
+  personalActivityLeftBorder,
+  type PersonalActivityType,
+} from '@/lib/personal-activity'
 import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
@@ -131,6 +137,7 @@ type ProjectedCard = {
   height: number
   status: EventStatus
   priority: EventPriority
+  personalActivityType?: string
 }
 
 function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
@@ -139,31 +146,41 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
   const PIcon = priorityBadgeIcon[projected.priority]
   const priorityBorderColor = priorityLeftBorderColor[projected.priority]
 
+  const isPersonal = projected.personalActivityType != null
+  const activityType = projected.personalActivityType as PersonalActivityType | undefined
+  const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
+  const activityClasses = activityType ? personalActivityStyles[activityType] : ''
+  const activityBorder = activityType ? personalActivityLeftBorder[activityType] : ''
+
   return (
     <div
-      className="pointer-events-none absolute z-20 flex min-h-5 flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50"
+      className={`pointer-events-none absolute z-20 flex min-h-5 flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50 ${
+        isPersonal ? activityClasses : 'border-l-[3px] border-zinc-200 bg-white'
+      }`}
       style={{
         top: `${projected.top}px`,
         height: `${Math.max(projected.height, 20)}px`,
         left: '2px',
         right: '2px',
-        borderLeftColor: priorityBorderColor,
+        ...(!isPersonal && { borderLeftColor: priorityBorderColor }),
       }}
       aria-hidden="true"
     >
-      {/* Row 1: checkbox + title + priority icon */}
+      {/* Row 1: icon + title */}
       <div className="flex min-w-0 items-center gap-1.5">
-        {projected.status === 'completed' ? (
+        {isPersonal && ActivityIcon ? (
+          <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} />
+        ) : projected.status === 'completed' ? (
           <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}>
             <Check className="size-2 text-white" strokeWidth={3} />
           </span>
         ) : (
           <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }} />
         )}
-        <span className={`min-w-0 flex-1 truncate font-semibold leading-tight text-zinc-900 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
+        <span className={`min-w-0 flex-1 truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
           {projected.title}
         </span>
-        {!isCompact && pClass && PIcon && (
+        {!isPersonal && !isCompact && pClass && PIcon && (
           <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
             <PIcon aria-hidden="true" className="size-2.5" />
           </span>
@@ -172,7 +189,7 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
 
       {/* Row 2: time range */}
       {!isCompact && (
-        <span className="mt-auto text-[10px] leading-tight text-zinc-500">
+        <span className={`mt-0.5 text-[10px] leading-tight ${isPersonal ? 'opacity-70' : 'text-zinc-500'}`}>
           {formatEventTime(projected.start)} – {formatEventTime(projected.end)}
         </span>
       )}
@@ -214,5 +231,6 @@ function getProjectedCard(
     height: durationToPixelHeight(start, end, HOUR_HEIGHT_PX),
     status,
     priority,
+    personalActivityType: dragRender.personalMeta?.activityType,
   }
 }
