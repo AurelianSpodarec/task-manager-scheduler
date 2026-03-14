@@ -18,7 +18,7 @@ export function AllDayRow({ weekDays }: AllDayRowProps) {
     <div className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid">
       {/* Gutter */}
       <div className="flex items-start justify-end border-r border-cal-grid-line pr-2 pt-1" aria-hidden="true">
-        <span className="text-[var(--cal-text-2xs)] font-medium text-cal-text-muted">
+        <span className="text-[11px] font-medium text-cal-text-muted">
           All-day
         </span>
       </div>
@@ -64,7 +64,7 @@ function AllDayEventChip({ event }: { event: CalendarEvent }) {
   return (
     <div
       ref={ref}
-      className={`mb-0.5 cursor-grab truncate rounded-[var(--cal-radius-pill)] px-1.5 py-0.5 text-[var(--cal-text-2xs)] font-semibold ${isDragging ? 'opacity-30' : ''}`}
+      className={`mb-0.5 cursor-grab truncate rounded-[var(--cal-radius-pill)] px-1.5 py-0.5 text-[11px] font-semibold ${isDragging ? 'opacity-30' : ''}`}
       style={{ backgroundColor: colors.bg, color: colors.text }}
     >
       {event.title}
