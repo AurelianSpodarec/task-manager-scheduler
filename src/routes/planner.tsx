@@ -6,13 +6,6 @@ export const Route = createFileRoute('/planner')({
 })
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -21,6 +14,7 @@ import {
 import { cn } from "@/lib/utils"
 
 type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving' | 'gym'
 
 type SidebarTask = {
   id: string
@@ -32,6 +26,11 @@ type SidebarTask = {
   priority: TaskPriority
 }
 
+type PersonalTask = {
+  id: string
+  activityType: PersonalActivityType
+  label: string
+}
 const recurringPriorityBorderClass: Record<TaskPriority, string> = {
   critical: 'border-l-zinc-900',
   high: 'border-l-zinc-700',
@@ -60,6 +59,29 @@ const sidebarTasks: SidebarTask[] = [
   },
 ]
 
+const personalTaskStyles: Record<PersonalActivityType, string> = {
+  schoolRun: 'border-[#d9c8a4] bg-[#e9dcc5] text-[#6f5a39]',
+  lunch: 'border-[#dfc2cb] bg-[#ecd9de] text-[#7f5160]',
+  dentist: 'border-[#c7d9cf] bg-[#dcebe4] text-[#43695a]',
+  driving: 'border-[#bcc4e4] bg-[#d6dcef] text-[#4b548a]',
+  gym: 'border-[#cfc9df] bg-[#e2def0] text-[#5a4f7e]',
+}
+
+const personalTaskIcons: Record<PersonalActivityType, string> = {
+  schoolRun: '🎒',
+  lunch: '🍽️',
+  dentist: '🦷',
+  driving: '🚗',
+  gym: '🏋️',
+}
+
+const personalTasks: PersonalTask[] = [
+  { id: 'personal-school-run', activityType: 'schoolRun', label: 'School Run' },
+  { id: 'personal-lunch', activityType: 'lunch', label: 'Lunch' },
+  { id: 'personal-dentist', activityType: 'dentist', label: 'Dentist' },
+  { id: 'personal-driving', activityType: 'driving', label: 'Driving' },
+  { id: 'personal-gym', activityType: 'gym', label: 'Gym' },
+]
 function SidebarTaskCard({ task }: { task: SidebarTask }) {
   return (
     <article
@@ -91,6 +113,26 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   )
 }
 
+function PersonalTaskCard({ task }: { task: PersonalTask }) {
+  return (
+    <article
+      className={cn(
+        'flex min-h-10 items-center gap-2 rounded-[4px] border px-2.5 py-2',
+        personalTaskStyles[task.activityType]
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="inline-flex size-4 items-center justify-center text-[13px] leading-none"
+      >
+        {personalTaskIcons[task.activityType]}
+      </span>
+      <span className="text-[12px] leading-none font-semibold tracking-[0.02em] uppercase">
+        {task.label}
+      </span>
+    </article>
+  )
+}
 export function PlannerSidebar() {
   return (
     <Tabs defaultValue="tasks" className="w-full">
@@ -103,18 +145,10 @@ export function PlannerSidebar() {
           <SidebarTaskCard key={task.id} task={task} />
         ))}
       </TabsContent>
-      <TabsContent value="personal">
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal</CardTitle>
-            <CardDescription>
-              Keep personal reminders, notes, and routines in one place.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            You have 2 personal reminders this week.
-          </CardContent>
-        </Card>
+      <TabsContent value="personal" className="space-y-1.5">
+        {personalTasks.map((task) => (
+          <PersonalTaskCard key={task.id} task={task} />
+        ))}
       </TabsContent>
     </Tabs>
   )
