@@ -1,6 +1,7 @@
 import type { EventColor, SlotDuration } from './types'
 
-export const DEFAULT_SLOT_DURATION: SlotDuration = 30
+export const SLOT_INCREMENT_MINUTES: SlotDuration = 15
+export const DEFAULT_SLOT_DURATION: SlotDuration = SLOT_INCREMENT_MINUTES
 export const DAY_START_HOUR = 0
 export const DAY_END_HOUR = 24
 export const VISIBLE_START_HOUR = 7

@@ -24,6 +24,11 @@ function nextId() {
   return `evt-${idCounter++}`
 }
 
+function roundUpToIncrement(minutes: number, incrementMinutes: number): number {
+  const safeMinutes = Number.isFinite(minutes) ? Math.max(minutes, incrementMinutes) : incrementMinutes
+  return Math.ceil(safeMinutes / incrementMinutes) * incrementMinutes
+}
+
 // -- Drag data discriminators --
 const DRAG_TYPE = 'calendar-drag' as const
 const SLOT_TYPE = 'calendar-slot' as const
@@ -63,14 +68,16 @@ function isSlotTarget(data: Record<string, unknown>): data is SlotDropData {
 
 /** Build drag data for an existing calendar event. */
 export function makeEventDragData(event: CalendarEvent): CalendarDragData {
-  const durationMinutes = Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000))
+  const slotDuration = getSlotDuration()
+  const durationMinutes = Math.max(1, Math.ceil((event.end.getTime() - event.start.getTime()) / 60000))
+  const snappedDurationMinutes = roundUpToIncrement(durationMinutes, slotDuration)
   return {
     _type: DRAG_TYPE,
     source: 'calendar',
     eventId: event.id,
     title: event.title,
     color: event.color,
-    durationMinutes: event.isAllDay ? 60 : durationMinutes,
+    durationMinutes: event.isAllDay ? 60 : snappedDurationMinutes,
     originalStart: event.start.getTime(),
     originalEnd: event.end.getTime(),
     isAllDay: event.isAllDay,
@@ -87,13 +94,15 @@ export function makeSidebarDragData(
   priority: EventPriority = 'none',
   meta?: { taskMeta?: TaskDragMeta; personalMeta?: PersonalDragMeta },
 ): CalendarDragData {
+  const slotDuration = getSlotDuration()
+  const snappedDurationMinutes = roundUpToIncrement(durationMinutes, slotDuration)
   return {
     _type: DRAG_TYPE,
     source: 'sidebar',
     eventId: taskId,
     title,
     color: 'teal',
-    durationMinutes,
+    durationMinutes: snappedDurationMinutes,
     priority,
     taskMeta: meta?.taskMeta,
     personalMeta: meta?.personalMeta,
@@ -201,7 +210,7 @@ export function useCalendarDropMonitor() {
         const targetStart = addMinutes(slotStart, -grabOffsetMin)
 
         if (drag.source === 'sidebar') {
-          const mins = drag.durationMinutes ?? 60
+          const mins = roundUpToIncrement(drag.durationMinutes ?? 60, slotDur)
           const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
           const newEvent: CalendarEvent = {
             id: nextId(),
@@ -216,14 +225,15 @@ export function useCalendarDropMonitor() {
           }
           addEvent(newEvent)
         } else if (drag.source === 'calendar' && drag.eventId) {
-          const durationMs =
+          const durationMinutes =
             drag.originalStart != null && drag.originalEnd != null
-              ? Math.max(60_000, drag.originalEnd - drag.originalStart)
-              : Math.max(1, drag.durationMinutes ?? 60) * 60_000
-          const timedDurationMs = drag.isAllDay ? 60 * 60_000 : durationMs
+              ? Math.max(1, Math.ceil((drag.originalEnd - drag.originalStart) / 60_000))
+              : Math.max(1, drag.durationMinutes ?? 60)
+          const snappedDurationMinutes = roundUpToIncrement(durationMinutes, slotDur)
+          const timedDurationMinutes = drag.isAllDay ? 60 : snappedDurationMinutes
           const end = isAllDayDrop
             ? addMinutes(targetStart, 1440)
-            : new Date(targetStart.getTime() + timedDurationMs)
+            : addMinutes(targetStart, timedDurationMinutes)
           updateEvent(drag.eventId, {
             start: targetStart,
             end,

@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { CalendarShell } from '@/features/calendar/components/calendar-shell'
+import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
 import { makeSidebarDragData } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
   Briefcase,
@@ -153,14 +154,28 @@ const personalTasks: PersonalTask[] = [
   { id: 'personal-driving', activityType: 'driving', label: 'Driving', duration: '1:00h' },
   { id: 'personal-gym', activityType: 'gym', label: 'Gym', duration: '1:00h' },
 ]
-/** Parse duration string like "2:05h" into minutes. */
+function roundUpDurationMinutes(minutes: number): number {
+  const safeMinutes = Number.isFinite(minutes) ? Math.max(minutes, SLOT_INCREMENT_MINUTES) : 60
+  return Math.ceil(safeMinutes / SLOT_INCREMENT_MINUTES) * SLOT_INCREMENT_MINUTES
+}
+
+function formatDurationLabel(minutes: number): string {
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return `${hours}:${String(remainingMinutes).padStart(2, '0')}h`
+}
+
+/** Parse duration string like "2:05h" into minutes and round up to 15-minute increments. */
 function parseDurationMinutes(dur: string): number {
   const match = dur.match(/(\d+):(\d+)/)
   if (!match) return 60
-  return parseInt(match[1], 10) * 60 + parseInt(match[2], 10)
+  const totalMinutes = parseInt(match[1], 10) * 60 + parseInt(match[2], 10)
+  return roundUpDurationMinutes(totalMinutes)
 }
 
 function SidebarTaskCard({ task }: { task: SidebarTask }) {
+  const roundedDurationMinutes = parseDurationMinutes(task.duration)
+  const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
   const priorityClass = priorityBadgeClass[task.priority]
   const priorityLabel = priorityBadgeLabel[task.priority]
   const PriorityIcon = priorityBadgeIcon[task.priority]
@@ -175,13 +190,13 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     if (!el) return
     return draggable({
       element: el,
-      getInitialData: () => makeSidebarDragData(task.id, task.title, parseDurationMinutes(task.duration), task.priority, {
+      getInitialData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, task.priority, {
         taskMeta: {
           clientName: task.clientName,
           dueDateLabel: task.dueDateLabel ?? null,
           isRecurring: task.isRecurring,
           recurringType: task.recurringType,
-          durationLabel: task.duration,
+          durationLabel: roundedDurationLabel,
           priority: task.priority,
         },
       }),
@@ -191,7 +206,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
-  }, [task.id, task.title, task.duration, task.priority])
+  }, [task.id, task.title, task.priority, task.clientName, task.dueDateLabel, task.isRecurring, task.recurringType, roundedDurationMinutes, roundedDurationLabel])
 
   return (
     <article
@@ -217,7 +232,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
         </div>
         <div className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md bg-zinc-50 px-1.5 py-0.5 text-[11px] font-medium text-zinc-500">
           <Clock3 aria-hidden="true" className="size-3.5" />
-          <span className="tabular-nums">{task.duration}</span>
+          <span className="tabular-nums">{roundedDurationLabel}</span>
         </div>
       </div>
       {hasStatusBadges && (
@@ -261,6 +276,8 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
 }
 
 function PersonalTaskCard({ task }: { task: PersonalTask }) {
+  const roundedDurationMinutes = parseDurationMinutes(task.duration)
+  const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
   const ActivityIcon = personalTaskIcons[task.activityType]
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -270,10 +287,10 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
     if (!el) return
     return draggable({
       element: el,
-      getInitialData: () => makeSidebarDragData(task.id, task.label, parseDurationMinutes(task.duration), 'none', {
+      getInitialData: () => makeSidebarDragData(task.id, task.label, roundedDurationMinutes, 'none', {
         personalMeta: {
           activityType: task.activityType,
-          durationLabel: task.duration,
+          durationLabel: roundedDurationLabel,
         },
       }),
       onGenerateDragPreview: ({ nativeSetDragImage }) => {
@@ -282,7 +299,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
-  }, [task.id, task.label, task.duration])
+  }, [task.id, task.label, task.activityType, roundedDurationMinutes, roundedDurationLabel])
 
   return (
     <article
@@ -304,7 +321,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       </span>
       <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/50 px-1.5 py-0.5 text-[11px] font-medium opacity-70">
         <Clock3 aria-hidden="true" className="size-3" />
-        <span className="tabular-nums">{task.duration}</span>
+        <span className="tabular-nums">{roundedDurationLabel}</span>
       </span>
     </article>
   )

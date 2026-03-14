@@ -4,6 +4,7 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
+  addMinutes,
   addDays,
   addWeeks,
   subWeeks,
@@ -54,13 +55,14 @@ export function navigateMonth(date: Date, direction: 'prev' | 'next'): Date {
 }
 
 /**
- * Snaps a time to the nearest slot boundary.
- * E.g. 10:22 with 15-min slots → 10:15
+ * Snaps a time to the next slot boundary.
+ * E.g. 10:22 with 15-min slots → 10:30
  */
 export function snapToSlot(date: Date, slotDuration: SlotDuration): Date {
+  const hourStart = setMinutes(setHours(startOfDay(date), getHours(date)), 0)
   const minutes = getMinutes(date)
-  const snapped = Math.round(minutes / slotDuration) * slotDuration
-  return setMinutes(setHours(startOfDay(date), getHours(date)), snapped >= 60 ? 0 : snapped)
+  const snapped = Math.ceil(minutes / slotDuration) * slotDuration
+  return addMinutes(hourStart, snapped)
 }
 
 /** Converts a pixel Y offset within the day grid to a TimeSlot. */
