@@ -7,13 +7,15 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/planner">Planner</Link>
-        <Link to="/scheduler">Scheduler</Link>
-        <Link to="/profile">Profile</Link>
-      </nav>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/planner">Planner</Link>
+          <Link to="/scheduler">Scheduler</Link>
+          <Link to="/profile">Profile</Link>
+        </nav>
+      </header>
       <main>
         <Outlet />
       </main>

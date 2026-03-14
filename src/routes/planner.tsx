@@ -6,8 +6,13 @@ export const Route = createFileRoute('/planner')({
 
 function PlannerPage() {
   return (
-    <div>
-      <h1>Planner</h1>
+    <div className="flex flex-row">
+      <aside>
+        Planner
+      </aside>
+      <div>
+        Calendar
+      </div>
     </div>
   )
 }
