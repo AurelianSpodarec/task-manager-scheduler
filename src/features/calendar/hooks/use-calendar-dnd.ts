@@ -1,10 +1,8 @@
 /**
- * Pragmatic drag-and-drop integration for the calendar.
- * Uses @atlaskit/pragmatic-drag-and-drop — React 19 + Compiler safe.
+ * Pointer-event-based drag system for the calendar.
+ * Replaces HTML5 DnD (which forces an OS-level cursor on Windows)
+ * with pointer events so CSS `cursor: grabbing` works everywhere.
  */
-import { useEffect } from 'react'
-import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled'
 import {
   addEvent,
   updateEvent,
@@ -16,7 +14,7 @@ import {
 } from '../calendar-store'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
-import { HOUR_HEIGHT_PX } from '../constants'
+import { DAY_START_HOUR, HOUR_HEIGHT_PX } from '../constants'
 import type { CalendarEvent, EventColor, EventPriority, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../types'
 
 let idCounter = Date.now()
@@ -61,10 +59,6 @@ export type SlotDropData = {
 
 export function isCalendarDrag(data: Record<string, unknown>): data is CalendarDragData {
   return data._type === DRAG_TYPE
-}
-
-function isSlotTarget(data: Record<string, unknown>): data is SlotDropData {
-  return data._type === SLOT_TYPE
 }
 
 /** Build drag data for an existing calendar event. */
@@ -127,29 +121,17 @@ export function makeAllDaySlotData(isoDay: string): SlotDropData {
   return { _type: SLOT_TYPE, isoDay, hour: 0, minute: 0, isAllDay: true }
 }
 
-function extractSlotTarget(dropTargets: Array<{ data: unknown }>): SlotDropData | null {
-  for (const target of dropTargets) {
-    const data = target.data
-    if (data && typeof data === 'object' && isSlotTarget(data as Record<string, unknown>)) {
-      return data as SlotDropData
-    }
-  }
-  return null
-}
-
 // ---------------------------------------------------------------------------
 // Direction-aware day-column snapping
-// Snaps to adjacent column ~20% before the pointer crosses the boundary,
-// with hysteresis to prevent flicker on direction reversal.
 // ---------------------------------------------------------------------------
 type ColumnRect = { isoDay: string; left: number; right: number }
 let columnRects: ColumnRect[] = []
 let currentDay: string | null = null
 let lastPointerX = 0
 
-const ADVANCE_ZONE = 0.13  // snap ahead when within 13% of the leading edge
-const COMMIT_ZONE = 0.35   // commit to new column once 35% past the entry side
-const MIN_DELTA = 2         // ignore sub-pixel jitter
+const ADVANCE_ZONE = 0.13
+const COMMIT_ZONE = 0.35
+const MIN_DELTA = 2
 
 function cacheColumnRects() {
   const els = document.querySelectorAll<HTMLElement>('[data-date]')
@@ -158,8 +140,8 @@ function cacheColumnRects() {
       const r = el.getBoundingClientRect()
       return { isoDay: el.dataset.date!, left: r.left, right: r.right }
     })
-    .filter((c) => c.right > c.left)   // drop hidden (zero-width) columns
-    .sort((a, b) => a.left - b.left)   // guarantee visual left-to-right order
+    .filter((c) => c.right > c.left)
+    .sort((a, b) => a.left - b.left)
 }
 
 function clearColumnRects() {
@@ -168,21 +150,12 @@ function clearColumnRects() {
   lastPointerX = 0
 }
 
-/**
- * Resolve target day column using direction-aware advance zones.
- *
- * Same column:    snap ahead when near the leading edge in the movement direction.
- * Adjacent column: only commit once the pointer is past COMMIT_ZONE from the
- *                  entry side — prevents immediate snap-back after crossing.
- * Non-adjacent:   fast mouse movement skipped columns — commit immediately.
- */
 function resolveSnapDay(clientX: number): string | null {
   if (columnRects.length === 0) return null
 
   const delta = clientX - lastPointerX
   lastPointerX = clientX
 
-  // Find the column the pointer is physically inside
   let idx = -1
   for (let i = 0; i < columnRects.length; i++) {
     if (clientX >= columnRects[i].left && clientX < columnRects[i].right) {
@@ -192,13 +165,11 @@ function resolveSnapDay(clientX: number): string | null {
   }
   if (idx === -1) return currentDay
 
-  // First contact — initialise without advance logic
   if (!currentDay) {
     currentDay = columnRects[idx].isoDay
     return currentDay
   }
 
-  // Suppress micro-jitter
   if (Math.abs(delta) < MIN_DELTA) return currentDay
 
   const col = columnRects[idx]
@@ -212,7 +183,6 @@ function resolveSnapDay(clientX: number): string | null {
     return currentDay
   }
 
-  // --- Same column as current snap ---
   if (idx === curDayIdx) {
     if (delta > 0 && posInCol > colWidth - margin && idx < columnRects.length - 1) {
       currentDay = columnRects[idx + 1].isoDay
@@ -222,150 +192,184 @@ function resolveSnapDay(clientX: number): string | null {
     return currentDay
   }
 
-  // --- Adjacent column (crossed boundary) ---
   const commitPx = colWidth * COMMIT_ZONE
   if (idx === curDayIdx + 1) {
-    // Entered from left — commit once past 40% from left edge
     if (posInCol > commitPx) currentDay = col.isoDay
     return currentDay
   }
   if (idx === curDayIdx - 1) {
-    // Entered from right — commit once past 40% from right edge
     if (posInCol < colWidth - commitPx) currentDay = col.isoDay
     return currentDay
   }
 
-  // --- Non-adjacent (fast movement) — commit immediately ---
   currentDay = col.isoDay
   return currentDay
 }
 
-function applyDayOverride(slot: SlotDropData | null, clientX: number): SlotDropData | null {
-  if (!slot) return null
-  const resolved = resolveSnapDay(clientX)
-  if (!resolved || resolved === slot.isoDay) return slot
-  return { ...slot, isoDay: resolved }
+// ---------------------------------------------------------------------------
+// Slot resolution from pointer coordinates
+// ---------------------------------------------------------------------------
+function resolveSlotFromPointer(clientX: number, clientY: number): SlotDropData | null {
+  // All-day row detection
+  const allDayEl = document.querySelector<HTMLElement>('[data-allday-row]')
+  if (allDayEl) {
+    const r = allDayEl.getBoundingClientRect()
+    if (clientY >= r.top && clientY <= r.bottom) {
+      const day = resolveSnapDay(clientX)
+      if (day) return { _type: SLOT_TYPE, isoDay: day, hour: 0, minute: 0, isAllDay: true }
+    }
+  }
+
+  const day = resolveSnapDay(clientX)
+  if (!day) return null
+
+  const colEl = document.querySelector<HTMLElement>(`[data-date="${day}"]`)
+  if (!colEl) return null
+
+  const rect = colEl.getBoundingClientRect()
+  const slotDuration = getSlotDuration()
+  const yInColumn = clientY - rect.top
+  const rawMinutes = DAY_START_HOUR * 60 + (yInColumn / HOUR_HEIGHT_PX) * 60
+  const snappedMinutes = Math.floor(rawMinutes / slotDuration) * slotDuration
+  const clamped = Math.max(DAY_START_HOUR * 60, snappedMinutes)
+  const hour = Math.floor(clamped / 60)
+  const minute = clamped % 60
+
+  return { _type: SLOT_TYPE, isoDay: day, hour, minute }
 }
+
+// ---------------------------------------------------------------------------
+// Drop execution (extracted from the old monitor onDrop)
+// ---------------------------------------------------------------------------
+function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
+  if (!slot) return
+
+  const day = new Date(slot.isoDay)
+  const isAllDayDrop = Boolean(slot.isAllDay)
+  const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
+
+  const slotDur = getSlotDuration()
+  const grabOffsetMin = drag.source === 'calendar' && drag.grabOffsetY != null
+    ? Math.round(((drag.grabOffsetY / HOUR_HEIGHT_PX) * 60) / slotDur) * slotDur
+    : 0
+  const targetStart = addMinutes(slotStart, -grabOffsetMin)
+
+  if (drag.source === 'sidebar') {
+    const mins = roundUpToIncrement(drag.durationMinutes ?? 60, slotDur)
+    const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
+    const newEvent: CalendarEvent = {
+      id: nextId(),
+      title: drag.title ?? 'New Event',
+      start: targetStart,
+      end,
+      isAllDay: isAllDayDrop || mins >= 1440,
+      color: drag.color ?? 'teal',
+      status: 'pending',
+      priority: drag.priority ?? 'none',
+      sourceTaskId: drag.eventId,
+      personalActivityType: drag.personalActivityType,
+    }
+    addEvent(newEvent)
+  } else if (drag.source === 'calendar' && drag.eventId) {
+    const durationMinutes =
+      drag.originalStart != null && drag.originalEnd != null
+        ? Math.max(1, Math.ceil((drag.originalEnd - drag.originalStart) / 60_000))
+        : Math.max(1, drag.durationMinutes ?? 60)
+    const snappedDurationMinutes = roundUpToIncrement(durationMinutes, slotDur)
+    const timedDurationMinutes = drag.isAllDay ? 60 : snappedDurationMinutes
+    const end = isAllDayDrop
+      ? addMinutes(targetStart, 1440)
+      : addMinutes(targetStart, timedDurationMinutes)
+    updateEvent(drag.eventId, {
+      start: targetStart,
+      end,
+      isAllDay: isAllDayDrop,
+    })
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Pointer-event drag lifecycle
+// ---------------------------------------------------------------------------
+const DRAG_THRESHOLD = 4
 
 /**
- * Global drop monitor — wire up once in a component wrapping the calendar + sidebar.
- * Handles sidebar→calendar creation and calendar→calendar moves.
+ * Start a pointer-based drag from a pointerdown event.
+ * Attaches move/up listeners on window and manages the full lifecycle.
  */
-export function useCalendarDropMonitor() {
-  useEffect(() => {
-    return monitorForElements({
-      canMonitor: ({ source }) => isCalendarDrag(source.data),
+export function startPointerDrag(
+  element: HTMLElement,
+  e: PointerEvent,
+  dragData: CalendarDragData,
+  callbacks: { onDragStart?: () => void; onDrop?: () => void },
+) {
+  const startX = e.clientX
+  const startY = e.clientY
+  let active = false
 
+  function activate() {
+    active = true
+    setDragState({ source: dragData.source, eventId: dragData.eventId, title: dragData.title })
+    document.body.classList.add('cal-dragging')
+    cacheColumnRects()
 
-      onDragStart: ({ source, location }) => {
-        const d = source.data as CalendarDragData
-        setDragState({ source: d.source, eventId: d.eventId, title: d.title })
-        document.body.classList.add('cal-dragging')
-        preventUnhandled.start()
-
-        const rect = source.element.getBoundingClientRect()
-        const input = location.initial.input
-        const slot = extractSlotTarget(location.current.dropTargets)
-
-        cacheColumnRects()
-
-        setDragRender({
-          source: d.source,
-          eventId: d.eventId,
-          title: d.title,
-          color: d.color ?? 'teal',
-          durationMinutes: d.durationMinutes,
-          originalStart: d.originalStart,
-          originalEnd: d.originalEnd,
-          personalActivityType: d.personalActivityType,
-          pointer: {
-            clientX: input.clientX,
-            clientY: input.clientY,
-          },
-          pointerOffset: {
-            x: Math.max(0, Math.min(rect.width, input.clientX - rect.left)),
-            y: Math.max(0, Math.min(rect.height, input.clientY - rect.top)),
-          },
-          elementSize: {
-            width: rect.width,
-            height: rect.height,
-          },
-          slot,
-          taskMeta: d.taskMeta,
-          personalMeta: d.personalMeta,
-          eventMeta: d.eventMeta,
-        })
+    const rect = element.getBoundingClientRect()
+    setDragRender({
+      source: dragData.source,
+      eventId: dragData.eventId,
+      title: dragData.title,
+      color: dragData.color ?? 'teal',
+      durationMinutes: dragData.durationMinutes,
+      originalStart: dragData.originalStart,
+      originalEnd: dragData.originalEnd,
+      personalActivityType: dragData.personalActivityType,
+      pointer: { clientX: startX, clientY: startY },
+      pointerOffset: {
+        x: Math.max(0, Math.min(rect.width, startX - rect.left)),
+        y: Math.max(0, Math.min(rect.height, startY - rect.top)),
       },
-
-      onDrag: ({ location }) => {
-        const input = location.current.input
-        const rawSlot = extractSlotTarget(location.current.dropTargets)
-        const slot = applyDayOverride(rawSlot, input.clientX)
-        updateDragRenderFrame(
-          {
-            clientX: input.clientX,
-            clientY: input.clientY,
-          },
-          slot,
-        )
-      },
-
-      onDrop: ({ source, location }) => {
-        setDragState(null)
-        clearDragRender()
-        document.body.classList.remove('cal-dragging')
-        preventUnhandled.stop()
-
-        const rawSlot = extractSlotTarget(location.current.dropTargets)
-        const slot = applyDayOverride(rawSlot, location.current.input.clientX)
-        clearColumnRects()
-        if (!slot) return
-
-        const drag = source.data as CalendarDragData
-        const day = new Date(slot.isoDay)
-        const isAllDayDrop = Boolean(slot.isAllDay)
-        const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
-
-        // Snap grab offset so the event lands on a slot boundary
-        const slotDur = getSlotDuration()
-        const grabOffsetMin = drag.source === 'calendar' && drag.grabOffsetY != null
-          ? Math.round(((drag.grabOffsetY / HOUR_HEIGHT_PX) * 60) / slotDur) * slotDur
-          : 0
-        const targetStart = addMinutes(slotStart, -grabOffsetMin)
-
-        if (drag.source === 'sidebar') {
-          const mins = roundUpToIncrement(drag.durationMinutes ?? 60, slotDur)
-          const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
-          const newEvent: CalendarEvent = {
-            id: nextId(),
-            title: drag.title ?? 'New Event',
-            start: targetStart,
-            end,
-            isAllDay: isAllDayDrop || mins >= 1440,
-            color: drag.color ?? 'teal',
-            status: 'pending',
-            priority: drag.priority ?? 'none',
-            sourceTaskId: drag.eventId,
-            personalActivityType: drag.personalActivityType,
-          }
-          addEvent(newEvent)
-        } else if (drag.source === 'calendar' && drag.eventId) {
-          const durationMinutes =
-            drag.originalStart != null && drag.originalEnd != null
-              ? Math.max(1, Math.ceil((drag.originalEnd - drag.originalStart) / 60_000))
-              : Math.max(1, drag.durationMinutes ?? 60)
-          const snappedDurationMinutes = roundUpToIncrement(durationMinutes, slotDur)
-          const timedDurationMinutes = drag.isAllDay ? 60 : snappedDurationMinutes
-          const end = isAllDayDrop
-            ? addMinutes(targetStart, 1440)
-            : addMinutes(targetStart, timedDurationMinutes)
-          updateEvent(drag.eventId, {
-            start: targetStart,
-            end,
-            isAllDay: isAllDayDrop,
-          })
-        }
-      },
+      elementSize: { width: rect.width, height: rect.height },
+      slot: resolveSlotFromPointer(startX, startY),
+      taskMeta: dragData.taskMeta,
+      personalMeta: dragData.personalMeta,
+      eventMeta: dragData.eventMeta,
     })
-  }, [])
+    callbacks.onDragStart?.()
+  }
+
+  function onMove(ev: PointerEvent) {
+    if (!active) {
+      if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < DRAG_THRESHOLD) return
+      activate()
+    }
+    const slot = resolveSlotFromPointer(ev.clientX, ev.clientY)
+    updateDragRenderFrame({ clientX: ev.clientX, clientY: ev.clientY }, slot)
+  }
+
+  function onUp(ev: PointerEvent) {
+    cleanup()
+    if (!active) return
+
+    const slot = resolveSlotFromPointer(ev.clientX, ev.clientY)
+    executeDrop(dragData, slot)
+
+    setDragState(null)
+    clearDragRender()
+    document.body.classList.remove('cal-dragging')
+    clearColumnRects()
+    callbacks.onDrop?.()
+  }
+
+  function cleanup() {
+    window.removeEventListener('pointermove', onMove)
+    window.removeEventListener('pointerup', onUp)
+    window.removeEventListener('pointercancel', onUp)
+  }
+
+  window.addEventListener('pointermove', onMove)
+  window.addEventListener('pointerup', onUp)
+  window.addEventListener('pointercancel', onUp)
 }
+
+/** No-op — kept for CalendarShell compatibility. */
+export function useCalendarDropMonitor() {}

@@ -1,11 +1,9 @@
-import { useRef, useEffect, useState } from 'react'
-import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
+import { useRef, useCallback, useState } from 'react'
 import { Check } from 'lucide-react'
 import type { EventLayoutRect } from '../types'
 import { EVENT_STATUS_INDICATOR_COLORS } from '../constants'
 import { formatEventTime } from '../utils/date'
-import { makeEventDragData } from '../hooks/use-calendar-dnd'
+import { makeEventDragData, startPointerDrag } from '../hooks/use-calendar-dnd'
 import { priorityLeftBorderColor } from '@/lib/priority'
 import {
   personalActivityStyles,
@@ -32,18 +30,16 @@ export function EventBlock({ layout }: EventBlockProps) {
   const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
   const activityClasses = activityType ? personalActivityStyles[activityType] : ''
 
-  useEffect(() => {
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    e.preventDefault()
     const el = ref.current
     if (!el) return
-    return draggable({
-      element: el,
-      getInitialData: ({ input, element }) => ({
-        ...makeEventDragData(event),
-        grabOffsetY: Math.max(0, input.clientY - element.getBoundingClientRect().top),
-      }),
-      onGenerateDragPreview: ({ nativeSetDragImage }) => {
-        disableNativeDragPreview({ nativeSetDragImage })
-      },
+    const data = {
+      ...makeEventDragData(event),
+      grabOffsetY: Math.max(0, e.clientY - el.getBoundingClientRect().top),
+    }
+    startPointerDrag(el, e.nativeEvent, data, {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
@@ -56,6 +52,7 @@ export function EventBlock({ layout }: EventBlockProps) {
   return (
     <button
       ref={ref}
+      onPointerDown={onPointerDown}
       className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${
         isPersonal
           ? activityClasses

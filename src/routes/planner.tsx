@@ -1,10 +1,8 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { CalendarShell } from '@/features/calendar/components/calendar-shell'
 import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
-import { makeSidebarDragData } from '@/features/calendar/hooks/use-calendar-dnd'
+import { makeSidebarDragData, startPointerDrag } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
   Briefcase,
   CalendarDays,
@@ -168,24 +166,22 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  useEffect(() => {
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    e.preventDefault()
     const el = ref.current
     if (!el) return
-    return draggable({
-      element: el,
-      getInitialData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, task.priority, {
-        taskMeta: {
-          clientName: task.clientName,
-          dueDateLabel: task.dueDateLabel ?? null,
-          isRecurring: task.isRecurring,
-          recurringType: task.recurringType,
-          durationLabel: roundedDurationLabel,
-          priority: task.priority,
-        },
-      }),
-      onGenerateDragPreview: ({ nativeSetDragImage }) => {
-        disableNativeDragPreview({ nativeSetDragImage })
+    const data = makeSidebarDragData(task.id, task.title, roundedDurationMinutes, task.priority, {
+      taskMeta: {
+        clientName: task.clientName,
+        dueDateLabel: task.dueDateLabel ?? null,
+        isRecurring: task.isRecurring,
+        recurringType: task.recurringType,
+        durationLabel: roundedDurationLabel,
+        priority: task.priority,
       },
+    })
+    startPointerDrag(el, e.nativeEvent, data, {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
@@ -194,6 +190,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   return (
     <article
       ref={ref}
+      onPointerDown={onPointerDown}
       className={`cursor-grab rounded-[10px] border border-zinc-200 border-l-[3px] bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
       style={{ borderLeftColor: priorityBorderColor }}
     >
@@ -265,22 +262,20 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  useEffect(() => {
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    e.preventDefault()
     const el = ref.current
     if (!el) return
-    return draggable({
-      element: el,
-      getInitialData: () => makeSidebarDragData(task.id, task.label, roundedDurationMinutes, 'none', {
-        color: personalActivityEventColor[task.activityType],
-        personalActivityType: task.activityType,
-        personalMeta: {
-          activityType: task.activityType,
-          durationLabel: roundedDurationLabel,
-        },
-      }),
-      onGenerateDragPreview: ({ nativeSetDragImage }) => {
-        disableNativeDragPreview({ nativeSetDragImage })
+    const data = makeSidebarDragData(task.id, task.label, roundedDurationMinutes, 'none', {
+      color: personalActivityEventColor[task.activityType],
+      personalActivityType: task.activityType,
+      personalMeta: {
+        activityType: task.activityType,
+        durationLabel: roundedDurationLabel,
       },
+    })
+    startPointerDrag(el, e.nativeEvent, data, {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
@@ -289,6 +284,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
   return (
     <article
       ref={ref}
+      onPointerDown={onPointerDown}
       className={cn(
         'flex min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
         personalActivityStyles[task.activityType],

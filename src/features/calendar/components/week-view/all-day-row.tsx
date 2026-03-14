@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
+import { useEffect, useRef, useCallback, useState, type ReactNode } from 'react'
+import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useAllDayEvents } from '../../calendar-store'
 import { isSameDay } from '../../utils/date'
 import { EVENT_COLOR_MAP } from '../../constants'
 import type { CalendarEvent } from '../../types'
-import { isCalendarDrag, makeAllDaySlotData, makeEventDragData } from '../../hooks/use-calendar-dnd'
+import { isCalendarDrag, makeAllDaySlotData, makeEventDragData, startPointerDrag } from '../../hooks/use-calendar-dnd'
 
 type AllDayRowProps = {
   weekDays: Date[]
@@ -15,7 +14,7 @@ export function AllDayRow({ weekDays }: AllDayRowProps) {
   const allDayEvents = useAllDayEvents(weekDays[0], weekDays[6])
 
   return (
-    <div className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid">
+    <div data-allday-row className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid">
       {/* Gutter */}
       <div className="flex items-start justify-end border-r border-cal-grid-line pr-2 pt-1" aria-hidden="true">
         <span className="text-[11px] font-medium text-cal-text-muted">
@@ -47,15 +46,12 @@ function AllDayEventChip({ event }: { event: CalendarEvent }) {
   const [isDragging, setIsDragging] = useState(false)
   const colors = EVENT_COLOR_MAP[event.color]
 
-  useEffect(() => {
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    e.preventDefault()
     const el = ref.current
     if (!el) return
-    return draggable({
-      element: el,
-      getInitialData: () => makeEventDragData(event),
-      onGenerateDragPreview: ({ nativeSetDragImage }) => {
-        disableNativeDragPreview({ nativeSetDragImage })
-      },
+    startPointerDrag(el, e.nativeEvent, makeEventDragData(event), {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
@@ -64,6 +60,7 @@ function AllDayEventChip({ event }: { event: CalendarEvent }) {
   return (
     <div
       ref={ref}
+      onPointerDown={onPointerDown}
       className={`mb-0.5 cursor-grab truncate rounded-[var(--cal-radius-pill)] px-1.5 py-0.5 text-[11px] font-semibold ${isDragging ? 'opacity-30' : ''}`}
       style={{ backgroundColor: colors.bg, color: colors.text }}
     >
