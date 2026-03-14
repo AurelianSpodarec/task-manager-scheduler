@@ -7,6 +7,7 @@ import { DayColumn } from './day-column'
 import { AllDayRow } from './all-day-row'
 import { DayHeaderRow } from './day-header-row'
 import { DayStripNav } from './day-strip-nav'
+import { CalendarDragLayer } from './calendar-drag-layer'
 
 export function WeekView() {
   const activeDate = useActiveDate()
@@ -61,6 +62,7 @@ export function WeekView() {
           <DayColumn day={weekDays[mobileFocus] ?? weekDays[0]} />
         </div>
       </div>
+      <CalendarDragLayer />
     </div>
   )
 }

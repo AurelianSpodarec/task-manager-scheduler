@@ -45,6 +45,30 @@ export type DragPayload = {
   originalEvent?: CalendarEvent
 }
 
+export type DragSlotCandidate = {
+  isoDay: string
+  hour: number
+  minute: number
+}
+
+export type DragPointer = {
+  clientX: number
+  clientY: number
+}
+
+export type DragRenderState = {
+  source: DragSource
+  eventId?: string
+  title?: string
+  durationMinutes?: number
+  originalStart?: number
+  originalEnd?: number
+  pointer: DragPointer
+  pointerOffset: { x: number; y: number }
+  elementSize: { width: number; height: number }
+  slot: DragSlotCandidate | null
+}
+
 export type TimeSlot = {
   day: Date
   hour: number

@@ -4,7 +4,14 @@
  */
 import { useEffect } from 'react'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { addEvent, updateEvent, setDragState } from '../calendar-store'
+import {
+  addEvent,
+  updateEvent,
+  setDragState,
+  setDragRender,
+  clearDragRender,
+  updateDragRenderFrame,
+} from '../calendar-store'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
 import type { CalendarEvent } from '../types'
@@ -50,6 +57,7 @@ export function makeEventDragData(event: CalendarEvent): CalendarDragData {
     source: 'calendar',
     eventId: event.id,
     title: event.title,
+    durationMinutes: Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000)),
     originalStart: event.start.getTime(),
     originalEnd: event.end.getTime(),
   }
@@ -69,6 +77,16 @@ export function makeSlotData(isoDay: string, hour: number, minute: number): Slot
   return { _type: SLOT_TYPE, isoDay, hour, minute }
 }
 
+function extractSlotTarget(dropTargets: Array<{ data: unknown }>): SlotDropData | null {
+  for (const target of dropTargets) {
+    const data = target.data
+    if (data && typeof data === 'object' && isSlotTarget(data as Record<string, unknown>)) {
+      return data as SlotDropData
+    }
+  }
+  return null
+}
+
 /**
  * Global drop monitor — wire up once in a component wrapping the calendar + sidebar.
  * Handles sidebar→calendar creation and calendar→calendar moves.
@@ -78,19 +96,65 @@ export function useCalendarDropMonitor() {
     return monitorForElements({
       canMonitor: ({ source }) => isCalendarDrag(source.data),
 
-      onDragStart: ({ source }) => {
+
+      onDragStart: ({ source, location }) => {
         const d = source.data as CalendarDragData
         setDragState({ source: d.source, eventId: d.eventId, title: d.title })
+
+        if (d.source !== 'calendar') {
+          clearDragRender()
+          return
+        }
+
+        const rect = source.element.getBoundingClientRect()
+        const input = location.initial.input
+        const slot = extractSlotTarget(location.current.dropTargets)
+
+        setDragRender({
+          source: d.source,
+          eventId: d.eventId,
+          title: d.title,
+          durationMinutes: d.durationMinutes,
+          originalStart: d.originalStart,
+          originalEnd: d.originalEnd,
+          pointer: {
+            clientX: input.clientX,
+            clientY: input.clientY,
+          },
+          pointerOffset: {
+            x: Math.max(0, Math.min(rect.width, input.clientX - rect.left)),
+            y: Math.max(0, Math.min(rect.height, input.clientY - rect.top)),
+          },
+          elementSize: {
+            width: rect.width,
+            height: rect.height,
+          },
+          slot,
+        })
+      },
+
+      onDrag: ({ source, location }) => {
+        const d = source.data as CalendarDragData
+        if (d.source !== 'calendar') return
+        const input = location.current.input
+        const slot = extractSlotTarget(location.current.dropTargets)
+        updateDragRenderFrame(
+          {
+            clientX: input.clientX,
+            clientY: input.clientY,
+          },
+          slot,
+        )
       },
 
       onDrop: ({ source, location }) => {
         setDragState(null)
+        clearDragRender()
 
-        const target = location.current.dropTargets[0]
-        if (!target || !isSlotTarget(target.data)) return
+        const slot = extractSlotTarget(location.current.dropTargets)
+        if (!slot) return
 
         const drag = source.data as CalendarDragData
-        const slot = target.data
         const day = new Date(slot.isoDay)
         const targetStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
 

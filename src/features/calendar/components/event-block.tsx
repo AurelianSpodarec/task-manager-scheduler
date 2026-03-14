@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { MoreHorizontal, Check } from 'lucide-react'
 import type { EventLayoutRect } from '../types'
 import { EVENT_COLOR_MAP } from '../constants'
@@ -23,6 +24,9 @@ export function EventBlock({ layout }: EventBlockProps) {
     return draggable({
       element: el,
       getInitialData: () => makeEventDragData(event),
+      onGenerateDragPreview: ({ nativeSetDragImage }) => {
+        disableNativeDragPreview({ nativeSetDragImage })
+      },
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
@@ -35,7 +39,7 @@ export function EventBlock({ layout }: EventBlockProps) {
   return (
     <button
       ref={ref}
-      className={`group/event absolute z-10 flex cursor-grab flex-col overflow-hidden rounded-[var(--cal-radius-event)] border-l-[3px] px-[var(--cal-event-padding-x)] py-[var(--cal-event-padding-y)] text-left shadow-[var(--cal-shadow-event)] transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${isDragging ? 'opacity-40' : ''}`}
+      className={`group/event absolute z-10 flex cursor-grab flex-col overflow-hidden rounded-[var(--cal-radius-event)] border-l-[3px] px-[var(--cal-event-padding-x)] py-[var(--cal-event-padding-y)] text-left shadow-[var(--cal-shadow-event)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${isDragging ? 'opacity-10' : ''}`}
       style={{
         top: `${top}px`,
         height: `${Math.max(height, 20)}px`,

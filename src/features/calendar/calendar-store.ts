@@ -1,5 +1,13 @@
 import { useSyncExternalStore } from 'react'
-import type { CalendarEvent, ViewMode, SlotDuration, DragPayload } from './types'
+import type {
+  CalendarEvent,
+  ViewMode,
+  SlotDuration,
+  DragPayload,
+  DragRenderState,
+  DragPointer,
+  DragSlotCandidate,
+} from './types'
 import { DEFAULT_SLOT_DURATION } from './constants'
 import { isSameDay, startOfDay } from './utils/date'
 import { seedEvents } from './seed-events'
@@ -13,6 +21,7 @@ type CalendarState = {
   activeDate: Date
   slotDuration: SlotDuration
   dragState: DragPayload | null
+  dragRender: DragRenderState | null
   mobileFocusDay: number
 }
 
@@ -25,6 +34,7 @@ let state: CalendarState = {
   activeDate: new Date(),
   slotDuration: DEFAULT_SLOT_DURATION,
   dragState: null,
+  dragRender: null,
   mobileFocusDay: new Date().getDay(),
 }
 
@@ -74,6 +84,38 @@ export function setSlotDuration(duration: SlotDuration) {
 
 export function setDragState(drag: DragPayload | null) {
   setState({ dragState: drag })
+}
+
+export function setDragRender(dragRender: DragRenderState | null) {
+  setState({ dragRender })
+}
+
+export function clearDragRender() {
+  if (state.dragRender == null) return
+  setState({ dragRender: null })
+}
+
+function isSameSlotCandidate(a: DragSlotCandidate | null, b: DragSlotCandidate | null): boolean {
+  if (a === b) return true
+  if (!a || !b) return false
+  return a.isoDay === b.isoDay && a.hour === b.hour && a.minute === b.minute
+}
+
+function isSamePointer(a: DragPointer, b: DragPointer): boolean {
+  return a.clientX === b.clientX && a.clientY === b.clientY
+}
+
+export function updateDragRenderFrame(pointer: DragPointer, slot: DragSlotCandidate | null) {
+  const current = state.dragRender
+  if (!current) return
+  if (isSamePointer(current.pointer, pointer) && isSameSlotCandidate(current.slot, slot)) return
+  setState({
+    dragRender: {
+      ...current,
+      pointer,
+      slot,
+    },
+  })
 }
 
 export function setMobileFocusDay(index: number) {
@@ -181,6 +223,10 @@ export function useSlotDuration(): SlotDuration {
 
 export function useDragState(): DragPayload | null {
   return useStoreSelector((s) => s.dragState)
+}
+
+export function useDragRender(): DragRenderState | null {
+  return useStoreSelector((s) => s.dragRender)
 }
 
 export function useMobileFocusDay(): number {
