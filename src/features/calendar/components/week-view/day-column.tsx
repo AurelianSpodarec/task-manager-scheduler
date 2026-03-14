@@ -8,7 +8,7 @@ import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
 import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
-import type { CalendarEvent, DragRenderState } from '../../types'
+import type { DragRenderState } from '../../types'
 
 type DayColumnProps = {
   day: Date
@@ -21,8 +21,8 @@ export function DayColumn({ day }: DayColumnProps) {
   const slotDuration = useSlotDuration()
   const dragRender = useDragRender()
   const isoDay = day.toISOString().split('T')[0]
-  const isDragging = dragRender?.source === 'calendar'
-  const projected = getProjectedCard(dragRender, isoDay, events)
+  const isDragging = dragRender != null
+  const projected = getProjectedCard(dragRender, isoDay)
 
   const slots: { hour: number; minute: number }[] = []
   for (let h = DAY_START_HOUR; h < DAY_END_HOUR; h++) {
@@ -138,24 +138,18 @@ function DroppableSlot({
 function getProjectedCard(
   dragRender: DragRenderState | null,
   isoDay: string,
-  events: CalendarEvent[],
 ) {
-  if (dragRender?.source !== 'calendar' || !dragRender.eventId || !dragRender.slot) return null
+  if (!dragRender?.slot) return null
   if (dragRender.slot.isoDay !== isoDay) return null
-
-  const event = events.find((item) => item.id === dragRender.eventId)
-  if (!event) return null
 
   const day = new Date(dragRender.slot.isoDay)
   const start = setMinutes(setHours(startOfDay(day), dragRender.slot.hour), dragRender.slot.minute)
-  const durationMinutes =
-    dragRender.durationMinutes ??
-    Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000))
+  const durationMinutes = dragRender.durationMinutes ?? 60
   const end = addMinutes(start, durationMinutes)
-  const colors = EVENT_COLOR_MAP[event.color]
+  const colors = EVENT_COLOR_MAP[dragRender.color]
 
   return {
-    title: event.title,
+    title: dragRender.title ?? 'New Event',
     start,
     end,
     top: dateToPixelOffset(start, HOUR_HEIGHT_PX),

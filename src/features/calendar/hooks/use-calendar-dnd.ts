@@ -14,7 +14,7 @@ import {
 } from '../calendar-store'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, EventColor } from '../types'
 
 let idCounter = Date.now()
 function nextId() {
@@ -30,6 +30,7 @@ export type CalendarDragData = {
   source: 'sidebar' | 'calendar'
   eventId?: string
   title?: string
+  color?: EventColor
   durationMinutes?: number
   originalStart?: number
   originalEnd?: number
@@ -57,6 +58,7 @@ export function makeEventDragData(event: CalendarEvent): CalendarDragData {
     source: 'calendar',
     eventId: event.id,
     title: event.title,
+    color: event.color,
     durationMinutes: Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000)),
     originalStart: event.start.getTime(),
     originalEnd: event.end.getTime(),
@@ -69,7 +71,14 @@ export function makeSidebarDragData(
   title: string,
   durationMinutes: number,
 ): CalendarDragData {
-  return { _type: DRAG_TYPE, source: 'sidebar', eventId: taskId, title, durationMinutes }
+  return {
+    _type: DRAG_TYPE,
+    source: 'sidebar',
+    eventId: taskId,
+    title,
+    color: 'teal',
+    durationMinutes,
+  }
 }
 
 /** Build drop-target data for a time slot. */
@@ -101,11 +110,6 @@ export function useCalendarDropMonitor() {
         const d = source.data as CalendarDragData
         setDragState({ source: d.source, eventId: d.eventId, title: d.title })
 
-        if (d.source !== 'calendar') {
-          clearDragRender()
-          return
-        }
-
         const rect = source.element.getBoundingClientRect()
         const input = location.initial.input
         const slot = extractSlotTarget(location.current.dropTargets)
@@ -114,6 +118,7 @@ export function useCalendarDropMonitor() {
           source: d.source,
           eventId: d.eventId,
           title: d.title,
+          color: d.color ?? 'teal',
           durationMinutes: d.durationMinutes,
           originalStart: d.originalStart,
           originalEnd: d.originalEnd,
@@ -133,9 +138,7 @@ export function useCalendarDropMonitor() {
         })
       },
 
-      onDrag: ({ source, location }) => {
-        const d = source.data as CalendarDragData
-        if (d.source !== 'calendar') return
+      onDrag: ({ location }) => {
         const input = location.current.input
         const slot = extractSlotTarget(location.current.dropTargets)
         updateDragRenderFrame(

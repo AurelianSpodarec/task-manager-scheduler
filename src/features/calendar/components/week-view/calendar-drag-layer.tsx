@@ -1,36 +1,17 @@
-import { addMinutes, setHours, setMinutes } from 'date-fns'
-import { useCalendarEvents, useDragRender } from '../../calendar-store'
+import { useDragRender } from '../../calendar-store'
 import { EVENT_COLOR_MAP } from '../../constants'
-import { formatEventTime, startOfDay } from '../../utils/date'
 
 export function CalendarDragLayer() {
   const dragRender = useDragRender()
-  const events = useCalendarEvents()
+  if (!dragRender || dragRender.source !== 'sidebar' || dragRender.slot) return null
 
-  if (dragRender?.source !== 'calendar' || !dragRender.eventId) return null
-
-  const event = events.find((item) => item.id === dragRender.eventId)
-  if (!event) return null
-
-  const colors = EVENT_COLOR_MAP[event.color]
+  const colors = EVENT_COLOR_MAP[dragRender.color]
   const left = dragRender.pointer.clientX - dragRender.pointerOffset.x
   const top = dragRender.pointer.clientY - dragRender.pointerOffset.y
   const width = Math.max(dragRender.elementSize.width, 120)
   const height = Math.max(dragRender.elementSize.height, 20)
-
-  const durationMinutes =
-    dragRender.durationMinutes ??
-    Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000))
-
-  const slotStart = dragRender.slot
-    ? setMinutes(
-        setHours(startOfDay(new Date(dragRender.slot.isoDay)), dragRender.slot.hour),
-        dragRender.slot.minute,
-      )
-    : null
-
-  const previewStart = slotStart ?? event.start
-  const previewEnd = slotStart ? addMinutes(slotStart, durationMinutes) : event.end
+  const title = dragRender.title ?? 'New Event'
+  const duration = dragRender.durationMinutes ?? 60
 
   return (
     <div
@@ -47,11 +28,18 @@ export function CalendarDragLayer() {
       aria-hidden="true"
     >
       <span className="min-w-0 truncate text-[var(--cal-text-xs)] font-semibold leading-tight">
-        {event.title}
+        {title}
       </span>
-      <span className="mt-auto text-[var(--cal-text-2xs)] leading-tight opacity-95">
-        {formatEventTime(previewStart)} - {formatEventTime(previewEnd)}
-      </span>
+      <span className="mt-auto text-[var(--cal-text-2xs)] leading-tight opacity-95">Duration: {formatDuration(duration)}</span>
     </div>
   )
+}
+
+function formatDuration(minutes: number): string {
+  const safeMinutes = Math.max(1, Math.round(minutes))
+  const hours = Math.floor(safeMinutes / 60)
+  const mins = safeMinutes % 60
+  if (!hours) return `${mins}m`
+  if (!mins) return `${hours}h`
+  return `${hours}h ${mins}m`
 }

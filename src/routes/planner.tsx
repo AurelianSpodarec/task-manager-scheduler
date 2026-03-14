@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { CalendarShell } from '@/features/calendar/components/calendar-shell'
 import { makeSidebarDragData } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
@@ -199,6 +200,9 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     return draggable({
       element: el,
       getInitialData: () => makeSidebarDragData(task.id, task.title, parseDurationMinutes(task.duration)),
+      onGenerateDragPreview: ({ nativeSetDragImage }) => {
+        disableNativeDragPreview({ nativeSetDragImage })
+      },
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })

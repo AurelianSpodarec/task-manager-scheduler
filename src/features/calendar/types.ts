@@ -60,6 +60,7 @@ export type DragRenderState = {
   source: DragSource
   eventId?: string
   title?: string
+  color: EventColor
   durationMinutes?: number
   originalStart?: number
   originalEnd?: number
