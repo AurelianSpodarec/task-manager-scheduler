@@ -5,16 +5,12 @@ import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/elem
 import { CalendarShell } from '@/features/calendar/components/calendar-shell'
 import { makeSidebarDragData } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowUp,
   Briefcase,
   Backpack,
   CalendarDays,
   Car,
   Clock3,
   Dumbbell,
-  Minus,
   Repeat2,
   Stethoscope,
   Utensils,
@@ -32,8 +28,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import type { TaskPriority } from "@/lib/priority"
+import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from "@/lib/priority"
 
-type TaskPriority = 'none' | 'low' | 'medium' | 'high' | 'critical'
 type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving' | 'gym'
 
 type SidebarTask = {
@@ -51,29 +48,7 @@ type PersonalTask = {
   id: string
   activityType: PersonalActivityType
   label: string
-}
-const priorityBadgeClass: Record<TaskPriority, string | null> = {
-  none: null,
-  low: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  medium: 'border-amber-200 bg-amber-50 text-amber-700',
-  high: 'border-orange-200 bg-orange-50 text-orange-700',
-  critical: 'border-red-200 bg-red-50 text-red-700',
-}
-
-const priorityBadgeLabel: Record<TaskPriority, string | null> = {
-  none: null,
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  critical: 'Critical',
-}
-
-const priorityBadgeIcon: Record<TaskPriority, LucideIcon | null> = {
-  none: null,
-  low: ArrowDown,
-  medium: Minus,
-  high: ArrowUp,
-  critical: AlertTriangle,
+  duration: string
 }
 
 const sidebarTasks: SidebarTask[] = [
@@ -172,11 +147,11 @@ const personalTaskIcons: Record<PersonalActivityType, LucideIcon> = {
 }
 
 const personalTasks: PersonalTask[] = [
-  { id: 'personal-school-run', activityType: 'schoolRun', label: 'School Run' },
-  { id: 'personal-lunch', activityType: 'lunch', label: 'Lunch' },
-  { id: 'personal-dentist', activityType: 'dentist', label: 'Dentist' },
-  { id: 'personal-driving', activityType: 'driving', label: 'Driving' },
-  { id: 'personal-gym', activityType: 'gym', label: 'Gym' },
+  { id: 'personal-school-run', activityType: 'schoolRun', label: 'School Run', duration: '1:00h' },
+  { id: 'personal-lunch', activityType: 'lunch', label: 'Lunch', duration: '1:00h' },
+  { id: 'personal-dentist', activityType: 'dentist', label: 'Dentist', duration: '1:00h' },
+  { id: 'personal-driving', activityType: 'driving', label: 'Driving', duration: '1:00h' },
+  { id: 'personal-gym', activityType: 'gym', label: 'Gym', duration: '1:00h' },
 ]
 /** Parse duration string like "2:05h" into minutes. */
 function parseDurationMinutes(dur: string): number {
@@ -199,14 +174,23 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     if (!el) return
     return draggable({
       element: el,
-      getInitialData: () => makeSidebarDragData(task.id, task.title, parseDurationMinutes(task.duration)),
+      getInitialData: () => makeSidebarDragData(task.id, task.title, parseDurationMinutes(task.duration), task.priority, {
+        taskMeta: {
+          clientName: task.clientName,
+          dueDateLabel: task.dueDateLabel ?? null,
+          isRecurring: task.isRecurring,
+          recurringType: task.recurringType,
+          durationLabel: task.duration,
+          priority: task.priority,
+        },
+      }),
       onGenerateDragPreview: ({ nativeSetDragImage }) => {
         disableNativeDragPreview({ nativeSetDragImage })
       },
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
-  }, [task.id, task.title, task.duration])
+  }, [task.id, task.title, task.duration, task.priority])
 
   return (
     <article
@@ -276,11 +260,35 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
 
 function PersonalTaskCard({ task }: { task: PersonalTask }) {
   const ActivityIcon = personalTaskIcons[task.activityType]
+  const ref = useRef<HTMLElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    return draggable({
+      element: el,
+      getInitialData: () => makeSidebarDragData(task.id, task.label, parseDurationMinutes(task.duration), 'none', {
+        personalMeta: {
+          activityType: task.activityType,
+          durationLabel: task.duration,
+        },
+      }),
+      onGenerateDragPreview: ({ nativeSetDragImage }) => {
+        disableNativeDragPreview({ nativeSetDragImage })
+      },
+      onDragStart: () => setIsDragging(true),
+      onDrop: () => setIsDragging(false),
+    })
+  }, [task.id, task.label, task.duration])
+
   return (
     <article
+      ref={ref}
       className={cn(
-        'flex min-h-11 items-center gap-2 rounded-[10px] border px-3 py-2.5',
-        personalTaskStyles[task.activityType]
+        'flex min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
+        personalTaskStyles[task.activityType],
+        isDragging && 'opacity-40'
       )}
     >
       <span
@@ -289,8 +297,12 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       >
         <ActivityIcon className="size-3.5" strokeWidth={2} />
       </span>
-      <span className="text-[12px] leading-none font-semibold tracking-[0.03em] uppercase">
+      <span className="flex-1 text-[12px] leading-none font-semibold tracking-[0.03em] uppercase">
         {task.label}
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/50 px-1.5 py-0.5 text-[11px] font-medium opacity-70">
+        <Clock3 aria-hidden="true" className="size-3" />
+        <span className="tabular-nums">{task.duration}</span>
       </span>
     </article>
   )

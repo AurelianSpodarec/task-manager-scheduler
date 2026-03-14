@@ -1,14 +1,16 @@
 import { useRef, useEffect, useState } from 'react'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
+import { Check, Clock3 } from 'lucide-react'
 import { useEventsForDay, useSlotDuration, useDragRender } from '../../calendar-store'
 import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_COLOR_MAP } from '../../constants'
-import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
+import { isToday, startOfDay, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
+import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from '@/lib/priority'
 import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
-import type { DragRenderState } from '../../types'
+import type { DragRenderState, EventPriority, EventStatus } from '../../types'
 
 type DayColumnProps = {
   day: Date
@@ -60,27 +62,8 @@ export function DayColumn({ day }: DayColumnProps) {
           <EventBlock key={layout.event.id} layout={layout} />
         ))}
 
-        {projected && (
-          <div
-            className="pointer-events-none absolute z-20 flex min-h-5 flex-col overflow-hidden rounded-[var(--cal-radius-event)] border-l-[3px] px-[var(--cal-event-padding-x)] py-[var(--cal-event-padding-y)] shadow-[var(--cal-shadow-event)] ring-1 ring-white/35"
-            style={{
-              top: `${projected.top}px`,
-              height: `${Math.max(projected.height, 20)}px`,
-              left: '2px',
-              right: '2px',
-              backgroundColor: projected.bg,
-              color: projected.text,
-              borderColor: projected.border,
-            }}
-            aria-hidden="true"
-          >
-            <span className="truncate text-[var(--cal-text-xs)] font-semibold leading-tight">
-              {projected.title}
-            </span>
-            <span className="mt-auto text-[var(--cal-text-2xs)] leading-tight opacity-90">
-              {formatEventTime(projected.start)} - {formatEventTime(projected.end)}
-            </span>
-          </div>
+      {projected && (
+          <ProjectedGhostCard projected={projected} />
         )}
 
         <CurrentTimeLine day={day} />
@@ -135,10 +118,78 @@ function DroppableSlot({
   )
 }
 
+function formatDuration(start: Date, end: Date): string {
+  const mins = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  if (!h) return `${m}m`
+  if (!m) return `${h}h`
+  return `${h}:${String(m).padStart(2, '0')}h`
+}
+
+type ProjectedCard = {
+  title: string
+  start: Date
+  end: Date
+  top: number
+  height: number
+  border: string
+  status: EventStatus
+  priority: EventPriority
+}
+
+function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
+  const isCompact = projected.height < 40
+  const pClass = priorityBadgeClass[projected.priority]
+  const pLabel = priorityBadgeLabel[projected.priority]
+  const PIcon = priorityBadgeIcon[projected.priority]
+
+  return (
+    <div
+      className="pointer-events-none absolute z-20 flex min-h-5 flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50"
+      style={{
+        top: `${projected.top}px`,
+        height: `${Math.max(projected.height, 20)}px`,
+        left: '2px',
+        right: '2px',
+        borderLeftColor: projected.border,
+      }}
+      aria-hidden="true"
+    >
+      <div className="flex min-w-0 items-center gap-1.5">
+        {projected.status === 'completed' ? (
+          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: projected.border }}>
+            <Check className="size-2 text-white" strokeWidth={3} />
+          </span>
+        ) : (
+          <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: projected.border }} />
+        )}
+        <span className={`min-w-0 flex-1 truncate font-semibold leading-tight text-zinc-900 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
+          {projected.title}
+        </span>
+        {!isCompact && (
+          <span className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-zinc-50 px-1 py-0.5 text-[10px] font-medium text-zinc-500">
+            <Clock3 aria-hidden="true" className="size-2.5" />
+            <span className="tabular-nums">{formatDuration(projected.start, projected.end)}</span>
+          </span>
+        )}
+      </div>
+      {!isCompact && pClass && pLabel && PIcon && (
+        <div className="mt-auto flex items-center pt-0.5">
+          <span className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
+            <PIcon aria-hidden="true" className="size-2.5" />
+            {projected.height >= 52 && <span>{pLabel}</span>}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function getProjectedCard(
   dragRender: DragRenderState | null,
   isoDay: string,
-) {
+): ProjectedCard | null {
   if (!dragRender?.slot) return null
   if (dragRender.slot.isAllDay) return null
   if (dragRender.slot.isoDay !== isoDay) return null
@@ -149,14 +200,19 @@ function getProjectedCard(
   const end = addMinutes(start, durationMinutes)
   const colors = EVENT_COLOR_MAP[dragRender.color]
 
+  // Resolve priority + status from whichever meta is available
+  const priority: EventPriority =
+    dragRender.eventMeta?.priority ?? dragRender.taskMeta?.priority ?? 'none'
+  const status: EventStatus = dragRender.eventMeta?.status ?? 'pending'
+
   return {
     title: dragRender.title ?? 'New Event',
     start,
     end,
     top: dateToPixelOffset(start, HOUR_HEIGHT_PX),
     height: durationToPixelHeight(start, end, HOUR_HEIGHT_PX),
-    bg: colors.bg,
-    text: colors.text,
     border: colors.border,
+    status,
+    priority,
   }
 }

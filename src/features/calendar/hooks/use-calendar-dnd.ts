@@ -14,7 +14,7 @@ import {
 } from '../calendar-store'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
-import type { CalendarEvent, EventColor } from '../types'
+import type { CalendarEvent, EventColor, EventPriority, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../types'
 
 let idCounter = Date.now()
 function nextId() {
@@ -35,6 +35,10 @@ export type CalendarDragData = {
   originalStart?: number
   originalEnd?: number
   isAllDay?: boolean
+  priority?: EventPriority
+  taskMeta?: TaskDragMeta
+  personalMeta?: PersonalDragMeta
+  eventMeta?: EventDragMeta
 }
 
 export type SlotDropData = {
@@ -66,6 +70,8 @@ export function makeEventDragData(event: CalendarEvent): CalendarDragData {
     originalStart: event.start.getTime(),
     originalEnd: event.end.getTime(),
     isAllDay: event.isAllDay,
+    priority: event.priority,
+    eventMeta: { status: event.status, priority: event.priority },
   }
 }
 
@@ -74,6 +80,8 @@ export function makeSidebarDragData(
   taskId: string,
   title: string,
   durationMinutes: number,
+  priority: EventPriority = 'none',
+  meta?: { taskMeta?: TaskDragMeta; personalMeta?: PersonalDragMeta },
 ): CalendarDragData {
   return {
     _type: DRAG_TYPE,
@@ -82,6 +90,9 @@ export function makeSidebarDragData(
     title,
     color: 'teal',
     durationMinutes,
+    priority,
+    taskMeta: meta?.taskMeta,
+    personalMeta: meta?.personalMeta,
   }
 }
 
@@ -144,6 +155,9 @@ export function useCalendarDropMonitor() {
             height: rect.height,
           },
           slot,
+          taskMeta: d.taskMeta,
+          personalMeta: d.personalMeta,
+          eventMeta: d.eventMeta,
         })
       },
 
@@ -182,6 +196,7 @@ export function useCalendarDropMonitor() {
             isAllDay: isAllDayDrop || mins >= 1440,
             color: 'teal',
             status: 'pending',
+            priority: drag.priority ?? 'none',
             sourceTaskId: drag.eventId,
           }
           addEvent(newEvent)

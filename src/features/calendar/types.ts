@@ -13,6 +13,8 @@ export type EventColor =
 
 export type EventStatus = 'pending' | 'completed'
 
+export type EventPriority = 'none' | 'low' | 'medium' | 'high' | 'critical'
+
 export type Participant = {
   id: string
   name: string
@@ -27,6 +29,7 @@ export type CalendarEvent = {
   isAllDay: boolean
   color: EventColor
   status: EventStatus
+  priority: EventPriority
   description?: string
   participants?: Participant[]
   /** Source sidebar task ID — links back to the task pool */
@@ -57,6 +60,25 @@ export type DragPointer = {
   clientY: number
 }
 
+export type TaskDragMeta = {
+  clientName: string
+  dueDateLabel: string | null
+  isRecurring: boolean
+  recurringType?: 'standard' | 'retainer'
+  durationLabel: string
+  priority: EventPriority
+}
+
+export type PersonalDragMeta = {
+  activityType: string
+  durationLabel: string
+}
+
+export type EventDragMeta = {
+  status: EventStatus
+  priority: EventPriority
+}
+
 export type DragRenderState = {
   source: DragSource
   eventId?: string
@@ -69,6 +91,9 @@ export type DragRenderState = {
   pointerOffset: { x: number; y: number }
   elementSize: { width: number; height: number }
   slot: DragSlotCandidate | null
+  taskMeta?: TaskDragMeta
+  personalMeta?: PersonalDragMeta
+  eventMeta?: EventDragMeta
 }
 
 export type TimeSlot = {

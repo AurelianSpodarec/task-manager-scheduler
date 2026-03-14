@@ -1,5 +1,5 @@
 import { addDays, startOfWeek, setHours, setMinutes, startOfDay } from 'date-fns'
-import type { CalendarEvent } from './types'
+import type { CalendarEvent, EventPriority } from './types'
 
 /** Builds a Date at a specific hour:minute on a given day. */
 function at(day: Date, hour: number, minute = 0): Date {
@@ -36,6 +36,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'blue' as const,
       status: i < 3 ? 'completed' as const : 'pending' as const,
+      priority: 'medium' as EventPriority,
       participants: teamAvatars,
     })),
 
@@ -49,6 +50,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'rose' as const,
       status: 'completed' as const,
+      priority: 'low' as EventPriority,
     },
 
     // Deep Work — Tuesday 4:00–6:00 PM (actually shown as 7-9 PM in screenshot, but label says 4-6)
@@ -60,6 +62,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'teal' as const,
       status: 'completed' as const,
+      priority: 'high' as EventPriority,
       participants: [teamAvatars[1]],
     },
 
@@ -72,6 +75,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'emerald' as const,
       status: 'completed' as const,
+      priority: 'none' as EventPriority,
       participants: [teamAvatars[0], teamAvatars[1]],
     },
 
@@ -84,6 +88,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'purple' as const,
       status: 'pending' as const,
+      priority: 'none' as EventPriority,
       participants: teamAvatars,
     },
 
@@ -96,6 +101,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'teal' as const,
       status: 'pending' as const,
+      priority: 'critical' as EventPriority,
     },
 
     // Client Call — Saturday 5:00–6:00 PM
@@ -107,6 +113,7 @@ export function seedEvents(): CalendarEvent[] {
       isAllDay: false,
       color: 'teal' as const,
       status: 'pending' as const,
+      priority: 'none' as EventPriority,
       participants: [teamAvatars[0], teamAvatars[1]],
     },
   ]
