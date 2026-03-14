@@ -142,6 +142,8 @@ type ProjectedCard = {
 function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
   const isCompact = projected.height < 40
   const priorityBorderColor = priorityLeftBorderColor[projected.priority]
+  const verticalInsetPx = 2
+  const renderedHeightPx = Math.max(projected.height - verticalInsetPx * 2, 16)
 
   const isPersonal = projected.personalActivityType != null
   const activityType = projected.personalActivityType as PersonalActivityType | undefined
@@ -150,12 +152,12 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
 
   return (
     <div
-      className={`pointer-events-none absolute z-20 flex min-h-5 flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50 ${
+      className={`pointer-events-none absolute z-20 flex min-h-4 flex-col overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50 ${
         isPersonal ? activityClasses : 'border-l-[3px] border-zinc-200 bg-white'
       }`}
       style={{
-        top: `${projected.top}px`,
-        height: `${Math.max(projected.height, 20)}px`,
+        top: `${projected.top + verticalInsetPx}px`,
+        height: `${renderedHeightPx}px`,
         left: '2px',
         right: '2px',
         ...(!isPersonal && { borderLeftColor: priorityBorderColor }),

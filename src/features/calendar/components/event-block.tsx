@@ -47,7 +47,9 @@ export function EventBlock({ layout }: EventBlockProps) {
 
   const widthPercent = 100 / totalColumns
   const leftPercent = column * widthPercent
-  const insetPx = totalColumns > 1 ? 2 : 0
+  const horizontalInsetPx = 2
+  const verticalInsetPx = 2
+  const renderedHeightPx = Math.max(height - verticalInsetPx * 2, 16)
 
   return (
     <button
@@ -59,10 +61,10 @@ export function EventBlock({ layout }: EventBlockProps) {
           : 'border-l-[3px] border-zinc-200 bg-white hover:border-zinc-300'
       } ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
       style={{
-        top: `${top}px`,
-        height: `${Math.max(height, 20)}px`,
-        width: `calc(${widthPercent}% - ${insetPx * 2}px)`,
-        left: `calc(${leftPercent}% + ${insetPx}px)`,
+        top: `${top + verticalInsetPx}px`,
+        height: `${renderedHeightPx}px`,
+        width: `calc(${widthPercent}% - ${horizontalInsetPx * 2}px)`,
+        left: `calc(${leftPercent}% + ${horizontalInsetPx}px)`,
         ...(!isPersonal && { borderLeftColor: priorityBorderColor }),
       }}
       aria-label={`${event.title}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
