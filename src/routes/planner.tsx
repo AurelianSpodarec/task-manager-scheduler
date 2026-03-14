@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
-type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+type TaskPriority = 'none' | 'low' | 'medium' | 'high' | 'critical'
 type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving' | 'gym'
 
 type SidebarTask = {
@@ -42,10 +42,11 @@ type PersonalTask = {
   label: string
 }
 const recurringPriorityBorderClass: Record<TaskPriority, string> = {
-  critical: 'border-l-zinc-900',
-  high: 'border-l-zinc-700',
-  medium: 'border-l-zinc-500',
-  low: 'border-l-zinc-300',
+  none: 'border-l-zinc-300',
+  low: 'border-l-blue-500',
+  medium: 'border-l-yellow-400',
+  high: 'border-l-orange-500',
+  critical: 'border-l-red-500',
 }
 
 const sidebarTasks: SidebarTask[] = [
