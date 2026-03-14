@@ -1,3 +1,10 @@
+export type WorkHoursConfig = {
+  startHour: number
+  endHour: number
+  /** Day-of-week indices where work hours apply (0=Sun, 6=Sat) */
+  daysOfWeek: number[]
+}
+
 export type ViewMode = 'week' | 'month'
 
 export type SlotDuration = 15 | 30 | 60

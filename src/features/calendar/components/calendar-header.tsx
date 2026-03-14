@@ -9,6 +9,7 @@ import {
 } from '../calendar-store'
 import { getWeekDays, navigateWeek, navigateMonth, formatDateRange, format } from '../utils/date'
 import type { ViewMode } from '../types'
+import { WorkHoursSetting } from './work-hours-setting'
 
 export function CalendarHeader() {
   const view = useCalendarView()
@@ -83,6 +84,8 @@ export function CalendarHeader() {
             <ChevronRight className="size-4" />
           </Button>
         </div>
+
+        <WorkHoursSetting />
 
         <div className="relative ml-1 hidden sm:block">
           <Search className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-cal-text-dimmed" />

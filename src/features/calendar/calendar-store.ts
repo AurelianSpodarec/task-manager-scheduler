@@ -7,8 +7,9 @@ import type {
   DragRenderState,
   DragPointer,
   DragSlotCandidate,
+  WorkHoursConfig,
 } from './types'
-import { DEFAULT_SLOT_DURATION } from './constants'
+import { DEFAULT_SLOT_DURATION, DEFAULT_WORK_HOURS } from './constants'
 import { isSameDay, startOfDay } from './utils/date'
 import { seedEvents } from './seed-events'
 
@@ -20,6 +21,7 @@ type CalendarState = {
   view: ViewMode
   activeDate: Date
   slotDuration: SlotDuration
+  workHours: WorkHoursConfig
   dragState: DragPayload | null
   dragRender: DragRenderState | null
   mobileFocusDay: number
@@ -33,6 +35,7 @@ let state: CalendarState = {
   view: 'week',
   activeDate: new Date(),
   slotDuration: DEFAULT_SLOT_DURATION,
+  workHours: DEFAULT_WORK_HOURS,
   dragState: null,
   dragRender: null,
   mobileFocusDay: new Date().getDay(),
@@ -129,6 +132,20 @@ export function updateDragRenderFrame(pointer: DragPointer, slot: DragSlotCandid
 
 export function setMobileFocusDay(index: number) {
   setState({ mobileFocusDay: index })
+}
+
+export function setWorkHours(config: WorkHoursConfig) {
+  setState({ workHours: config })
+}
+
+/** Pure check — slot falls within configured work hours for the given day */
+export function isWithinWorkHours(
+  dayOfWeek: number,
+  hour: number,
+  config: WorkHoursConfig,
+): boolean {
+  if (!config.daysOfWeek.includes(dayOfWeek)) return false
+  return hour >= config.startHour && hour < config.endHour
 }
 
 // ---------------------------------------------------------------------------
@@ -240,4 +257,8 @@ export function useDragRender(): DragRenderState | null {
 
 export function useMobileFocusDay(): number {
   return useStoreSelector((s) => s.mobileFocusDay)
+}
+
+export function useWorkHours(): WorkHoursConfig {
+  return useStoreSelector((s) => s.workHours)
 }

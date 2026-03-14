@@ -1,4 +1,4 @@
-import type { EventColor, SlotDuration } from './types'
+import type { EventColor, SlotDuration, WorkHoursConfig } from './types'
 
 export const SLOT_INCREMENT_MINUTES: SlotDuration = 15
 export const DEFAULT_SLOT_DURATION: SlotDuration = SLOT_INCREMENT_MINUTES
@@ -27,3 +27,9 @@ export const EVENT_STATUS_INDICATOR_COLORS = {
 } as const
 
 export const WEEK_DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const
+
+export const DEFAULT_WORK_HOURS: WorkHoursConfig = {
+  startHour: 9,
+  endHour: 17,
+  daysOfWeek: [1, 2, 3, 4, 5],
+}

@@ -74,7 +74,7 @@ export function EventBlock({ layout }: EventBlockProps) {
 
       {/* Row 2: time range */}
       {!isCompact && (
-        <span className="mt-auto text-[10px] leading-tight text-zinc-500">
+        <span className="mt-0.5 text-[10px] leading-tight text-zinc-500">
           {formatEventTime(event.start)} – {formatEventTime(event.end)}
         </span>
       )}

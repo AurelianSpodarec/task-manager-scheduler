@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { Check } from 'lucide-react'
-import { useEventsForDay, useSlotDuration, useDragRender } from '../../calendar-store'
+import { useEventsForDay, useSlotDuration, useDragRender, useWorkHours, isWithinWorkHours } from '../../calendar-store'
 import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
 import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
@@ -22,7 +22,9 @@ export function DayColumn({ day }: DayColumnProps) {
   const today = isToday(day)
   const slotDuration = useSlotDuration()
   const dragRender = useDragRender()
+  const workHours = useWorkHours()
   const isoDay = day.toISOString().split('T')[0]
+  const dayOfWeek = day.getDay()
   const isDragging = dragRender != null
   const projected = getProjectedCard(dragRender, isoDay, slotDuration)
 
@@ -50,6 +52,7 @@ export function DayColumn({ day }: DayColumnProps) {
               hour={hour}
               minute={minute}
               isDragging={isDragging}
+              isOffHours={!isWithinWorkHours(dayOfWeek, hour, workHours)}
               height={(HOUR_HEIGHT_PX / 60) * slotDuration}
               showHourBorder={slotEnd >= 60}
               showHalfBorder={slotEnd === 30}
@@ -79,6 +82,7 @@ function DroppableSlot({
   hour,
   minute,
   isDragging,
+  isOffHours,
   height,
   showHourBorder,
   showHalfBorder,
@@ -87,6 +91,7 @@ function DroppableSlot({
   hour: number
   minute: number
   isDragging: boolean
+  isOffHours: boolean
   height: number
   showHourBorder: boolean
   showHalfBorder: boolean
@@ -112,7 +117,7 @@ function DroppableSlot({
       ref={ref}
       className={`${isDragging ? 'transition-none' : 'transition-colors'} ${
         showHourBorder ? 'border-b border-cal-grid-line' : showHalfBorder ? 'border-b border-dotted border-cal-grid-line' : ''
-      } ${isOver ? 'bg-cal-hover-bg' : ''}`}
+      } ${isOver ? 'bg-cal-hover-bg' : isOffHours ? 'bg-cal-offhours-bg' : ''}`}
       style={{ height: `${height}px` }}
     />
   )
