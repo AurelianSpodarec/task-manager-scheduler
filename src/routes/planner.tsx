@@ -96,7 +96,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   return (
     <article
       className={cn(
-        'rounded-lg border border-zinc-200 bg-card px-3 py-2 shadow-sm',
+        'rounded-[4px] border border-zinc-200 bg-card px-3 py-2 shadow-sm',
         task.isRecurring && [
           'border-l-4',
           recurringPriorityBorderClass[task.priority],
@@ -147,9 +147,9 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
 export function PlannerSidebar() {
   return (
     <Tabs defaultValue="tasks" className="w-full">
-      <TabsList className="w-full">
-        <TabsTrigger value="tasks">Tasks</TabsTrigger>
-        <TabsTrigger value="personal">Personal</TabsTrigger>
+      <TabsList className="w-full rounded-[4px]">
+        <TabsTrigger value="tasks" className="rounded-[3px]">Tasks</TabsTrigger>
+        <TabsTrigger value="personal" className="rounded-[3px]">Personal</TabsTrigger>
       </TabsList>
       <TabsContent value="tasks" className="space-y-2">
         {sidebarTasks.map((task) => (
@@ -179,11 +179,11 @@ function PlannerContent() {
 function PlannerPage() {
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch gap-4 p-4 md:flex-row md:gap-6 md:p-6">
-      <aside className="h-full min-h-0 w-full rounded-lg border bg-card p-4 md:w-72 md:shrink-0">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch md:flex-row">
+      <aside className="h-full min-h-0 w-full border border-zinc-200/70 bg-card p-4 md:w-72 md:shrink-0 md:border-r">
         <PlannerSidebar />
       </aside>
-      <section className="h-full min-h-0 flex-1 rounded-lg border bg-card p-4 md:p-6">
+      <section className="h-full min-h-0 flex-1 border border-zinc-200/70 bg-card p-4 md:border-l-0 md:p-6">
         <PlannerContent />
       </section>
     </div>
