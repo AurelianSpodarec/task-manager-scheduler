@@ -42,7 +42,7 @@ function RootLayout() {
     <div className="flex h-dvh min-h-0 flex-col">
       <header className="shrink-0">
         <nav className="border-b border-gray-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
             <input id="mobile-menu-toggle" type="checkbox" className="peer sr-only" />
             <div className="flex h-[42px] items-center justify-between">
               <div className="flex items-center">

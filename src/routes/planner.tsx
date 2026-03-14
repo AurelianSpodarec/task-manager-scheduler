@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/planner')({
@@ -7,10 +6,8 @@ export const Route = createFileRoute('/planner')({
 
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -21,7 +18,19 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-export function TabsDemo() {
+function TaskCard() {
+  return (
+    <div>
+      Title
+      Duration Time
+      isRecurring (small recycle icon)
+      Priority (this will be left border, can also try trello style of icon)
+      Due Date(if exists)
+    </div>
+  )
+}
+
+export function PlannerSidebar() {
   return (
     <Tabs defaultValue="tasks" className="w-full">
       <TabsList className="w-full">
@@ -58,20 +67,26 @@ export function TabsDemo() {
   )
 }
 
-
+function PlannerContent() {
+  return (
+    <>
+      <h2 className="text-lg font-semibold text-card-foreground">Calendar</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Calendar view placeholder.
+      </p>
+    </>
+  )
+}
 
 function PlannerPage() {
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-1 flex-col items-stretch gap-4 p-4 md:flex-row md:gap-6 md:p-6">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch gap-4 p-4 md:flex-row md:gap-6 md:p-6">
       <aside className="h-full min-h-0 w-full rounded-lg border bg-card p-4 md:w-72 md:shrink-0">
-        <TabsDemo />
+        <PlannerSidebar />
       </aside>
       <section className="h-full min-h-0 flex-1 rounded-lg border bg-card p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-card-foreground">Calendar</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Calendar view placeholder.
-        </p>
+        <PlannerContent />
       </section>
     </div>
   )
