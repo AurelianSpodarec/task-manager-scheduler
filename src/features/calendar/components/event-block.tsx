@@ -6,7 +6,7 @@ import type { EventLayoutRect } from '../types'
 import { EVENT_STATUS_INDICATOR_COLORS } from '../constants'
 import { formatEventTime } from '../utils/date'
 import { makeEventDragData } from '../hooks/use-calendar-dnd'
-import { priorityBadgeClass, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
+import { priorityLeftBorderColor } from '@/lib/priority'
 import {
   personalActivityStyles,
   personalActivityIcons,
@@ -26,8 +26,6 @@ export function EventBlock({ layout }: EventBlockProps) {
   const isPersonal = event.personalActivityType != null
   const activityType = event.personalActivityType as PersonalActivityType | undefined
 
-  const pClass = priorityBadgeClass[event.priority]
-  const PIcon = priorityBadgeIcon[event.priority]
   const priorityBorderColor = priorityLeftBorderColor[event.priority]
 
   // Personal activity styling
@@ -84,11 +82,6 @@ export function EventBlock({ layout }: EventBlockProps) {
         >
           {event.title}
         </span>
-        {!isPersonal && !isCompact && pClass && PIcon && (
-          <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
-            <PIcon aria-hidden="true" className="size-2.5" />
-          </span>
-        )}
       </div>
 
       {/* Row 2: time range */}

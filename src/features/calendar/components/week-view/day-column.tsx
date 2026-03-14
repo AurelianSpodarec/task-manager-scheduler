@@ -12,7 +12,7 @@ import {
 import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
-import { priorityBadgeClass, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
+import { priorityLeftBorderColor } from '@/lib/priority'
 import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
 import type { DragRenderState, EventPriority, EventStatus } from '../../types'
@@ -141,8 +141,6 @@ type ProjectedCard = {
 
 function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
   const isCompact = projected.height < 40
-  const pClass = priorityBadgeClass[projected.priority]
-  const PIcon = priorityBadgeIcon[projected.priority]
   const priorityBorderColor = priorityLeftBorderColor[projected.priority]
 
   const isPersonal = projected.personalActivityType != null
@@ -178,11 +176,6 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
         <span className={`min-w-0 flex-1 truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
           {projected.title}
         </span>
-        {!isPersonal && !isCompact && pClass && PIcon && (
-          <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
-            <PIcon aria-hidden="true" className="size-2.5" />
-          </span>
-        )}
       </div>
 
       {/* Row 2: time range */}

@@ -137,8 +137,6 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
   const ActivityIcon = activityType ? personalActivityIcons[activityType] : null
   const activityClasses = activityType ? personalActivityStyles[activityType] : ''
 
-  const pClass = priorityBadgeClass[meta.priority]
-  const PIcon = priorityBadgeIcon[meta.priority]
   const priorityBorderColor = priorityLeftBorderColor[meta.priority]
   const start = drag.originalStart ? new Date(drag.originalStart) : null
   const end = drag.originalEnd ? new Date(drag.originalEnd) : null
@@ -164,11 +162,6 @@ function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; me
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-tight">
           {drag.title}
         </span>
-        {!isPersonal && pClass && PIcon && (
-          <span className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium leading-none ${pClass}`}>
-            <PIcon aria-hidden="true" className="size-2.5" />
-          </span>
-        )}
       </div>
 
       {/* Row 2: time range */}

@@ -137,6 +137,116 @@ function extractSlotTarget(dropTargets: Array<{ data: unknown }>): SlotDropData 
   return null
 }
 
+// ---------------------------------------------------------------------------
+// Direction-aware day-column snapping
+// Snaps to adjacent column ~20% before the pointer crosses the boundary,
+// with hysteresis to prevent flicker on direction reversal.
+// ---------------------------------------------------------------------------
+type ColumnRect = { isoDay: string; left: number; right: number }
+let columnRects: ColumnRect[] = []
+let currentDay: string | null = null
+let lastPointerX = 0
+
+const ADVANCE_ZONE = 0.13  // snap ahead when within 13% of the leading edge
+const COMMIT_ZONE = 0.35   // commit to new column once 35% past the entry side
+const MIN_DELTA = 2         // ignore sub-pixel jitter
+
+function cacheColumnRects() {
+  const els = document.querySelectorAll<HTMLElement>('[data-date]')
+  columnRects = Array.from(els)
+    .map((el) => {
+      const r = el.getBoundingClientRect()
+      return { isoDay: el.dataset.date!, left: r.left, right: r.right }
+    })
+    .filter((c) => c.right > c.left)   // drop hidden (zero-width) columns
+    .sort((a, b) => a.left - b.left)   // guarantee visual left-to-right order
+}
+
+function clearColumnRects() {
+  columnRects = []
+  currentDay = null
+  lastPointerX = 0
+}
+
+/**
+ * Resolve target day column using direction-aware advance zones.
+ *
+ * Same column:    snap ahead when near the leading edge in the movement direction.
+ * Adjacent column: only commit once the pointer is past COMMIT_ZONE from the
+ *                  entry side — prevents immediate snap-back after crossing.
+ * Non-adjacent:   fast mouse movement skipped columns — commit immediately.
+ */
+function resolveSnapDay(clientX: number): string | null {
+  if (columnRects.length === 0) return null
+
+  const delta = clientX - lastPointerX
+  lastPointerX = clientX
+
+  // Find the column the pointer is physically inside
+  let idx = -1
+  for (let i = 0; i < columnRects.length; i++) {
+    if (clientX >= columnRects[i].left && clientX < columnRects[i].right) {
+      idx = i
+      break
+    }
+  }
+  if (idx === -1) return currentDay
+
+  // First contact — initialise without advance logic
+  if (!currentDay) {
+    currentDay = columnRects[idx].isoDay
+    return currentDay
+  }
+
+  // Suppress micro-jitter
+  if (Math.abs(delta) < MIN_DELTA) return currentDay
+
+  const col = columnRects[idx]
+  const colWidth = col.right - col.left
+  const posInCol = clientX - col.left
+  const margin = colWidth * ADVANCE_ZONE
+
+  const curDayIdx = columnRects.findIndex((c) => c.isoDay === currentDay)
+  if (curDayIdx === -1) {
+    currentDay = col.isoDay
+    return currentDay
+  }
+
+  // --- Same column as current snap ---
+  if (idx === curDayIdx) {
+    if (delta > 0 && posInCol > colWidth - margin && idx < columnRects.length - 1) {
+      currentDay = columnRects[idx + 1].isoDay
+    } else if (delta < 0 && posInCol < margin && idx > 0) {
+      currentDay = columnRects[idx - 1].isoDay
+    }
+    return currentDay
+  }
+
+  // --- Adjacent column (crossed boundary) ---
+  const commitPx = colWidth * COMMIT_ZONE
+  if (idx === curDayIdx + 1) {
+    // Entered from left — commit once past 40% from left edge
+    if (posInCol > commitPx) currentDay = col.isoDay
+    return currentDay
+  }
+  if (idx === curDayIdx - 1) {
+    // Entered from right — commit once past 40% from right edge
+    if (posInCol < colWidth - commitPx) currentDay = col.isoDay
+    return currentDay
+  }
+
+  // --- Non-adjacent (fast movement) — commit immediately ---
+  currentDay = col.isoDay
+  return currentDay
+}
+
+function applyDayOverride(slot: SlotDropData | null, clientX: number): SlotDropData | null {
+  if (!slot) return null
+  const resolved = resolveSnapDay(clientX)
+  if (!resolved || resolved === slot.isoDay) return slot
+  return { ...slot, isoDay: resolved }
+}
+
 /**
  * Global drop monitor — wire up once in a component wrapping the calendar + sidebar.
  * Handles sidebar→calendar creation and calendar→calendar moves.
@@ -156,6 +266,8 @@ export function useCalendarDropMonitor() {
         const rect = source.element.getBoundingClientRect()
         const input = location.initial.input
         const slot = extractSlotTarget(location.current.dropTargets)
+
+        cacheColumnRects()
 
         setDragRender({
           source: d.source,
@@ -187,7 +299,8 @@ export function useCalendarDropMonitor() {
 
       onDrag: ({ location }) => {
         const input = location.current.input
-        const slot = extractSlotTarget(location.current.dropTargets)
+        const rawSlot = extractSlotTarget(location.current.dropTargets)
+        const slot = applyDayOverride(rawSlot, input.clientX)
         updateDragRenderFrame(
           {
             clientX: input.clientX,
@@ -203,7 +316,9 @@ export function useCalendarDropMonitor() {
         document.body.classList.remove('cal-dragging')
         preventUnhandled.stop()
 
-        const slot = extractSlotTarget(location.current.dropTargets)
+        const rawSlot = extractSlotTarget(location.current.dropTargets)
+        const slot = applyDayOverride(rawSlot, location.current.input.clientX)
+        clearColumnRects()
         if (!slot) return
 
         const drag = source.data as CalendarDragData
