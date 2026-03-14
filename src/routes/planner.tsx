@@ -147,9 +147,9 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
 export function PlannerSidebar() {
   return (
     <Tabs defaultValue="tasks" className="w-full">
-      <TabsList className="w-full rounded-[4px]">
-        <TabsTrigger value="tasks" className="rounded-[3px]">Tasks</TabsTrigger>
-        <TabsTrigger value="personal" className="rounded-[3px]">Personal</TabsTrigger>
+      <TabsList className="w-full rounded-[4px] p-0">
+        <TabsTrigger value="tasks" className="rounded-[3px] px-0 py-0">Tasks</TabsTrigger>
+        <TabsTrigger value="personal" className="rounded-[3px] px-0 py-0">Personal</TabsTrigger>
       </TabsList>
       <TabsContent value="tasks" className="space-y-2">
         {sidebarTasks.map((task) => (
