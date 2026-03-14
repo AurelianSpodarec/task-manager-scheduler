@@ -19,7 +19,7 @@ export function TimeGutter() {
           style={{ height: `${HOUR_HEIGHT_PX}px` }}
         >
           {/* Half-hour dotted divider */}
-          <div className="absolute inset-x-0 top-1/2 border-b border-dashed border-cal-grid-line/40" />
+          <div className="absolute inset-x-0 top-1/2 border-b border-dotted border-cal-grid-line" />
 
           {/* Hour label — centered between top border and half-hour line */}
           <div className="absolute inset-x-0 top-0 flex h-1/2 items-center justify-end pr-1 md:pr-2">

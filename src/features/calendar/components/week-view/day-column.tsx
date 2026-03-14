@@ -97,7 +97,7 @@ function DroppableSlot({
     <div
       ref={ref}
       className={`transition-colors ${
-        showHourBorder ? 'border-b border-cal-grid-line' : showHalfBorder ? 'border-b border-dashed border-cal-grid-line/40' : ''
+        showHourBorder ? 'border-b border-cal-grid-line' : showHalfBorder ? 'border-b border-dotted border-cal-grid-line' : ''
       } ${isOver ? 'bg-cal-hover-bg' : ''}`}
       style={{ height: `${height}px` }}
     />
