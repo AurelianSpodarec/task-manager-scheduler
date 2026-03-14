@@ -12,8 +12,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useDragRender } from '../../calendar-store'
-import { EVENT_COLOR_MAP } from '../../constants'
-import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from '@/lib/priority'
+import { EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
+import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
 import type { DragRenderState, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../../types'
 
 const personalStyleMap: Record<string, string> = {
@@ -69,12 +69,13 @@ function TaskPreview({ drag, meta, width }: { drag: DragRenderState; meta: TaskD
   const pClass = priorityBadgeClass[meta.priority]
   const pLabel = priorityBadgeLabel[meta.priority]
   const PIcon = priorityBadgeIcon[meta.priority]
+  const priorityBorderColor = priorityLeftBorderColor[meta.priority]
   const hasStatusBadges = meta.isRecurring || Boolean(pClass)
 
   return (
     <div
-      className="rounded-[10px] border border-zinc-200 bg-white px-3 py-3 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
-      style={{ width }}
+      className="rounded-[10px] border border-zinc-200 border-l-[3px] bg-white px-3 py-3 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
+      style={{ width, borderLeftColor: priorityBorderColor }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -147,25 +148,25 @@ function PersonalPreview({ drag, meta, width }: { drag: DragRenderState; meta: P
 
 /** Calendar event card — 1:1 clone of resting EventBlock */
 function EventPreview({ drag, meta, width, height }: { drag: DragRenderState; meta: EventDragMeta; width: number; height: number }) {
-  const colors = EVENT_COLOR_MAP[drag.color]
   const pClass = priorityBadgeClass[meta.priority]
   const PIcon = priorityBadgeIcon[meta.priority]
+  const priorityBorderColor = priorityLeftBorderColor[meta.priority]
   const start = drag.originalStart ? new Date(drag.originalStart) : null
   const end = drag.originalEnd ? new Date(drag.originalEnd) : null
 
   return (
     <div
       className="flex flex-col overflow-hidden rounded-[7px] border border-zinc-200 border-l-[3px] bg-white px-2 py-1.5 shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
-      style={{ width, height, borderLeftColor: colors.border }}
+      style={{ width, height, borderLeftColor: priorityBorderColor }}
     >
       {/* Row 1: checkbox + title + priority icon */}
       <div className="flex min-w-0 items-center gap-1.5">
         {meta.status === 'completed' ? (
-          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: colors.border }}>
+          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}>
             <Check className="size-2 text-white" strokeWidth={3} />
           </span>
         ) : (
-          <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: colors.border }} />
+          <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }} />
         )}
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold leading-tight text-zinc-900">
           {drag.title}

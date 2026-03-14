@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import type { TaskPriority } from "@/lib/priority"
-import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from "@/lib/priority"
+import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon, priorityLeftBorderColor } from "@/lib/priority"
 
 type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving' | 'gym'
 
@@ -164,6 +164,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   const priorityClass = priorityBadgeClass[task.priority]
   const priorityLabel = priorityBadgeLabel[task.priority]
   const PriorityIcon = priorityBadgeIcon[task.priority]
+  const priorityBorderColor = priorityLeftBorderColor[task.priority]
   const hasStatusBadges = task.isRecurring || Boolean(priorityClass)
   const metaToggleId = `compact-meta-${task.id}`
   const ref = useRef<HTMLElement>(null)
@@ -195,7 +196,8 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   return (
     <article
       ref={ref}
-      className={`cursor-grab rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
+      className={`cursor-grab rounded-[10px] border border-zinc-200 border-l-[3px] bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
+      style={{ borderLeftColor: priorityBorderColor }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

@@ -3,11 +3,11 @@ import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { Check } from 'lucide-react'
 import { useEventsForDay, useSlotDuration, useDragRender } from '../../calendar-store'
-import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_COLOR_MAP } from '../../constants'
+import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX, EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
 import { isToday, startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { makeSlotData, isCalendarDrag } from '../../hooks/use-calendar-dnd'
-import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from '@/lib/priority'
+import { priorityBadgeClass, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
 import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
 import type { DragRenderState, EventPriority, EventStatus } from '../../types'
@@ -124,7 +124,6 @@ type ProjectedCard = {
   end: Date
   top: number
   height: number
-  border: string
   status: EventStatus
   priority: EventPriority
 }
@@ -132,8 +131,8 @@ type ProjectedCard = {
 function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
   const isCompact = projected.height < 40
   const pClass = priorityBadgeClass[projected.priority]
-  const pLabel = priorityBadgeLabel[projected.priority]
   const PIcon = priorityBadgeIcon[projected.priority]
+  const priorityBorderColor = priorityLeftBorderColor[projected.priority]
 
   return (
     <div
@@ -143,18 +142,18 @@ function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
         height: `${Math.max(projected.height, 20)}px`,
         left: '2px',
         right: '2px',
-        borderLeftColor: projected.border,
+        borderLeftColor: priorityBorderColor,
       }}
       aria-hidden="true"
     >
       {/* Row 1: checkbox + title + priority icon */}
       <div className="flex min-w-0 items-center gap-1.5">
         {projected.status === 'completed' ? (
-          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: projected.border }}>
+          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}>
             <Check className="size-2 text-white" strokeWidth={3} />
           </span>
         ) : (
-          <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: projected.border }} />
+          <span className="size-3.5 shrink-0 rounded-full border-2" style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }} />
         )}
         <span className={`min-w-0 flex-1 truncate font-semibold leading-tight text-zinc-900 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
           {projected.title}
@@ -196,7 +195,6 @@ function getProjectedCard(
 
   const durationMinutes = dragRender.durationMinutes ?? 60
   const end = addMinutes(start, durationMinutes)
-  const colors = EVENT_COLOR_MAP[dragRender.color]
 
   // Resolve priority + status from whichever meta is available
   const priority: EventPriority =
@@ -209,7 +207,6 @@ function getProjectedCard(
     end,
     top: dateToPixelOffset(start, HOUR_HEIGHT_PX),
     height: durationToPixelHeight(start, end, HOUR_HEIGHT_PX),
-    border: colors.border,
     status,
     priority,
   }

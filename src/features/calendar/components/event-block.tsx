@@ -3,35 +3,25 @@ import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { Check } from 'lucide-react'
 import type { EventLayoutRect } from '../types'
-import { EVENT_COLOR_MAP } from '../constants'
+import { EVENT_STATUS_INDICATOR_COLORS } from '../constants'
 import { formatEventTime } from '../utils/date'
 import { makeEventDragData } from '../hooks/use-calendar-dnd'
-import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon } from '@/lib/priority'
+import { priorityBadgeClass, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
 
 type EventBlockProps = {
   layout: EventLayoutRect
 }
 
-/** Compute a human-readable duration string from start/end dates. */
-function formatDuration(start: Date, end: Date): string {
-  const mins = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
-  const h = Math.floor(mins / 60)
-  const m = mins % 60
-  if (!h) return `${m}m`
-  if (!m) return `${h}h`
-  return `${h}:${String(m).padStart(2, '0')}h`
-}
 
 export function EventBlock({ layout }: EventBlockProps) {
   const { event, column, totalColumns, top, height } = layout
-  const colors = EVENT_COLOR_MAP[event.color]
   const isCompact = height < 40
   const ref = useRef<HTMLButtonElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   const pClass = priorityBadgeClass[event.priority]
-  const pLabel = priorityBadgeLabel[event.priority]
   const PIcon = priorityBadgeIcon[event.priority]
+  const priorityBorderColor = priorityLeftBorderColor[event.priority]
 
   useEffect(() => {
     const el = ref.current
@@ -63,13 +53,13 @@ export function EventBlock({ layout }: EventBlockProps) {
         height: `${Math.max(height, 20)}px`,
         width: `calc(${widthPercent}% - ${insetPx * 2}px)`,
         left: `calc(${leftPercent}% + ${insetPx}px)`,
-        borderLeftColor: colors.border,
+        borderLeftColor: priorityBorderColor,
       }}
       aria-label={`${event.title}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
     >
       {/* Row 1: checkbox + title */}
       <div className="flex min-w-0 items-center gap-1.5">
-        <StatusIcon status={event.status} color={colors.border} />
+        <StatusIcon status={event.status} />
         <span
           className={`min-w-0 flex-1 truncate font-semibold leading-tight text-zinc-900 ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
         >
@@ -92,12 +82,12 @@ export function EventBlock({ layout }: EventBlockProps) {
   )
 }
 
-function StatusIcon({ status, color }: { status: string; color: string }) {
+function StatusIcon({ status }: { status: string }) {
   if (status === 'completed') {
     return (
       <span
         className="flex size-3.5 shrink-0 items-center justify-center rounded-full"
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: EVENT_STATUS_INDICATOR_COLORS.completedFill }}
       >
         <Check className="size-2 text-white" strokeWidth={3} />
       </span>
@@ -106,7 +96,7 @@ function StatusIcon({ status, color }: { status: string; color: string }) {
   return (
     <span
       className="size-3.5 shrink-0 rounded-full border-2"
-      style={{ borderColor: color }}
+      style={{ borderColor: EVENT_STATUS_INDICATOR_COLORS.pendingBorder }}
     />
   )
 }

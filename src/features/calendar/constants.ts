@@ -20,4 +20,9 @@ export const EVENT_COLOR_MAP: Record<EventColor, { bg: string; text: string; bor
   blue:    { bg: 'var(--cal-brand-blue)',    text: 'var(--cal-event-text)', border: 'var(--cal-brand-blue)' },
 }
 
+export const EVENT_STATUS_INDICATOR_COLORS = {
+  pendingBorder: 'var(--cal-brand-zinc-400)',
+  completedFill: 'var(--cal-brand-emerald)',
+} as const
+
 export const WEEK_DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const

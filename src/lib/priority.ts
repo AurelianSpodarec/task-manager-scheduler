@@ -31,3 +31,11 @@ export const priorityBadgeIcon: Record<TaskPriority, LucideIcon | null> = {
   high: ArrowUp,
   critical: AlertTriangle,
 }
+
+export const priorityLeftBorderColor: Record<TaskPriority, string> = {
+  none: '#e4e4e7',
+  low: '#10b981',
+  medium: '#f59e0b',
+  high: '#f97316',
+  critical: '#ef4444',
+}
