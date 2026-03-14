@@ -1,5 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { CalendarDays, Clock3, Repeat2 } from 'lucide-react'
+import {
+  Backpack,
+  CalendarDays,
+  Car,
+  Clock3,
+  Dumbbell,
+  Repeat2,
+  Stethoscope,
+  Utensils,
+  type LucideIcon,
+} from 'lucide-react'
 
 export const Route = createFileRoute('/planner')({
   component: PlannerPage,
@@ -60,19 +70,19 @@ const sidebarTasks: SidebarTask[] = [
 ]
 
 const personalTaskStyles: Record<PersonalActivityType, string> = {
-  schoolRun: 'border-[#d9c8a4] bg-[#e9dcc5] text-[#6f5a39]',
-  lunch: 'border-[#dfc2cb] bg-[#ecd9de] text-[#7f5160]',
-  dentist: 'border-[#c7d9cf] bg-[#dcebe4] text-[#43695a]',
-  driving: 'border-[#bcc4e4] bg-[#d6dcef] text-[#4b548a]',
-  gym: 'border-[#cfc9df] bg-[#e2def0] text-[#5a4f7e]',
+  schoolRun: 'border-[#fed7aa] bg-[#ffedd6] text-black',
+  lunch: 'border-[#fecdd3] bg-[#ffe4e6] text-black',
+  dentist: 'border-[#bbf7d0] bg-[#dcfce7] text-black',
+  driving: 'border-[#c7d2fe] bg-[#e0e7ff] text-black',
+  gym: 'border-[#e9d5ff] bg-[#f3e8ff] text-black',
 }
 
-const personalTaskIcons: Record<PersonalActivityType, string> = {
-  schoolRun: '🎒',
-  lunch: '🍽️',
-  dentist: '🦷',
-  driving: '🚗',
-  gym: '🏋️',
+const personalTaskIcons: Record<PersonalActivityType, LucideIcon> = {
+  schoolRun: Backpack,
+  lunch: Utensils,
+  dentist: Stethoscope,
+  driving: Car,
+  gym: Dumbbell,
 }
 
 const personalTasks: PersonalTask[] = [
@@ -114,6 +124,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
 }
 
 function PersonalTaskCard({ task }: { task: PersonalTask }) {
+  const ActivityIcon = personalTaskIcons[task.activityType]
   return (
     <article
       className={cn(
@@ -123,9 +134,9 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
     >
       <span
         aria-hidden="true"
-        className="inline-flex size-4 items-center justify-center text-[13px] leading-none"
+        className="inline-flex size-4 items-center justify-center"
       >
-        {personalTaskIcons[task.activityType]}
+        <ActivityIcon className="size-3.5" strokeWidth={2} />
       </span>
       <span className="text-[12px] leading-none font-semibold tracking-[0.02em] uppercase">
         {task.label}
