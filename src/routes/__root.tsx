@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- TanStack route modules export `Route` and a component from the same file. */
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { Bell, ChevronDown, Grip } from 'lucide-react'
+import { ChevronDown, Grip } from 'lucide-react'
 
 const user = {
   name: 'Aurelian',
@@ -16,28 +16,39 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-100/70">
-      <header className="shrink-0">
-        <nav className="border-b border-zinc-200/80 bg-white/95 backdrop-blur-sm">
-          <div className="w-full px-3 sm:px-4 lg:px-6">
-            <div className="flex h-14 items-center justify-between">
-              <div className="flex items-center gap-3">
+      <header className="h-[42px] shrink-0">
+        <nav className="h-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-sm">
+          <div className="h-full w-full px-3 sm:px-4 lg:px-6">
+            <div className="flex h-full items-center justify-between">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
-                  className="inline-flex size-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-colors hover:border-zinc-300 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  className="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                 >
                   <span className="sr-only">Open workspace apps</span>
                   <Grip aria-hidden="true" className="size-4" />
                 </button>
-                <div className="flex items-center gap-2.5">
-                  <span className="inline-flex size-8 items-center justify-center rounded-lg bg-rose-600 text-[11px] font-semibold tracking-[0.04em] text-white uppercase">
-                    LR
+                <div className="flex items-center gap-1 rounded-md px-1">
+                  <span className="inline-flex size-6 shrink-0 items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      xmlSpace="preserve"
+                      x="0"
+                      y="0"
+                      version="1.1"
+                      viewBox="0 0 45.1 45.1"
+                      className="size-[22px]"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill="#d90000"
+                        d="m32.1 19.1-6.6 13.2 6.4 12.9H26l-6.4-12.9 6.6-13.2-3.6-7.2-14 27.8H16l2.7 5.4H0L22.5 0zm3.6 7.2-3 5.9 6.4 12.9H45z"
+                      ></path>
+                    </svg>
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-[15px] leading-5 font-semibold tracking-tight text-zinc-900">
+                    <p className="truncate text-[14px] leading-5 font-semibold tracking-tight text-zinc-900">
                       Laser Red Team
-                    </p>
-                    <p className="text-[11px] leading-4 font-medium tracking-[0.08em] text-zinc-500 uppercase">
-                      Workspace
                     </p>
                   </div>
                 </div>
@@ -45,23 +56,15 @@ function RootLayout() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="relative inline-flex size-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-colors hover:border-zinc-300 hover:text-zinc-700 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
-                >
-                  <span className="absolute -inset-1.5" />
-                  <span className="sr-only">View notifications</span>
-                  <Bell aria-hidden="true" className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-zinc-200 bg-white py-1 pr-1.5 pl-1 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-shadow hover:shadow-[0_4px_10px_rgba(16,24,40,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  className="inline-flex h-8 items-center gap-1 rounded-full border border-zinc-200 bg-white py-1 pr-1.5 pl-1 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-shadow hover:shadow-[0_3px_8px_rgba(16,24,40,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                 >
                   <span className="sr-only">Open user menu</span>
                   <img
                     alt={user.name}
                     src={user.imageUrl}
-                    className="size-7 rounded-full border border-zinc-200 object-cover"
+                    className="size-6 rounded-full border border-zinc-200 object-cover"
                   />
-                  <ChevronDown aria-hidden="true" className="size-4 text-zinc-500" />
+                  <ChevronDown aria-hidden="true" className="size-3.5 text-zinc-500" />
                 </button>
               </div>
             </div>
