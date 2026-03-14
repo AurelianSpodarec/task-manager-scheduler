@@ -266,9 +266,19 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
 export function PlannerSidebar() {
   return (
     <Tabs defaultValue="tasks" className="h-full min-h-0 w-full gap-3">
-      <TabsList className="w-full shrink-0 rounded-xl bg-zinc-100 p-1">
-        <TabsTrigger value="tasks" className="h-8 rounded-lg px-3 py-0 text-[13px] font-medium data-active:bg-white data-active:shadow-[0_1px_2px_rgba(16,24,40,0.08)]">Tasks</TabsTrigger>
-        <TabsTrigger value="personal" className="h-8 rounded-lg px-3 py-0 text-[13px] font-medium data-active:bg-white data-active:shadow-[0_1px_2px_rgba(16,24,40,0.08)]">Personal</TabsTrigger>
+      <TabsList className="h-auto w-full shrink-0 rounded-md border border-zinc-200 bg-zinc-50 p-0.5">
+        <TabsTrigger
+          value="tasks"
+          className="h-7 rounded-[5px] px-2.5 py-0 text-[13px] font-medium text-zinc-600 hover:text-zinc-900 data-active:bg-white data-active:text-zinc-900 data-active:shadow-none"
+        >
+          Tasks
+        </TabsTrigger>
+        <TabsTrigger
+          value="personal"
+          className="h-7 rounded-[5px] px-2.5 py-0 text-[13px] font-medium text-zinc-600 hover:text-zinc-900 data-active:bg-white data-active:text-zinc-900 data-active:shadow-none"
+        >
+          Personal
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="tasks" className="sidebar-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
         {sidebarTasks.map((task) => (
