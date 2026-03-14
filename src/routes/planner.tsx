@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { CalendarDays, Clock3, Repeat2 } from 'lucide-react'
 
 export const Route = createFileRoute('/planner')({
   component: PlannerPage,
@@ -17,16 +18,76 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
 
-function TaskCard() {
+type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+
+type SidebarTask = {
+  id: string
+  title: string
+  duration: string
+  clientName: string
+  dueDateLabel: string
+  isRecurring: boolean
+  priority: TaskPriority
+}
+
+const recurringPriorityBorderClass: Record<TaskPriority, string> = {
+  critical: 'border-l-zinc-900',
+  high: 'border-l-zinc-700',
+  medium: 'border-l-zinc-500',
+  low: 'border-l-zinc-300',
+}
+
+const sidebarTasks: SidebarTask[] = [
+  {
+    id: 'task-graphic-design-edits',
+    title: 'Graphic Design Edits',
+    duration: '2:10h',
+    clientName: 'Client name',
+    dueDateLabel: 'Aug 27',
+    isRecurring: true,
+    priority: 'high',
+  },
+  {
+    id: 'task-invoice-review',
+    title: 'Invoice Review',
+    duration: '1:00h',
+    clientName: 'Finance',
+    dueDateLabel: 'Aug 29',
+    isRecurring: false,
+    priority: 'medium',
+  },
+]
+
+function SidebarTaskCard({ task }: { task: SidebarTask }) {
   return (
-    <div>
-      Title
-      Duration Time
-      isRecurring (small recycle icon)
-      Priority (this will be left border, can also try trello style of icon)
-      Due Date(if exists)
-    </div>
+    <article
+      className={cn(
+        'rounded-lg border border-zinc-200 bg-card px-3 py-2 shadow-sm',
+        task.isRecurring && [
+          'border-l-4',
+          recurringPriorityBorderClass[task.priority],
+        ]
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="truncate text-sm font-medium text-card-foreground">
+          {task.title}
+        </h3>
+        <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+          <Clock3 aria-hidden="true" className="size-3.5" />
+          <span>{task.duration}</span>
+          {task.isRecurring && <Repeat2 aria-hidden="true" className="size-3.5" />}
+        </div>
+      </div>
+      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+        <span className="font-semibold text-card-foreground">{task.clientName}</span>
+        <span aria-hidden="true">-</span>
+        <CalendarDays aria-hidden="true" className="size-3.5" />
+        <span>{task.dueDateLabel}</span>
+      </div>
+    </article>
   )
 }
 
@@ -37,18 +98,10 @@ export function PlannerSidebar() {
         <TabsTrigger value="tasks">Tasks</TabsTrigger>
         <TabsTrigger value="personal">Personal</TabsTrigger>
       </TabsList>
-      <TabsContent value="tasks">
-        <Card>
-          <CardHeader>
-            <CardTitle>Tasks</CardTitle>
-            <CardDescription>
-              Track your work items and monitor progress across ongoing tasks.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            You have 3 priority tasks due today.
-          </CardContent>
-        </Card>
+      <TabsContent value="tasks" className="space-y-2">
+        {sidebarTasks.map((task) => (
+          <SidebarTaskCard key={task.id} task={task} />
+        ))}
       </TabsContent>
       <TabsContent value="personal">
         <Card>
