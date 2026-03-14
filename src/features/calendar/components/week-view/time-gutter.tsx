@@ -38,8 +38,8 @@ export function TimeGutter() {
       {/* Filled triangle at current time — triggers dashed guide line on hover */}
       <button
         type="button"
-        className="absolute left-0 z-20 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-start"
-        style={{ top: `${chevronTop}px` }}
+        className="absolute left-0 z-20 flex size-6 cursor-pointer items-center justify-start"
+        style={{ top: `${chevronTop}px`, transform: 'translateY(calc(-50% + 1px))' }}
         onClick={() => toggleTimeGuidePinned()}
         onMouseEnter={() => setTimeChevronHovered(true)}
         onMouseLeave={() => setTimeChevronHovered(false)}

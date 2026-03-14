@@ -15,7 +15,7 @@ export function CurrentTimeLine({ day }: CurrentTimeLineProps) {
 
   return (
     <div
-      className="pointer-events-none absolute right-0 left-0 z-20 -translate-y-1/2"
+      className="pointer-events-none absolute right-0 left-0 z-20"
       style={{ top: `${top}px` }}
       aria-hidden="true"
     >
