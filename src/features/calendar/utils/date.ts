@@ -11,6 +11,7 @@ import {
   subMonths,
   isSameDay,
   isToday,
+  getWeek,
   format,
   getHours,
   getMinutes,
@@ -104,6 +105,11 @@ export function formatDateRange(start: Date, end: Date): string {
 
 export function formatDayHeader(date: Date): string {
   return format(date, 'dd')
+}
+
+export function formatWeekOfYear(date: Date): string {
+  const weekNumber = getWeek(date, { weekStartsOn: 0, firstWeekContainsDate: 1 })
+  return `W ${weekNumber}`
 }
 
 export { isSameDay, isToday, addDays, startOfDay, getHours, getMinutes, format }

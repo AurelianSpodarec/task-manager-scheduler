@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { useActiveDate, useMobileFocusDay } from '../../calendar-store'
-import { getWeekDays } from '../../utils/date'
+import { getWeekDays, formatWeekOfYear } from '../../utils/date'
 import { VISIBLE_START_HOUR, HOUR_HEIGHT_PX } from '../../constants'
 import { TimeGutter } from './time-gutter'
 import { DayColumn } from './day-column'
@@ -12,6 +12,7 @@ import { CalendarDragLayer } from './calendar-drag-layer'
 export function WeekView() {
   const activeDate = useActiveDate()
   const weekDays = getWeekDays(activeDate)
+  const weekLabel = formatWeekOfYear(activeDate)
   const mobileFocus = useMobileFocusDay()
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -43,7 +44,7 @@ export function WeekView() {
 
       {/* Desktop: fixed day header row */}
       <div role="rowgroup" className="hidden md:block">
-        <DayHeaderRow weekDays={weekDays} />
+        <DayHeaderRow weekDays={weekDays} weekLabel={weekLabel} />
       </div>
 
       {/* Scrollable time grid */}

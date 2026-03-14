@@ -5,17 +5,22 @@ const FULL_DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
 
 type DayHeaderRowProps = {
   weekDays: Date[]
+  weekLabel: string
 }
 
-export function DayHeaderRow({ weekDays }: DayHeaderRowProps) {
+export function DayHeaderRow({ weekDays, weekLabel }: DayHeaderRowProps) {
   return (
-    <div role="row" className="cal-week-grid-header hidden border-b border-cal-grid-line md:grid">
-      {/* Gutter spacer */}
-      <div className="border-r border-cal-grid-line" aria-hidden="true" />
+    <div role="row" className="cal-week-grid-header hidden border-b border-cal-week-header-separator bg-cal-week-header-bg md:grid">
+      <div className="flex items-center justify-center border-r border-cal-week-header-separator bg-cal-week-header-control-bg px-1.5">
+        <span className="text-[10px] font-semibold tracking-[0.04em] text-cal-week-header-text-muted uppercase">
+          {weekLabel}
+        </span>
+      </div>
 
       {weekDays.map((day) => {
         const dayIndex = day.getDay()
         const today = isToday(day)
+        const dayLabel = `${WEEK_DAY_LABELS[dayIndex]}.`
 
         return (
           <div
@@ -23,25 +28,27 @@ export function DayHeaderRow({ weekDays }: DayHeaderRowProps) {
             role="columnheader"
             aria-label={FULL_DAY_NAMES[dayIndex]}
             aria-current={today ? 'date' : undefined}
-            className={`flex flex-col items-center justify-center border-r border-cal-grid-line py-1.5 ${
-              today ? 'bg-cal-today-bg' : ''
+            className={`flex items-center justify-center border-r border-cal-week-header-separator px-2 py-2 ${
+              today
+                ? 'bg-cal-week-header-active-bg shadow-[inset_0_-2px_0_0_var(--cal-week-header-active-underline)]'
+                : 'bg-cal-week-header-bg'
             }`}
           >
-            <span
-              aria-hidden="true"
-              className={`text-[var(--cal-text-2xs)] font-semibold uppercase tracking-wider ${
-                today ? 'text-cal-today-text' : 'text-cal-text-muted'
-              }`}
-            >
-              {WEEK_DAY_LABELS[dayIndex]}
-            </span>
-            <span
-              aria-hidden="true"
-              className={`text-[var(--cal-text-base)] font-bold leading-none ${
-                today ? 'text-cal-today-text' : 'text-cal-text'
-              }`}
-            >
-              {formatDayHeader(day)}
+            <span aria-hidden="true" className="inline-flex items-baseline gap-1">
+              <span
+                className={`text-[10px] font-semibold tracking-[0.06em] uppercase ${
+                  today ? 'text-cal-week-header-active-text' : 'text-cal-week-header-text-muted'
+                }`}
+              >
+                {dayLabel}
+              </span>
+              <span
+                className={`text-[13px] font-semibold leading-none tabular-nums ${
+                  today ? 'text-cal-week-header-active-text' : 'text-cal-week-header-text'
+                }`}
+              >
+                {formatDayHeader(day)}
+              </span>
             </span>
           </div>
         )

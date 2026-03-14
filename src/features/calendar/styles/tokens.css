@@ -86,11 +86,31 @@
   --cal-event-bg-completed: var(--cal-brand-teal);
   --cal-hover-bg: oklch(0.97 0 0);
   --cal-focus-ring: var(--cal-brand-blue);
+  --cal-week-header-bg: oklch(0.985 0 0);
+  --cal-week-header-text: var(--cal-brand-zinc-700);
+  --cal-week-header-text-muted: var(--cal-brand-zinc-500);
+  --cal-week-header-separator: oklch(0.93 0 0);
+  --cal-week-header-control-bg: oklch(0.98 0 0);
+  --cal-week-header-control-border: oklch(0.9 0 0);
+  --cal-week-header-control-text: var(--cal-brand-zinc-700);
+  --cal-week-header-active-bg: oklch(0.95 0.02 250);
+  --cal-week-header-active-text: var(--cal-brand-blue);
+  --cal-week-header-active-underline: var(--cal-brand-blue);
 }
 
 .dark {
   --cal-today-bg: oklch(0.25 0.02 250);
   --cal-hover-bg: oklch(0.25 0 0);
+  --cal-week-header-bg: oklch(0.23 0.01 255);
+  --cal-week-header-text: var(--cal-brand-zinc-700);
+  --cal-week-header-text-muted: var(--cal-brand-zinc-500);
+  --cal-week-header-separator: oklch(0.31 0 0);
+  --cal-week-header-control-bg: oklch(0.24 0.01 255);
+  --cal-week-header-control-border: oklch(0.36 0 0);
+  --cal-week-header-control-text: var(--cal-brand-zinc-700);
+  --cal-week-header-active-bg: oklch(0.29 0.03 255);
+  --cal-week-header-active-text: var(--cal-brand-zinc-900);
+  --cal-week-header-active-underline: var(--cal-brand-blue);
 }
 
 /* ----------------------------------------------------------------------------
@@ -134,4 +154,13 @@
   --color-cal-event-text: var(--cal-event-text);
   --color-cal-hover-bg: var(--cal-hover-bg);
   --color-cal-focus-ring: var(--cal-focus-ring);
+  --color-cal-week-header-bg: var(--cal-week-header-bg);
+  --color-cal-week-header-text: var(--cal-week-header-text);
+  --color-cal-week-header-text-muted: var(--cal-week-header-text-muted);
+  --color-cal-week-header-separator: var(--cal-week-header-separator);
+  --color-cal-week-header-control-bg: var(--cal-week-header-control-bg);
+  --color-cal-week-header-control-border: var(--cal-week-header-control-border);
+  --color-cal-week-header-control-text: var(--cal-week-header-control-text);
+  --color-cal-week-header-active-bg: var(--cal-week-header-active-bg);
+  --color-cal-week-header-active-text: var(--cal-week-header-active-text);
 }
