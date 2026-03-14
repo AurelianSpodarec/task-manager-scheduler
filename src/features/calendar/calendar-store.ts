@@ -98,7 +98,12 @@ export function clearDragRender() {
 function isSameSlotCandidate(a: DragSlotCandidate | null, b: DragSlotCandidate | null): boolean {
   if (a === b) return true
   if (!a || !b) return false
-  return a.isoDay === b.isoDay && a.hour === b.hour && a.minute === b.minute
+  return (
+    a.isoDay === b.isoDay &&
+    a.hour === b.hour &&
+    a.minute === b.minute &&
+    Boolean(a.isAllDay) === Boolean(b.isAllDay)
+  )
 }
 
 function isSamePointer(a: DragPointer, b: DragPointer): boolean {

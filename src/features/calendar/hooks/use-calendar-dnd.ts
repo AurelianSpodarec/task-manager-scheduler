@@ -34,6 +34,7 @@ export type CalendarDragData = {
   durationMinutes?: number
   originalStart?: number
   originalEnd?: number
+  isAllDay?: boolean
 }
 
 export type SlotDropData = {
@@ -41,6 +42,7 @@ export type SlotDropData = {
   isoDay: string
   hour: number
   minute: number
+  isAllDay?: boolean
 }
 
 export function isCalendarDrag(data: Record<string, unknown>): data is CalendarDragData {
@@ -53,15 +55,17 @@ function isSlotTarget(data: Record<string, unknown>): data is SlotDropData {
 
 /** Build drag data for an existing calendar event. */
 export function makeEventDragData(event: CalendarEvent): CalendarDragData {
+  const durationMinutes = Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000))
   return {
     _type: DRAG_TYPE,
     source: 'calendar',
     eventId: event.id,
     title: event.title,
     color: event.color,
-    durationMinutes: Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / 60000)),
+    durationMinutes: event.isAllDay ? 60 : durationMinutes,
     originalStart: event.start.getTime(),
     originalEnd: event.end.getTime(),
+    isAllDay: event.isAllDay,
   }
 }
 
@@ -84,6 +88,11 @@ export function makeSidebarDragData(
 /** Build drop-target data for a time slot. */
 export function makeSlotData(isoDay: string, hour: number, minute: number): SlotDropData {
   return { _type: SLOT_TYPE, isoDay, hour, minute }
+}
+
+/** Build drop-target data for an all-day cell. */
+export function makeAllDaySlotData(isoDay: string): SlotDropData {
+  return { _type: SLOT_TYPE, isoDay, hour: 0, minute: 0, isAllDay: true }
 }
 
 function extractSlotTarget(dropTargets: Array<{ data: unknown }>): SlotDropData | null {
@@ -159,26 +168,36 @@ export function useCalendarDropMonitor() {
 
         const drag = source.data as CalendarDragData
         const day = new Date(slot.isoDay)
+        const isAllDayDrop = Boolean(slot.isAllDay)
         const targetStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
 
         if (drag.source === 'sidebar') {
           const mins = drag.durationMinutes ?? 60
+          const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
           const newEvent: CalendarEvent = {
             id: nextId(),
             title: drag.title ?? 'New Event',
             start: targetStart,
-            end: addMinutes(targetStart, mins),
-            isAllDay: mins >= 1440,
+            end,
+            isAllDay: isAllDayDrop || mins >= 1440,
             color: 'teal',
             status: 'pending',
             sourceTaskId: drag.eventId,
           }
           addEvent(newEvent)
-        } else if (drag.source === 'calendar' && drag.eventId && drag.originalStart && drag.originalEnd) {
-          const durationMs = drag.originalEnd - drag.originalStart
+        } else if (drag.source === 'calendar' && drag.eventId) {
+          const durationMs =
+            drag.originalStart != null && drag.originalEnd != null
+              ? Math.max(60_000, drag.originalEnd - drag.originalStart)
+              : Math.max(1, drag.durationMinutes ?? 60) * 60_000
+          const timedDurationMs = drag.isAllDay ? 60 * 60_000 : durationMs
+          const end = isAllDayDrop
+            ? addMinutes(targetStart, 1440)
+            : new Date(targetStart.getTime() + timedDurationMs)
           updateEvent(drag.eventId, {
             start: targetStart,
-            end: new Date(targetStart.getTime() + durationMs),
+            end,
+            isAllDay: isAllDayDrop,
           })
         }
       },

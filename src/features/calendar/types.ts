@@ -49,6 +49,7 @@ export type DragSlotCandidate = {
   isoDay: string
   hour: number
   minute: number
+  isAllDay?: boolean
 }
 
 export type DragPointer = {

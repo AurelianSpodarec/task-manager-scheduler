@@ -140,6 +140,7 @@ function getProjectedCard(
   isoDay: string,
 ) {
   if (!dragRender?.slot) return null
+  if (dragRender.slot.isAllDay) return null
   if (dragRender.slot.isoDay !== isoDay) return null
 
   const day = new Date(dragRender.slot.isoDay)

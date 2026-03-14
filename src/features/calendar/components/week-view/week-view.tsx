@@ -37,14 +37,14 @@ export function WeekView() {
       {/* Mobile: day strip selector */}
       <DayStripNav weekDays={weekDays} />
 
-      {/* Desktop: all-day row */}
-      <div role="rowgroup" className="hidden md:block">
-        <AllDayRow weekDays={weekDays} />
-      </div>
-
       {/* Desktop: fixed day header row */}
       <div role="rowgroup" className="hidden md:block">
         <DayHeaderRow weekDays={weekDays} weekLabel={weekLabel} />
+      </div>
+
+      {/* Desktop: all-day row */}
+      <div role="rowgroup" className="hidden md:block">
+        <AllDayRow weekDays={weekDays} />
       </div>
 
       {/* Scrollable time grid */}
