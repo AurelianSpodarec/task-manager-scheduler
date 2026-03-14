@@ -12,11 +12,11 @@ export type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving'
 
 /** Tailwind classes for sidebar cards and calendar event blocks */
 export const personalActivityStyles: Record<PersonalActivityType, string> = {
-  schoolRun: 'border-orange-200 bg-orange-50 text-orange-950',
-  lunch: 'border-rose-200 bg-rose-50 text-rose-950',
-  dentist: 'border-emerald-200 bg-emerald-50 text-emerald-950',
-  driving: 'border-indigo-200 bg-indigo-50 text-indigo-950',
-  gym: 'border-violet-200 bg-violet-50 text-violet-950',
+  schoolRun: 'border-orange-200 bg-orange-50 text-zinc-900',
+  lunch: 'border-rose-200 bg-rose-50 text-zinc-900',
+  dentist: 'border-emerald-200 bg-emerald-50 text-zinc-900',
+  driving: 'border-indigo-200 bg-indigo-50 text-zinc-900',
+  gym: 'border-violet-200 bg-violet-50 text-zinc-900',
 }
 
 export const personalActivityIcons: Record<PersonalActivityType, LucideIcon> = {
