@@ -94,11 +94,11 @@ export function TabsDemo() {
 function PlannerPage() {
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
+    <div className="mx-auto flex h-full w-full max-w-7xl flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
       <aside className="w-full rounded-lg border bg-card p-4 md:w-72 md:shrink-0">
         <TabsDemo />
       </aside>
-      <section className="min-h-[28rem] flex-1 rounded-lg border bg-card p-4 md:p-6">
+      <section className="h-full flex-1 rounded-lg border bg-card p-4 md:p-6">
         <h2 className="text-lg font-semibold text-card-foreground">Calendar</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Calendar view placeholder.

@@ -43,7 +43,7 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <header>
         <nav className="bg-gray-800 dark:bg-gray-800/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -195,9 +195,9 @@ function RootLayout() {
           </div>
         </nav>
       </header>
-      <main>
+      <main className="flex min-h-0 flex-1 flex-col">
         <Outlet />
       </main>
-    </>
+    </div>
   )
 }
