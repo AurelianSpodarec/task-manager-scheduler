@@ -1,11 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
   Briefcase,
   Backpack,
   CalendarDays,
   Car,
   Clock3,
   Dumbbell,
+  Minus,
   Repeat2,
   Stethoscope,
   Utensils,
@@ -57,6 +61,14 @@ const priorityBadgeLabel: Record<TaskPriority, string | null> = {
   medium: 'Medium',
   high: 'High',
   critical: 'Critical',
+}
+
+const priorityBadgeIcon: Record<TaskPriority, LucideIcon | null> = {
+  none: null,
+  low: ArrowDown,
+  medium: Minus,
+  high: ArrowUp,
+  critical: AlertTriangle,
 }
 
 const sidebarTasks: SidebarTask[] = [
@@ -164,51 +176,65 @@ const personalTasks: PersonalTask[] = [
 function SidebarTaskCard({ task }: { task: SidebarTask }) {
   const priorityClass = priorityBadgeClass[task.priority]
   const priorityLabel = priorityBadgeLabel[task.priority]
-  const hasDetailsRow = task.isRecurring || Boolean(priorityClass)
+  const PriorityIcon = priorityBadgeIcon[task.priority]
+  const hasStatusBadges = task.isRecurring || Boolean(priorityClass)
+  const metaToggleId = `compact-meta-${task.id}`
   return (
     <article className="rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 space-y-1">
+        <div className="min-w-0">
           <h3 className="line-clamp-2 text-[14px] leading-5 font-semibold text-zinc-900">
             {task.title}
           </h3>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-4 text-zinc-500">
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] leading-4 text-zinc-500">
             <span className="font-medium text-zinc-700">{task.clientName}</span>
             {task.dueDateLabel && (
               <>
                 <span aria-hidden="true">•</span>
-                <CalendarDays aria-hidden="true" className="size-3.5" />
-                <span>{task.dueDateLabel}</span>
+                <CalendarDays aria-hidden="true" className="size-3 text-zinc-400" />
+                <span className="font-medium text-zinc-500">{task.dueDateLabel}</span>
               </>
             )}
           </div>
         </div>
-        <div className="mt-0.5 flex shrink-0 items-center gap-1 text-[11px] font-medium text-zinc-500">
+        <div className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md bg-zinc-50 px-1.5 py-0.5 text-[11px] font-medium text-zinc-500">
           <Clock3 aria-hidden="true" className="size-3.5" />
-          <span>{task.duration}</span>
+          <span className="tabular-nums">{task.duration}</span>
         </div>
       </div>
-      {hasDetailsRow && (
+      {hasStatusBadges && (
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <input id={metaToggleId} type="checkbox" className="task-meta-toggle sr-only" />
           {task.isRecurring && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+            <label
+              htmlFor={metaToggleId}
+              className={cn(
+                'task-meta-badge inline-flex cursor-pointer items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-100'
+              )}
+              title="Toggle compact metadata labels"
+            >
               {task.recurringType === 'retainer' ? (
                 <Briefcase aria-hidden="true" className="size-3" />
               ) : (
                 <Repeat2 aria-hidden="true" className="size-3" />
               )}
-              <span>{task.recurringType === 'retainer' ? 'Retainer' : 'Recurring'}</span>
-            </span>
+              <span className="task-meta-label">
+                {task.recurringType === 'retainer' ? 'Retainer' : 'Recurring'}
+              </span>
+            </label>
           )}
-          {priorityClass && priorityLabel && (
-            <span
+          {priorityClass && priorityLabel && PriorityIcon && (
+            <label
+              htmlFor={metaToggleId}
               className={cn(
-                'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+                'task-meta-badge inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors',
                 priorityClass
               )}
+              title="Toggle compact metadata labels"
             >
-              {priorityLabel}
-            </span>
+              <PriorityIcon aria-hidden="true" className="size-3" />
+              <span className="task-meta-label">{priorityLabel}</span>
+            </label>
           )}
         </div>
       )}
@@ -239,17 +265,17 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
 }
 export function PlannerSidebar() {
   return (
-    <Tabs defaultValue="tasks" className="w-full gap-3">
-      <TabsList className="w-full rounded-xl bg-zinc-100 p-1">
+    <Tabs defaultValue="tasks" className="h-full min-h-0 w-full gap-3">
+      <TabsList className="w-full shrink-0 rounded-xl bg-zinc-100 p-1">
         <TabsTrigger value="tasks" className="h-8 rounded-lg px-3 py-0 text-[13px] font-medium data-active:bg-white data-active:shadow-[0_1px_2px_rgba(16,24,40,0.08)]">Tasks</TabsTrigger>
         <TabsTrigger value="personal" className="h-8 rounded-lg px-3 py-0 text-[13px] font-medium data-active:bg-white data-active:shadow-[0_1px_2px_rgba(16,24,40,0.08)]">Personal</TabsTrigger>
       </TabsList>
-      <TabsContent value="tasks" className="space-y-2.5">
+      <TabsContent value="tasks" className="sidebar-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
         {sidebarTasks.map((task) => (
           <SidebarTaskCard key={task.id} task={task} />
         ))}
       </TabsContent>
-      <TabsContent value="personal" className="space-y-2">
+      <TabsContent value="personal" className="sidebar-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
         {personalTasks.map((task) => (
           <PersonalTaskCard key={task.id} task={task} />
         ))}
@@ -272,11 +298,11 @@ function PlannerContent() {
 function PlannerPage() {
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch gap-2 md:flex-row md:gap-3">
-      <aside className="h-full min-h-0 w-full rounded-xl border border-zinc-200/80 bg-card p-4 md:w-[20.5rem] md:shrink-0">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-stretch gap-2 overflow-hidden md:flex-row md:gap-3">
+      <aside className="flex h-full min-h-0 w-full overflow-hidden rounded-xl border border-zinc-200/80 bg-card p-4 md:w-[20.5rem] md:shrink-0">
         <PlannerSidebar />
       </aside>
-      <section className="h-full min-h-0 flex-1 rounded-xl border border-zinc-200/80 bg-card p-4 md:p-6">
+      <section className="h-full min-h-0 flex-1 overflow-auto rounded-xl border border-zinc-200/80 bg-card p-4 md:p-6">
         <PlannerContent />
       </section>
     </div>

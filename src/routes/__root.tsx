@@ -15,7 +15,7 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <div className="flex h-dvh min-h-0 flex-col bg-zinc-100/70">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-100/70">
       <header className="shrink-0">
         <nav className="border-b border-zinc-200/80 bg-white/95 backdrop-blur-sm">
           <div className="w-full px-3 sm:px-4 lg:px-6">
@@ -68,7 +68,7 @@ function RootLayout() {
           </div>
         </nav>
       </header>
-      <main className="flex min-h-0 flex-1 flex-col bg-zinc-100/70 px-2 pb-2 md:px-3 md:pb-3">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-zinc-100/70 px-2 pb-2 md:px-3 md:pb-3">
         <Outlet />
       </main>
     </div>
