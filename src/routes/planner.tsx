@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import type { TaskPriority } from "@/lib/priority"
-import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon, priorityLeftBorderColor } from "@/lib/priority"
+import { priorityLeftBorderColor } from "@/lib/priority"
 import {
   personalActivityStyles,
   personalActivityIcons,
@@ -157,11 +157,8 @@ function parseDurationMinutes(dur: string): number {
 function SidebarTaskCard({ task }: { task: SidebarTask }) {
   const roundedDurationMinutes = parseDurationMinutes(task.duration)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
-  const priorityClass = priorityBadgeClass[task.priority]
-  const priorityLabel = priorityBadgeLabel[task.priority]
-  const PriorityIcon = priorityBadgeIcon[task.priority]
   const priorityBorderColor = priorityLeftBorderColor[task.priority]
-  const hasStatusBadges = task.isRecurring || Boolean(priorityClass)
+  const hasStatusBadges = task.isRecurring
   const metaToggleId = `compact-meta-${task.id}`
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -234,19 +231,6 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
               <span className="task-meta-label">
                 {task.recurringType === 'retainer' ? 'Retainer' : 'Recurring'}
               </span>
-            </label>
-          )}
-          {priorityClass && priorityLabel && PriorityIcon && (
-            <label
-              htmlFor={metaToggleId}
-              className={cn(
-                'task-meta-badge inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors',
-                priorityClass
-              )}
-              title="Toggle compact metadata labels"
-            >
-              <PriorityIcon aria-hidden="true" className="size-3" />
-              <span className="task-meta-label">{priorityLabel}</span>
             </label>
           )}
         </div>

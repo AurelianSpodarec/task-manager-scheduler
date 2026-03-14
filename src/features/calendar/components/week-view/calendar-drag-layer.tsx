@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { useDragRender } from '../../calendar-store'
 import { EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
-import { priorityBadgeClass, priorityBadgeLabel, priorityBadgeIcon, priorityLeftBorderColor } from '@/lib/priority'
+import { priorityLeftBorderColor } from '@/lib/priority'
 import {
   personalActivityStyles,
   personalActivityIcons,
@@ -49,11 +49,8 @@ export function CalendarDragLayer() {
 
 /** Sidebar task card — 1:1 clone of SidebarTaskCard */
 function TaskPreview({ drag, meta, width }: { drag: DragRenderState; meta: TaskDragMeta; width: number; height: number }) {
-  const pClass = priorityBadgeClass[meta.priority]
-  const pLabel = priorityBadgeLabel[meta.priority]
-  const PIcon = priorityBadgeIcon[meta.priority]
   const priorityBorderColor = priorityLeftBorderColor[meta.priority]
-  const hasStatusBadges = meta.isRecurring || Boolean(pClass)
+  const hasStatusBadges = meta.isRecurring
 
   return (
     <div
@@ -91,12 +88,6 @@ function TaskPreview({ drag, meta, width }: { drag: DragRenderState; meta: TaskD
                 <Repeat2 aria-hidden="true" className="size-3" />
               )}
               <span>{meta.recurringType === 'retainer' ? 'Retainer' : 'Recurring'}</span>
-            </span>
-          )}
-          {pClass && pLabel && PIcon && (
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${pClass}`}>
-              <PIcon aria-hidden="true" className="size-3" />
-              <span>{pLabel}</span>
             </span>
           )}
         </div>
