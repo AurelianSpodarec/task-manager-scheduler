@@ -3,9 +3,9 @@ import { X, SendHorizonal } from 'lucide-react'
 import { addDays, setHours, setMinutes, startOfDay, startOfWeek } from 'date-fns'
 import { cn } from '@/lib/utils'
 import crystalSplash from '@/assets/crystal-splash.gif'
-import { upsertTask } from '@/database/db'
 import type { Task } from '@/database/schema'
 import type { EventColor, EventPriority } from '@/features/calendar/types'
+import { scheduleTask, spawnScheduledTask, getUnscheduledTasks } from '@/services/task-service'
 import './chat.css'
 
 type ChatMessage = {
@@ -78,7 +78,7 @@ function rand<T>(arr: readonly T[]): T {
  * - One dentist appointment
  * - Work tasks filling the remaining gaps
  */
-function generateWeekTasks(): Task[] {
+export function generateWeekTasks(): Task[] {
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
   const days      = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i))
 
@@ -168,6 +168,73 @@ function generateWeekTasks(): Task[] {
   }
 
   return tasks
+}
+
+// ── Sidebar-aware week scheduling ─────────────────────────────────────────
+type ScheduleAction =
+  | { kind: 'schedule'; taskId: string; start: Date; end: Date }
+  | { kind: 'spawn'; templateId: string; start: Date; end: Date }
+
+/**
+ * Build a Mon–Fri schedule using actual sidebar tasks:
+ * - Personal activities are spawned from their templates
+ * - Work tasks are pulled from the unscheduled sidebar pool
+ */
+function generateWeekSchedule(): ScheduleAction[] {
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i))
+
+  const schoolDayIdx = Math.floor(Math.random() * 4)
+  const dentistDayIdx = rand([0, 1, 2, 3, 4].filter(i => i !== schoolDayIdx))
+
+  const workPool = [...getUnscheduledTasks('work')].sort(() => Math.random() - 0.5)
+  let wi = 0
+  const actions: ScheduleAction[] = []
+
+  function spawn(templateId: string, start: Date, end: Date) {
+    actions.push({ kind: 'spawn', templateId, start, end })
+  }
+
+  function scheduleNext(start: Date, end: Date) {
+    if (wi >= workPool.length) return
+    actions.push({ kind: 'schedule', taskId: workPool[wi++].id, start, end })
+  }
+
+  for (let di = 0; di < 5; di++) {
+    const base = startOfDay(days[di])
+    const isSchoolDay = di === schoolDayIdx
+    const hasDentist = di === dentistDayIdx
+
+    // Morning: school run OR commute
+    if (isSchoolDay) {
+      spawn('personal-school-run', at(base, 8), at(base, 9))
+    } else {
+      const mStart = at(base, Math.random() < 0.5 ? 6 : 7, Math.random() < 0.5 ? 0 : 30)
+      spawn('personal-driving', mStart, new Date(mStart.getTime() + 90 * 60_000))
+    }
+
+    // Morning work — shortened on dentist days
+    if (hasDentist) {
+      scheduleNext(at(base, 9, 15), at(base, 10, 15))
+      spawn('personal-dentist', at(base, 10, 30), at(base, 11, 30))
+    } else {
+      scheduleNext(at(base, 9, 15), at(base, 11, 30))
+    }
+
+    // Lunch
+    const lStart = at(base, 12, Math.random() < 0.6 ? 0 : 30)
+    spawn('personal-lunch', lStart, new Date(lStart.getTime() + 60 * 60_000))
+
+    // Afternoon work (two blocks)
+    scheduleNext(at(base, 13, 30), at(base, 15))
+    scheduleNext(at(base, 15, 15), at(base, 17))
+
+    // Evening commute
+    const eStart = at(base, 17, Math.random() < 0.5 ? 0 : 30)
+    spawn('personal-driving', eStart, new Date(eStart.getTime() + 90 * 60_000))
+  }
+
+  return actions
 }
 
 function LaserLogo({ className }: { className?: string }) {
@@ -316,15 +383,18 @@ export function ChatWidget() {
       setInput('')
 
       if (chatPhase === 'greeting') {
-        const weekTasks = generateWeekTasks()
+        const actions = generateWeekSchedule()
 
         // Show thinking indicator immediately
         setIsThinking(true)
 
-        // Drip each task onto the calendar ~350ms apart so it visibly fills up
-        const interval = 2400 / weekTasks.length
-        weekTasks.forEach((task, i) => {
-          setTimeout(() => upsertTask(task), i * interval)
+        // Drip each action onto the calendar so it visibly fills up
+        const interval = 2400 / actions.length
+        actions.forEach((a, i) => {
+          setTimeout(() => {
+            if (a.kind === 'spawn') spawnScheduledTask(a.templateId, a.start, a.end, false)
+            else scheduleTask(a.taskId, a.start, a.end, false)
+          }, i * interval)
         })
 
         // Once the last task has landed, kill the thinking bubble and stream reply
