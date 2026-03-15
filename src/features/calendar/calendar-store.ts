@@ -12,6 +12,7 @@ export {
 // --- Config (locale, time format, visible days, work hours, slot duration) ---
 export {
   type CalendarConfig,
+  type CalendarEventHandlers,
   applyConfig,
   setSlotDuration, getSlotDuration,
   setWorkHours, useWorkHours,
@@ -49,6 +50,6 @@ export {
 } from './stores/event-store'
 
 // --- Data adapter ---
-export { type CalendarDataSource, setDataSource, getDataSource, SyncDbDataSource } from './data'
+export { type CalendarDataSource, setDataSource, getDataSource } from './data'
 
 export { isWithinWorkHours } from './utils/work-hours'

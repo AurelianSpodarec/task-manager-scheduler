@@ -1,4 +1,5 @@
-import type { CalendarEvent, EventColor, EventPriority, TaskDragMeta, PersonalDragMeta } from '../types'
+import type { ComponentType, CSSProperties } from 'react'
+import type { CalendarEvent, EventColor } from '../types'
 import { getSlotDuration } from '../config'
 import { DRAG_TYPE, SLOT_TYPE, roundUpToIncrement, type CalendarDragData, type SlotDropData } from './types'
 
@@ -17,23 +18,23 @@ export function makeEventDragData(event: CalendarEvent): CalendarDragData {
     originalStart: event.start.getTime(),
     originalEnd: event.end.getTime(),
     isAllDay: event.isAllDay,
-    priority: event.priority,
-    personalActivityType: event.personalActivityType,
-    eventMeta: { status: event.status, priority: event.priority },
+    className: event.className,
+    style: event.style,
+    icon: event.icon,
   }
 }
 
-/** Build drag data for a sidebar task. */
+/** Build drag data for a sidebar task. Consumer provides visual fields + opaque dragMeta. */
 export function makeSidebarDragData(
   taskId: string,
   title: string,
   durationMinutes: number,
-  priority: EventPriority = 'none',
   meta?: {
-    taskMeta?: TaskDragMeta
-    personalMeta?: PersonalDragMeta
     color?: EventColor
-    personalActivityType?: string
+    className?: string
+    style?: CSSProperties
+    icon?: ComponentType<{ className?: string }>
+    dragMeta?: unknown
   },
 ): CalendarDragData {
   const slotDuration = getSlotDuration()
@@ -45,10 +46,10 @@ export function makeSidebarDragData(
     title,
     color: meta?.color ?? 'teal',
     durationMinutes: snappedDurationMinutes,
-    priority,
-    personalActivityType: meta?.personalActivityType,
-    taskMeta: meta?.taskMeta,
-    personalMeta: meta?.personalMeta,
+    className: meta?.className,
+    style: meta?.style,
+    icon: meta?.icon,
+    dragMeta: meta?.dragMeta,
   }
 }
 

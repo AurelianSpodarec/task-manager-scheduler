@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useWeekStartsOn } from '../calendar-store'
 import { getWeekDays } from '../utils/date'
 import { useFormatTime } from '../hooks/use-format-time'
@@ -32,37 +31,37 @@ export function CalendarHeader() {
       </div>
 
       <div className="flex items-center gap-1.5">
-        <Button
-          variant="outline"
-          size="sm"
+        <button
+          type="button"
           onClick={goToday}
           aria-label="Go to today"
+          className="inline-flex h-7 items-center rounded-md border border-cal-grid-line bg-cal-bg px-2.5 text-[13px] font-medium text-cal-text transition-colors hover:bg-cal-bg-subtle"
         >
           Today
-        </Button>
+        </button>
 
         <div className="mx-1 flex items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="icon-sm"
+          <button
+            type="button"
             onClick={goPrev}
             aria-label={`Previous ${view}`}
+            className="inline-flex size-7 items-center justify-center rounded-md text-cal-text-muted transition-colors hover:bg-cal-bg-subtle hover:text-cal-text"
           >
             <ChevronLeft className="size-4" />
-          </Button>
+          </button>
 
           <span className="hidden min-w-[12rem] text-center text-[13px] font-medium text-cal-text tabular-nums sm:inline">
             {rangeLabel}
           </span>
 
-          <Button
-            variant="ghost"
-            size="icon-sm"
+          <button
+            type="button"
             onClick={goNext}
             aria-label={`Next ${view}`}
+            className="inline-flex size-7 items-center justify-center rounded-md text-cal-text-muted transition-colors hover:bg-cal-bg-subtle hover:text-cal-text"
           >
             <ChevronRight className="size-4" />
-          </Button>
+          </button>
         </div>
       </div>
     </header>

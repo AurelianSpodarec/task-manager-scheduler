@@ -1,4 +1,5 @@
-import type { EventColor, EventStatus, EventPriority } from './calendar'
+import type { ComponentType, CSSProperties } from 'react'
+import type { EventColor } from './calendar'
 
 export type DragSource = 'sidebar' | 'calendar'
 
@@ -24,25 +25,7 @@ export type DragPointer = {
   clientY: number
 }
 
-export type TaskDragMeta = {
-  clientName: string
-  dueDateLabel: string | null
-  isRecurring: boolean
-  recurringType?: 'standard' | 'retainer'
-  durationLabel: string
-  priority: EventPriority
-}
-
-export type PersonalDragMeta = {
-  activityType: string
-  durationLabel: string
-}
-
-export type EventDragMeta = {
-  status: EventStatus
-  priority: EventPriority
-}
-
+/** Render state for the active drag — drives ghost cards and the floating preview. */
 export type DragRenderState = {
   source: DragSource
   eventId?: string
@@ -56,8 +39,12 @@ export type DragRenderState = {
   elementSize: { width: number; height: number }
   slot: DragSlotCandidate | null
   sidebarDropHovered: boolean
-  personalActivityType?: string
-  taskMeta?: TaskDragMeta
-  personalMeta?: PersonalDragMeta
-  eventMeta?: EventDragMeta
+  /** Consumer-provided CSS classes for the dragged event */
+  className?: string
+  /** Consumer-provided inline styles for the dragged event */
+  style?: CSSProperties
+  /** Consumer-provided icon component for the dragged event */
+  icon?: ComponentType<{ className?: string }>
+  /** Opaque consumer data — passed through to renderDragPreview */
+  dragMeta?: unknown
 }

@@ -1,15 +1,24 @@
 import { useSyncExternalStore } from 'react'
 import type { Task, TaskType } from '@/database/schema'
-import type { CalendarEvent } from '@/features/calendar/types'
+import type { CalendarEvent } from '@/features/calendar'
 import { getAllTasks, getTask, upsertTask, deleteTask, subscribe, getSnapshot } from '@/database/db'
+import { priorityLeftBorderColor } from '@/lib/priority'
+import {
+  personalActivityStyles,
+  personalActivityIcons,
+  type PersonalActivityType,
+} from '@/lib/personal-activity'
 
 // ---------------------------------------------------------------------------
 // Task → CalendarEvent adapter
 // ---------------------------------------------------------------------------
 
-/** Converts a scheduled Task into the CalendarEvent shape the calendar components expect. */
+/** Maps a scheduled Task into the CalendarEvent shape — consumer owns all visual treatment. */
 export function toCalendarEvent(task: Task): CalendarEvent {
   const s = task.schedule!
+  const isPersonal = task.personalActivityType != null
+  const activityType = task.personalActivityType as PersonalActivityType | undefined
+
   return {
     id: task.id,
     title: task.title,
@@ -17,10 +26,13 @@ export function toCalendarEvent(task: Task): CalendarEvent {
     end: new Date(s.end),
     isAllDay: s.isAllDay,
     color: task.color,
-    status: task.status,
-    priority: task.priority,
-    participants: task.participants,
-    personalActivityType: task.personalActivityType,
+    className: isPersonal && activityType
+      ? personalActivityStyles[activityType]
+      : 'border-zinc-200 bg-white hover:border-zinc-300',
+    style: isPersonal
+      ? undefined
+      : { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
+    icon: activityType ? personalActivityIcons[activityType] : undefined,
   }
 }
 

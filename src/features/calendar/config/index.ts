@@ -1,5 +1,6 @@
 export {
   type CalendarConfig,
+  type CalendarEventHandlers,
   DEFAULT_CONFIG,
   applyConfig,
   setWeekStartsOn,

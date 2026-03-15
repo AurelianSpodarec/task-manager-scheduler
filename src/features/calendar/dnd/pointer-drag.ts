@@ -1,5 +1,5 @@
 import { setDragState, setDragRender, clearDragRender, updateDragRenderFrame } from '../stores/drag-store'
-import { unscheduleTask, deleteScheduledTask } from '@/services/task-service'
+import { getConfig } from '../config'
 import { HOUR_HEIGHT_PX } from '../constants'
 import { cacheColumnRects, clearColumnRects, resolveSlotFromPointer, isOverSidebar } from './geometry'
 import { executeDrop } from './drop-handler'
@@ -51,7 +51,6 @@ export function startPointerDrag(
       durationMinutes: dragData.durationMinutes,
       originalStart: dragData.originalStart,
       originalEnd: dragData.originalEnd,
-      personalActivityType: dragData.personalActivityType,
       pointer: { clientX: startX, clientY: startY },
       pointerOffset: {
         x: Math.max(0, Math.min(rect.width, startX - rect.left)),
@@ -60,9 +59,10 @@ export function startPointerDrag(
       elementSize: { width: rect.width, height: rect.height },
       slot: resolveSlotFromPointer(startX, startY),
       sidebarDropHovered: false,
-      taskMeta: dragData.taskMeta,
-      personalMeta: dragData.personalMeta,
-      eventMeta: dragData.eventMeta,
+      className: dragData.className,
+      style: dragData.style,
+      icon: dragData.icon,
+      dragMeta: dragData.dragMeta,
     })
     callbacks.onDragStart?.()
   }
@@ -94,13 +94,9 @@ export function startPointerDrag(
     const overSidebar = isOverSidebar(ev.clientX, ev.clientY)
     const slot = overSidebar ? null : resolveSlotFromPointer(ev.clientX, ev.clientY)
 
-    // Calendar → sidebar: personal clones get deleted, work tasks get unscheduled
+    // Calendar → sidebar: consumer decides unschedule vs delete
     if (overSidebar && dragData.source === 'calendar' && dragData.eventId) {
-      if (dragData.personalActivityType != null) {
-        deleteScheduledTask(dragData.eventId)
-      } else {
-        unscheduleTask(dragData.eventId)
-      }
+      getConfig().eventHandlers.onEventRemove(dragData.eventId)
     } else {
       executeDrop(dragData, slot)
     }

@@ -4,7 +4,7 @@ import { addDays, setHours, setMinutes, startOfDay, startOfWeek } from 'date-fns
 import { cn } from '@/lib/utils'
 import crystalSplash from '@/assets/crystal-splash.gif'
 import type { Task } from '@/database/schema'
-import type { EventColor, EventPriority } from '@/features/calendar/types'
+import type { EventColor, EventPriority } from '@/types/shared'
 import { scheduleTask, spawnScheduledTask, getUnscheduledTasks } from '@/services/task-service'
 import './chat.css'
 

@@ -1,5 +1,6 @@
-import type { EventColor, EventStatus, EventPriority, Participant } from '@/types/shared'
-export type { EventColor, EventStatus, EventPriority, Participant }
+import type { ComponentType, CSSProperties } from 'react'
+import type { EventColor } from '@/types/shared'
+export type { EventColor }
 
 export type WorkHoursConfig = {
   startHour: number
@@ -14,6 +15,11 @@ export type ViewMode = 'week' | 'month'
 
 export type SlotDuration = 15 | 30 | 60
 
+/**
+ * Calendar-level event — layout + consumer-provided visuals.
+ * Domain fields (status, priority, etc.) live in the consumer's data model
+ * and are mapped to className/style/icon when building events.
+ */
 export type CalendarEvent = {
   id: string
   title: string
@@ -21,14 +27,12 @@ export type CalendarEvent = {
   end: Date
   isAllDay: boolean
   color: EventColor
-  status: EventStatus
-  priority: EventPriority
-  description?: string
-  participants?: Participant[]
-  /** Source sidebar task ID — links back to the task pool */
-  sourceTaskId?: string
-  /** Set for personal activities — drives icon + colored styling on the calendar */
-  personalActivityType?: string
+  /** Consumer CSS classes applied to the event card */
+  className?: string
+  /** Consumer inline styles (borders, backgrounds, etc.) */
+  style?: CSSProperties
+  /** Consumer-provided leading icon component */
+  icon?: ComponentType<{ className?: string }>
 }
 
 export type TimeSlot = {

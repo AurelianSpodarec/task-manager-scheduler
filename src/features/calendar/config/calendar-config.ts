@@ -1,11 +1,24 @@
 import { useSyncExternalStore } from 'react'
+import type { ReactNode } from 'react'
 import type { Locale } from 'date-fns'
 import { enUS } from 'date-fns/locale'
-import type { SlotDuration, WorkHoursConfig, WeekStartDay } from '../types'
+import type { SlotDuration, WorkHoursConfig, WeekStartDay, DragRenderState } from '../types'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+export type CalendarEventHandlers = {
+  onEventDrop: (eventId: string, start: Date, end: Date, isAllDay: boolean) => void
+  onEventMove: (eventId: string, start: Date, end: Date, isAllDay: boolean) => void
+  onEventRemove: (eventId: string) => void
+}
+
+const NOOP_HANDLERS: CalendarEventHandlers = {
+  onEventDrop: () => {},
+  onEventMove: () => {},
+  onEventRemove: () => {},
+}
+
 export type CalendarConfig = {
   locale: Locale
   use24HourTime: boolean
@@ -16,6 +29,9 @@ export type CalendarConfig = {
   dayStartHour: number
   dayEndHour: number
   visibleStartHour: number
+  eventHandlers: CalendarEventHandlers
+  /** Consumer-provided floating drag preview. Calendar falls back to a minimal default. */
+  renderDragPreview?: (drag: DragRenderState) => ReactNode
 }
 
 // ---------------------------------------------------------------------------
@@ -31,6 +47,7 @@ export const DEFAULT_CONFIG: CalendarConfig = {
   dayStartHour: 0,
   dayEndHour: 24,
   visibleStartHour: 7,
+  eventHandlers: NOOP_HANDLERS,
 }
 
 // ---------------------------------------------------------------------------

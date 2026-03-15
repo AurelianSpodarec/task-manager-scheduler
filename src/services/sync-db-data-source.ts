@@ -1,11 +1,10 @@
 import { subscribe as dbSubscribe, getSnapshot as dbGetSnapshot } from '@/database/db'
 import { toCalendarEvent } from '@/services/task-service'
-import type { CalendarEvent } from '../types'
-import type { CalendarDataSource } from './calendar-data-source'
+import type { CalendarEvent, CalendarDataSource } from '@/features/calendar'
 
 /**
- * Default data source — reads directly from the in-memory sync DB.
- * Zero runtime change from the previous hardwired setup.
+ * App-level data source — reads directly from the in-memory sync DB
+ * and maps Task → CalendarEvent via the consumer's toCalendarEvent adapter.
  */
 export class SyncDbDataSource implements CalendarDataSource {
   loading = false as const

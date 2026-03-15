@@ -1,4 +1,5 @@
-import type { EventColor, EventPriority, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../types'
+import type { ComponentType, CSSProperties } from 'react'
+import type { EventColor } from '../types'
 
 export const DRAG_TYPE = 'calendar-drag' as const
 export const SLOT_TYPE = 'calendar-slot' as const
@@ -13,12 +14,15 @@ export type CalendarDragData = {
   originalStart?: number
   originalEnd?: number
   isAllDay?: boolean
-  priority?: EventPriority
-  personalActivityType?: string
-  taskMeta?: TaskDragMeta
-  personalMeta?: PersonalDragMeta
-  eventMeta?: EventDragMeta
   grabOffsetY?: number
+  /** Consumer-provided CSS classes */
+  className?: string
+  /** Consumer-provided inline styles */
+  style?: CSSProperties
+  /** Consumer-provided icon component */
+  icon?: ComponentType<{ className?: string }>
+  /** Opaque consumer data — passed to renderDragPreview */
+  dragMeta?: unknown
 }
 
 export type SlotDropData = {

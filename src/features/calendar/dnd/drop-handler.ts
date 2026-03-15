@@ -1,13 +1,13 @@
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
-import { getSlotDuration } from '../config'
+import { getSlotDuration, getConfig } from '../config'
 import { HOUR_HEIGHT_PX } from '../constants'
-import { scheduleTask, moveScheduledTask, spawnScheduledTask } from '@/services/task-service'
 import { roundUpToIncrement, type CalendarDragData, type SlotDropData } from './types'
 
 export function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
   if (!slot) return
 
+  const { eventHandlers } = getConfig()
   const day = new Date(slot.isoDay)
   const isAllDayDrop = Boolean(slot.isAllDay)
   const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
@@ -22,11 +22,7 @@ export function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): 
     const mins = roundUpToIncrement(drag.durationMinutes ?? 60, slotDur)
     const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
     const allDay = isAllDayDrop || mins >= 1440
-    if (drag.personalActivityType != null) {
-      spawnScheduledTask(drag.eventId, targetStart, end, allDay)
-    } else {
-      scheduleTask(drag.eventId, targetStart, end, allDay)
-    }
+    eventHandlers.onEventDrop(drag.eventId, targetStart, end, allDay)
   } else if (drag.source === 'calendar' && drag.eventId) {
     const durationMinutes =
       drag.originalStart != null && drag.originalEnd != null
@@ -37,6 +33,6 @@ export function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): 
     const end = isAllDayDrop
       ? addMinutes(targetStart, 1440)
       : addMinutes(targetStart, timedDurationMinutes)
-    moveScheduledTask(drag.eventId, targetStart, end, isAllDayDrop)
+    eventHandlers.onEventMove(drag.eventId, targetStart, end, isAllDayDrop)
   }
 }

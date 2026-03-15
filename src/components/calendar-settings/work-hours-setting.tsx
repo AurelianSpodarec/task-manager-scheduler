@@ -7,10 +7,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useWorkHours, setWorkHours, useWeekStartsOn, setWeekStartsOn, useConfigLocale } from '../calendar-store'
-import { getOrderedWeekDays } from '../utils/date'
-import { useFormatTime } from '../hooks/use-format-time'
-import type { WeekStartDay } from '../types'
+import {
+  useWorkHours,
+  setWorkHours,
+  useWeekStartsOn,
+  setWeekStartsOn,
+  useConfigLocale,
+  useFormatTime,
+  type WeekStartDay,
+  getOrderedWeekDays,
+} from '@/features/calendar'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
