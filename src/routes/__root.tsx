@@ -24,7 +24,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const navigate = useNavigate()
   return (
-    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-100/70">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-100">
       <header className="h-[42px] shrink-0">
         <nav className="h-full bg-zinc-100/70 backdrop-blur-sm">
           <div className="h-full w-full px-3 sm:px-4 lg:px-6">
