@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Task, TaskType } from '@/database/schema'
 import type { CalendarEvent } from '@/features/calendar'
+import type { EventStatus } from '@/types/shared'
 import { getAllTasks, getTask, upsertTask, deleteTask, subscribe, getSnapshot } from '@/database/db'
 import { priorityLeftBorderColor } from '@/lib/priority'
 import {
@@ -117,6 +118,15 @@ export function spawnScheduledTask(
 /** Remove a spawned calendar clone — personal drags back to sidebar just delete the copy. */
 export function deleteScheduledTask(id: string): void {
   deleteTask(id)
+}
+
+/** Toggle task completion status and return the updated value. */
+export function toggleTaskStatus(id: string): EventStatus | null {
+  const task = getTask(id)
+  if (!task) return null
+  const status: EventStatus = task.status === 'completed' ? 'pending' : 'completed'
+  upsertTask({ ...task, status })
+  return status
 }
 
 // ---------------------------------------------------------------------------
