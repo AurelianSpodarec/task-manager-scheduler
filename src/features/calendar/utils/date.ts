@@ -21,20 +21,20 @@ import {
   differenceInMinutes,
   startOfDay,
 } from 'date-fns'
-import type { SlotDuration, TimeSlot } from '../types'
+import type { SlotDuration, TimeSlot, WeekStartDay } from '../types'
 
-/** Returns 7 days (Sun–Sat) for the week containing `date`. */
-export function getWeekDays(date: Date): Date[] {
-  const start = startOfWeek(date, { weekStartsOn: 0 })
-  return eachDayOfInterval({ start, end: endOfWeek(date, { weekStartsOn: 0 }) })
+/** Returns 7 days for the week containing `date`, ordered by `weekStartsOn`. */
+export function getWeekDays(date: Date, weekStartsOn: WeekStartDay = 1): Date[] {
+  const start = startOfWeek(date, { weekStartsOn })
+  return eachDayOfInterval({ start, end: endOfWeek(date, { weekStartsOn }) })
 }
 
 /** Returns a 6×7 grid of days for the month view. Pads with adjacent month days. */
-export function getMonthGrid(date: Date): Date[][] {
+export function getMonthGrid(date: Date, weekStartsOn: WeekStartDay = 1): Date[][] {
   const monthStart = startOfMonth(date)
   const monthEnd = endOfMonth(date)
-  const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 })
-  const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
+  const gridStart = startOfWeek(monthStart, { weekStartsOn })
+  const gridEnd = endOfWeek(monthEnd, { weekStartsOn })
 
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd })
 
@@ -109,8 +109,8 @@ export function formatDayHeader(date: Date): string {
   return format(date, 'dd')
 }
 
-export function formatWeekOfYear(date: Date): string {
-  const weekNumber = getWeek(date, { weekStartsOn: 0, firstWeekContainsDate: 1 })
+export function formatWeekOfYear(date: Date, weekStartsOn: WeekStartDay = 1): string {
+  const weekNumber = getWeek(date, { weekStartsOn, firstWeekContainsDate: 1 })
   return `W ${weekNumber}`
 }
 

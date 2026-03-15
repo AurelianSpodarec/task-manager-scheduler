@@ -5,14 +5,16 @@ import {
   useActiveDate,
   setActiveDate,
   navigateToToday,
+  useWeekStartsOn,
 } from '../calendar-store'
 import { getWeekDays, navigateWeek, navigateMonth, formatDateRange, format } from '../utils/date'
 
 export function CalendarHeader() {
   const view = useCalendarView()
   const activeDate = useActiveDate()
+  const weekStartsOn = useWeekStartsOn()
 
-  const weekDays = getWeekDays(activeDate)
+  const weekDays = getWeekDays(activeDate, weekStartsOn)
   const rangeLabel =
     view === 'week'
       ? formatDateRange(weekDays[0], weekDays[6])

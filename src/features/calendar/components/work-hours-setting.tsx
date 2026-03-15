@@ -7,14 +7,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useWorkHours, setWorkHours } from '../calendar-store'
-import { WEEK_DAY_LABELS } from '../constants'
+import { useWorkHours, setWorkHours, useWeekStartsOn, setWeekStartsOn } from '../calendar-store'
+import { getOrderedWeekDays } from '../constants'
 import { formatHour } from '../utils/date'
+import type { WeekStartDay } from '../types'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
 export function WorkHoursSetting() {
   const workHours = useWorkHours()
+  const weekStartsOn = useWeekStartsOn()
+  const orderedDays = getOrderedWeekDays(weekStartsOn)
 
   function handleStartChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setWorkHours({ ...workHours, startHour: Number(e.target.value) })
@@ -60,13 +63,13 @@ export function WorkHoursSetting() {
 
         {/* Day-of-week toggles */}
         <div className="mt-3 flex gap-1">
-          {WEEK_DAY_LABELS.map((label, i) => {
-            const active = workHours.daysOfWeek.includes(i)
+          {orderedDays.map(({ label, dayIndex }) => {
+            const active = workHours.daysOfWeek.includes(dayIndex)
             return (
               <button
-                key={i}
+                key={dayIndex}
                 type="button"
-                onClick={() => toggleDay(i)}
+                onClick={() => toggleDay(dayIndex)}
                 className={`flex size-7 items-center justify-center rounded-md text-[11px] font-medium transition-colors ${
                   active
                     ? 'bg-cal-today-text text-white'
@@ -79,6 +82,35 @@ export function WorkHoursSetting() {
               </button>
             )
           })}
+        </div>
+
+        <DropdownMenuSeparator className="my-2" />
+
+        {/* Week start toggle */}
+        <DropdownMenuLabel className="px-0 text-xs font-semibold text-cal-text">
+          Week Starts On
+        </DropdownMenuLabel>
+        <div className="mt-1.5 flex gap-1">
+          {([{ value: 1 as WeekStartDay, label: 'Monday' }, { value: 0 as WeekStartDay, label: 'Sunday' }]).map(
+            ({ value, label }) => {
+              const active = weekStartsOn === value
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setWeekStartsOn(value)}
+                  className={`flex-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                    active
+                      ? 'bg-cal-today-text text-white'
+                      : 'bg-cal-bg-subtle text-cal-text-muted hover:text-cal-text'
+                  }`}
+                  aria-pressed={active}
+                >
+                  {label}
+                </button>
+              )
+            },
+          )}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -5,6 +5,8 @@ export type WorkHoursConfig = {
   daysOfWeek: number[]
 }
 
+export type WeekStartDay = 0 | 1
+
 export type ViewMode = 'week' | 'month'
 
 export type SlotDuration = 15 | 30 | 60

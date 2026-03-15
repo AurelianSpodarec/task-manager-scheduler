@@ -8,6 +8,7 @@ import type {
   DragPointer,
   DragSlotCandidate,
   WorkHoursConfig,
+  WeekStartDay,
 } from './types'
 import { DEFAULT_SLOT_DURATION, DEFAULT_WORK_HOURS } from './constants'
 import { isSameDay, startOfDay } from './utils/date'
@@ -22,6 +23,7 @@ type CalendarState = {
   activeDate: Date
   slotDuration: SlotDuration
   workHours: WorkHoursConfig
+  weekStartsOn: WeekStartDay
   dragState: DragPayload | null
   dragRender: DragRenderState | null
   mobileFocusDay: number
@@ -32,15 +34,23 @@ type CalendarState = {
 // ---------------------------------------------------------------------------
 // Internal store singleton
 // ---------------------------------------------------------------------------
+/** Column index of today relative to the week start */
+function todayColumnIndex(weekStartsOn: WeekStartDay): number {
+  return (new Date().getDay() - weekStartsOn + 7) % 7
+}
+
+const DEFAULT_WEEK_STARTS_ON: WeekStartDay = 1
+
 let state: CalendarState = {
   events: seedEvents(),
   view: 'week',
   activeDate: new Date(),
   slotDuration: DEFAULT_SLOT_DURATION,
   workHours: DEFAULT_WORK_HOURS,
+  weekStartsOn: DEFAULT_WEEK_STARTS_ON,
   dragState: null,
   dragRender: null,
-  mobileFocusDay: new Date().getDay(),
+  mobileFocusDay: todayColumnIndex(DEFAULT_WEEK_STARTS_ON),
   timeChevronHovered: false,
   timeGuidePinned: false,
 }
@@ -140,6 +150,10 @@ export function setMobileFocusDay(index: number) {
 
 export function setWorkHours(config: WorkHoursConfig) {
   setState({ workHours: config })
+}
+
+export function setWeekStartsOn(day: WeekStartDay) {
+  setState({ weekStartsOn: day, mobileFocusDay: todayColumnIndex(day) })
 }
 
 export function setTimeChevronHovered(hovered: boolean) {
@@ -282,4 +296,8 @@ export function useTimeGuideVisible(): boolean {
 
 export function useTimeGuidePinned(): boolean {
   return useStoreSelector((s) => s.timeGuidePinned)
+}
+
+export function useWeekStartsOn(): WeekStartDay {
+  return useStoreSelector((s) => s.weekStartsOn)
 }

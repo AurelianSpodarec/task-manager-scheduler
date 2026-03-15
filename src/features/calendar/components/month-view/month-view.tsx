@@ -1,19 +1,21 @@
-import { useActiveDate } from '../../calendar-store'
+import { useActiveDate, useWeekStartsOn } from '../../calendar-store'
 import { getMonthGrid } from '../../utils/date'
-import { WEEK_DAY_LABELS } from '../../constants'
+import { getOrderedWeekDays } from '../../constants'
 import { MonthDayCell } from './month-day-cell'
 
 export function MonthView() {
   const activeDate = useActiveDate()
-  const weeks = getMonthGrid(activeDate)
+  const weekStartsOn = useWeekStartsOn()
+  const weeks = getMonthGrid(activeDate, weekStartsOn)
+  const orderedDays = getOrderedWeekDays(weekStartsOn)
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto" role="grid" aria-label="Month calendar view">
       {/* Day-of-week header */}
       <div className="grid shrink-0 grid-cols-7 border-b border-cal-grid-line" role="row">
-        {WEEK_DAY_LABELS.map((label) => (
+        {orderedDays.map(({ label, dayIndex }) => (
           <div
-            key={label}
+            key={dayIndex}
             className="border-r border-cal-grid-line px-1 py-1.5 text-center text-[var(--cal-text-2xs)] font-semibold uppercase tracking-wider text-cal-text-muted last:border-r-0"
             role="columnheader"
           >

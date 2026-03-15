@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { useActiveDate, useMobileFocusDay, useTimeGuideVisible } from '../../calendar-store'
+import { useActiveDate, useMobileFocusDay, useTimeGuideVisible, useWeekStartsOn } from '../../calendar-store'
 import { getWeekDays, formatWeekOfYear, dateToPixelOffset } from '../../utils/date'
 import { VISIBLE_START_HOUR, HOUR_HEIGHT_PX } from '../../constants'
 import { useCurrentTime } from '../../hooks/use-current-time'
@@ -12,8 +12,9 @@ import { CalendarDragLayer } from './calendar-drag-layer'
 
 export function WeekView() {
   const activeDate = useActiveDate()
-  const weekDays = getWeekDays(activeDate)
-  const weekLabel = formatWeekOfYear(activeDate)
+  const weekStartsOn = useWeekStartsOn()
+  const weekDays = getWeekDays(activeDate, weekStartsOn)
+  const weekLabel = formatWeekOfYear(activeDate, weekStartsOn)
   const mobileFocus = useMobileFocusDay()
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
