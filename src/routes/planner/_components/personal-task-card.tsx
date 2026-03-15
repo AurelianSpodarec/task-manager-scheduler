@@ -7,13 +7,13 @@ import {
   personalActivityIcons,
   type PersonalActivityType,
 } from '@/lib/personal-activity'
+import { PersonalCardContent } from './personal-card-content'
 import { roundUpDurationMinutes, formatDurationLabel } from './utils'
 
 export function PersonalTaskCard({ task }: { task: Task }) {
   const activityType = task.personalActivityType as PersonalActivityType
   const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
-  const ActivityIcon = personalActivityIcons[activityType]
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -48,18 +48,11 @@ export function PersonalTaskCard({ task }: { task: Task }) {
         isDragging && 'opacity-40'
       )}
     >
-      <span
-        aria-hidden="true"
-        className="inline-flex size-4 shrink-0 items-center justify-center"
-      >
-        <ActivityIcon className="size-3.5" strokeWidth={2} />
-      </span>
-      <span className="flex-1 text-[12px] leading-none font-semibold tracking-[0.03em] uppercase">
-        {task.title}
-      </span>
-      <span className="shrink-0 text-[11px] tabular-nums font-medium opacity-70">
-        {roundedDurationLabel}
-      </span>
+      <PersonalCardContent
+        title={task.title}
+        durationLabel={roundedDurationLabel}
+        activityType={activityType}
+      />
     </article>
   )
 }

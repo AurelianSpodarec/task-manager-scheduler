@@ -21,6 +21,7 @@ export function makeEventDragData(event: CalendarEvent): CalendarDragData {
     className: event.className,
     style: event.style,
     icon: event.icon,
+    dragMeta: event.dragMeta,
   }
 }
 

@@ -33,6 +33,8 @@ export type CalendarEvent = {
   style?: CSSProperties
   /** Consumer-provided leading icon component */
   icon?: ComponentType<{ className?: string; animate?: boolean }>
+  /** Opaque consumer data carried through the drag pipeline */
+  dragMeta?: unknown
 }
 
 export type TimeSlot = {

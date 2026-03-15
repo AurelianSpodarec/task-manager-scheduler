@@ -10,6 +10,7 @@ import {
   type PersonalActivityType,
 } from '@/lib/personal-activity'
 import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
+import { roundUpDurationMinutes, formatDurationLabel } from '@/routes/planner/_components/utils'
 
 // ---------------------------------------------------------------------------
 // Task → CalendarEvent adapter
@@ -37,6 +38,23 @@ export function toCalendarEvent(task: Task): CalendarEvent {
     icon: activityType
       ? personalActivityIcons[activityType]
       : task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
+    dragMeta: buildDragMeta(task, activityType),
+  }
+}
+
+function buildDragMeta(task: Task, activityType?: PersonalActivityType): unknown {
+  const durationLabel = formatDurationLabel(roundUpDurationMinutes(task.durationMinutes))
+  if (activityType) {
+    return { kind: 'personal' as const, activityType, durationLabel }
+  }
+  return {
+    kind: 'task' as const,
+    clientName: task.clientName ?? '',
+    dueDateLabel: task.dueDateLabel ?? null,
+    isRecurring: !!task.isRecurring,
+    recurringType: task.recurringType,
+    durationLabel,
+    priorityBorderColor: priorityLeftBorderColor[task.priority],
   }
 }
 

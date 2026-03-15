@@ -37,15 +37,16 @@ export function CalendarDragLayer() {
   const height = Math.max(dragRender.elementSize.height, 20)
 
   const { renderDragPreview } = getConfig()
-  const content = renderDragPreview?.(dragRender)
-    ?? <DefaultDragPreview drag={dragRender} width={width} height={height} />
+  const consumerPreview = renderDragPreview?.(dragRender)
+  const content = consumerPreview ?? <DefaultDragPreview drag={dragRender} width={width} height={height} />
 
   if (!content) return null
 
+  // Only constrain dimensions for the default fallback — consumer previews own their sizing.
   return (
     <div
       className="pointer-events-none fixed z-[80] select-none"
-      style={{ left, top, width, height }}
+      style={{ left, top, ...(consumerPreview ? {} : { width, height }) }}
       aria-hidden="true"
     >
       {content}
