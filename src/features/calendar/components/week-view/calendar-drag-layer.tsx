@@ -37,9 +37,8 @@ export function CalendarDragLayer() {
   const height = Math.max(dragRender.elementSize.height, 20)
 
   const { renderDragPreview } = getConfig()
-  const content = renderDragPreview
-    ? renderDragPreview(dragRender)
-    : <DefaultDragPreview drag={dragRender} width={width} height={height} />
+  const content = renderDragPreview?.(dragRender)
+    ?? <DefaultDragPreview drag={dragRender} width={width} height={height} />
 
   if (!content) return null
 
