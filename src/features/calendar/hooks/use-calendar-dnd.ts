@@ -4,24 +4,17 @@
  * with pointer events so CSS `cursor: grabbing` works everywhere.
  */
 import {
-  addEvent,
-  updateEvent,
-  removeEvent,
   setDragState,
   setDragRender,
   clearDragRender,
   updateDragRenderFrame,
   getSlotDuration,
 } from '../calendar-store'
+import { scheduleTask, unscheduleTask, moveScheduledTask } from '@/services/task-service'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
 import { DAY_START_HOUR, HOUR_HEIGHT_PX } from '../constants'
 import type { CalendarEvent, EventColor, EventPriority, TaskDragMeta, PersonalDragMeta, EventDragMeta } from '../types'
-
-let idCounter = Date.now()
-function nextId() {
-  return `evt-${idCounter++}`
-}
 
 function roundUpToIncrement(minutes: number, incrementMinutes: number): number {
   const safeMinutes = Number.isFinite(minutes) ? Math.max(minutes, incrementMinutes) : incrementMinutes
@@ -265,22 +258,10 @@ function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
     : 0
   const targetStart = addMinutes(slotStart, -grabOffsetMin)
 
-  if (drag.source === 'sidebar') {
+  if (drag.source === 'sidebar' && drag.eventId) {
     const mins = roundUpToIncrement(drag.durationMinutes ?? 60, slotDur)
     const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
-    const newEvent: CalendarEvent = {
-      id: nextId(),
-      title: drag.title ?? 'New Event',
-      start: targetStart,
-      end,
-      isAllDay: isAllDayDrop || mins >= 1440,
-      color: drag.color ?? 'teal',
-      status: 'pending',
-      priority: drag.priority ?? 'none',
-      sourceTaskId: drag.eventId,
-      personalActivityType: drag.personalActivityType,
-    }
-    addEvent(newEvent)
+    scheduleTask(drag.eventId, targetStart, end, isAllDayDrop || mins >= 1440)
   } else if (drag.source === 'calendar' && drag.eventId) {
     const durationMinutes =
       drag.originalStart != null && drag.originalEnd != null
@@ -291,11 +272,7 @@ function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
     const end = isAllDayDrop
       ? addMinutes(targetStart, 1440)
       : addMinutes(targetStart, timedDurationMinutes)
-    updateEvent(drag.eventId, {
-      start: targetStart,
-      end,
-      isAllDay: isAllDayDrop,
-    })
+    moveScheduledTask(drag.eventId, targetStart, end, isAllDayDrop)
   }
 }
 
@@ -388,11 +365,12 @@ export function startPointerDrag(
 
     // Flush any pending RAF so drop uses the latest position
     if (rafId != null) { cancelAnimationFrame(rafId); rafId = null }
-    const slot = resolveSlotFromPointer(ev.clientX, ev.clientY)
+    const overSidebar = isOverSidebar(ev.clientX, ev.clientY)
+    const slot = overSidebar ? null : resolveSlotFromPointer(ev.clientX, ev.clientY)
 
-    // Calendar → sidebar: remove the event from the calendar
-    if (!slot && dragData.source === 'calendar' && dragData.eventId && isOverSidebar(ev.clientX, ev.clientY)) {
-      removeEvent(dragData.eventId)
+    // Calendar → sidebar: unschedule the task so it reappears in sidebar
+    if (overSidebar && dragData.source === 'calendar' && dragData.eventId) {
+      unscheduleTask(dragData.eventId)
     } else {
       executeDrop(dragData, slot)
     }

@@ -3,8 +3,9 @@ import { X, SendHorizonal } from 'lucide-react'
 import { addDays, setHours, setMinutes, startOfDay, startOfWeek } from 'date-fns'
 import { cn } from '@/lib/utils'
 import crystalSplash from '@/assets/crystal-splash.gif'
-import { addEvent } from '@/features/calendar/calendar-store'
-import type { CalendarEvent, EventColor, EventPriority } from '@/features/calendar/types'
+import { upsertTask } from '@/database/db'
+import type { Task } from '@/database/schema'
+import type { EventColor, EventPriority } from '@/features/calendar/types'
 import './chat.css'
 
 type ChatMessage = {
@@ -77,7 +78,7 @@ function rand<T>(arr: readonly T[]): T {
  * - One dentist appointment
  * - Work tasks filling the remaining gaps
  */
-function generateWeekTasks(): CalendarEvent[] {
+function generateWeekTasks(): Task[] {
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
   const days      = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i))
 
@@ -87,10 +88,22 @@ function generateWeekTasks(): CalendarEvent[] {
 
   const workQueue = [...TASK_POOL].sort(() => Math.random() - 0.5)
   let   wi        = 0
-  const events: CalendarEvent[] = []
+  const tasks: Task[] = []
 
-  function push(fields: Omit<CalendarEvent, 'id'>) {
-    events.push({ ...fields, id: `ai-${Date.now()}-${aiTaskCounter++}` })
+  function push(fields: { title: string; start: Date; end: Date; color: EventColor; status: 'pending'; priority: EventPriority; personalActivityType?: string }) {
+    const id = `ai-${Date.now()}-${aiTaskCounter++}`
+    const isPersonal = fields.personalActivityType != null
+    tasks.push({
+      id,
+      title: fields.title,
+      type: isPersonal ? 'personal' : 'work',
+      durationMinutes: Math.round((fields.end.getTime() - fields.start.getTime()) / 60_000),
+      priority: fields.priority,
+      status: fields.status,
+      color: fields.color,
+      personalActivityType: fields.personalActivityType as Task['personalActivityType'],
+      schedule: { start: fields.start.toISOString(), end: fields.end.toISOString(), isAllDay: false },
+    })
   }
 
   for (let di = 0; di < 5; di++) {
@@ -101,14 +114,14 @@ function generateWeekTasks(): CalendarEvent[] {
     // ── Morning: school run OR commute drive (06:00–09:00) ────────────────
     if (isSchoolDay) {
       push({ title: 'School Run', start: at(base, 8), end: at(base, 9),
-        isAllDay: false, color: 'amber', status: 'pending', priority: 'none',
+        color: 'amber', status: 'pending', priority: 'none',
         personalActivityType: 'schoolRun' })
     } else {
       // Start randomly at 06:00, 06:30, 07:00 or 07:30; always ~1.5 h
       const mStart = at(base, Math.random() < 0.5 ? 6 : 7, Math.random() < 0.5 ? 0 : 30)
       push({ title: 'Driving',
         start: mStart, end: new Date(mStart.getTime() + 90 * 60_000),
-        isAllDay: false, color: 'indigo', status: 'pending', priority: 'none',
+        color: 'indigo', status: 'pending', priority: 'none',
         personalActivityType: 'driving' })
     }
 
@@ -117,15 +130,15 @@ function generateWeekTasks(): CalendarEvent[] {
       // Short block before the dentist
       if (wi < workQueue.length)
         push({ title: workQueue[wi++], start: at(base, 9, 15), end: at(base, 10, 15),
-          isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+          color: rand(TASK_COLORS), status: 'pending',
           priority: rand(TASK_PRIORITIES) })
       push({ title: 'Dentist', start: at(base, 10, 30), end: at(base, 11, 30),
-        isAllDay: false, color: 'emerald', status: 'pending', priority: 'none',
+        color: 'emerald', status: 'pending', priority: 'none',
         personalActivityType: 'dentist' })
     } else {
       if (wi < workQueue.length)
         push({ title: workQueue[wi++], start: at(base, 9, 15), end: at(base, 11, 30),
-          isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+          color: rand(TASK_COLORS), status: 'pending',
           priority: rand(TASK_PRIORITIES) })
     }
 
@@ -133,28 +146,28 @@ function generateWeekTasks(): CalendarEvent[] {
     const lStart = at(base, 12, Math.random() < 0.6 ? 0 : 30)
     push({ title: 'Lunch',
       start: lStart, end: new Date(lStart.getTime() + 60 * 60_000),
-      isAllDay: false, color: 'rose', status: 'pending', priority: 'none',
+      color: 'rose', status: 'pending', priority: 'none',
       personalActivityType: 'lunch' })
 
     // ── Afternoon work (13:30–17:00, two blocks) ──────────────────────────
     if (wi < workQueue.length)
       push({ title: workQueue[wi++], start: at(base, 13, 30), end: at(base, 15),
-        isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+        color: rand(TASK_COLORS), status: 'pending',
         priority: rand(TASK_PRIORITIES) })
     if (wi < workQueue.length)
       push({ title: workQueue[wi++], start: at(base, 15, 15), end: at(base, 17),
-        isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+        color: rand(TASK_COLORS), status: 'pending',
         priority: rand(TASK_PRIORITIES) })
 
     // ── Evening commute (17:00–19:00 window, ~1.5 h) ──────────────────────
     const eStart = at(base, 17, Math.random() < 0.5 ? 0 : 30)
     push({ title: 'Driving',
       start: eStart, end: new Date(eStart.getTime() + 90 * 60_000),
-      isAllDay: false, color: 'indigo', status: 'pending', priority: 'none',
+      color: 'indigo', status: 'pending', priority: 'none',
       personalActivityType: 'driving' })
   }
 
-  return events
+  return tasks
 }
 
 function LaserLogo({ className }: { className?: string }) {
@@ -303,15 +316,15 @@ export function ChatWidget() {
       setInput('')
 
       if (chatPhase === 'greeting') {
-        const tasks = generateWeekTasks()
+        const weekTasks = generateWeekTasks()
 
         // Show thinking indicator immediately
         setIsThinking(true)
 
         // Drip each task onto the calendar ~350ms apart so it visibly fills up
-        const interval = 2400 / tasks.length
-        tasks.forEach((task, i) => {
-          setTimeout(() => addEvent(task), i * interval)
+        const interval = 2400 / weekTasks.length
+        weekTasks.forEach((task, i) => {
+          setTimeout(() => upsertTask(task), i * interval)
         })
 
         // Once the last task has landed, kill the thinking bubble and stream reply

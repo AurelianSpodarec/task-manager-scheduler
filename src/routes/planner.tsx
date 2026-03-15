@@ -4,6 +4,8 @@ import { CalendarShell } from '@/features/calendar/components/calendar-shell'
 import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
 import { makeSidebarDragData, startPointerDrag } from '@/features/calendar/hooks/use-calendar-dnd'
 import { useDragRender } from '@/features/calendar/calendar-store'
+import { useUnscheduledTasks } from '@/services/task-service'
+import type { Task } from '@/database/schema'
 import {
   Briefcase,
   Repeat2,
@@ -20,120 +22,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import type { TaskPriority } from "@/lib/priority"
 import { priorityLeftBorderColor } from "@/lib/priority"
 import {
   personalActivityStyles,
   personalActivityIcons,
-  personalActivityEventColor,
   type PersonalActivityType,
 } from '@/lib/personal-activity'
 
-type SidebarTask = {
-  id: string
-  title: string
-  duration: string
-  clientName: string
-  dueDateLabel?: string | null
-  isRecurring: boolean
-  recurringType?: 'standard' | 'retainer'
-  priority: TaskPriority
-}
-
-type PersonalTask = {
-  id: string
-  activityType: PersonalActivityType
-  label: string
-  duration: string
-}
-
-const sidebarTasks: SidebarTask[] = [
-  {
-    id: 'task-brand-refresh-workshop',
-    title: 'Brand Refresh Workshop',
-    duration: '2:05h',
-    clientName: 'Laser Red',
-    dueDateLabel: 'Mar 18',
-    isRecurring: true,
-    recurringType: 'retainer',
-    priority: 'medium',
-  },
-  {
-    id: 'task-dashboard-qa-pass',
-    title: 'Dashboard QA Pass',
-    duration: '1:20h',
-    clientName: 'MyEnergi Ltd',
-    dueDateLabel: null,
-    isRecurring: false,
-    priority: 'none',
-  },
-  {
-    id: 'task-weekly-insights-sync',
-    title: 'Weekly Insights Sync',
-    duration: '0:45h',
-    clientName: 'FiveCast',
-    dueDateLabel: 'Mar 15',
-    isRecurring: true,
-    recurringType: 'standard',
-    priority: 'high',
-  },
-  {
-    id: 'task-campaign-copy-review',
-    title: 'Campaign Copy Review',
-    duration: '1:35h',
-    clientName: 'Bush Tyres',
-    dueDateLabel: 'Mar 22',
-    isRecurring: false,
-    priority: 'none',
-  },
-  {
-    id: 'task-donation-form-audit',
-    title: 'Donation Form Audit',
-    duration: '2:40h',
-    clientName: 'St Barbans Hospice',
-    dueDateLabel: null,
-    isRecurring: false,
-    priority: 'none',
-  },
-  {
-    id: 'task-mobile-nav-hotfix',
-    title: 'Mobile Nav Hotfix',
-    duration: '0:55h',
-    clientName: 'Smartev Limited',
-    dueDateLabel: 'Mar 16',
-    isRecurring: true,
-    recurringType: 'standard',
-    priority: 'critical',
-  },
-  {
-    id: 'task-seo-content-batch',
-    title: 'SEO Content Batch',
-    duration: '3:10h',
-    clientName: 'National Education Union',
-    dueDateLabel: 'Mar 29',
-    isRecurring: false,
-    priority: 'none',
-  },
-  {
-    id: 'task-api-contract-check',
-    title: 'API Contract Check',
-    duration: '1:50h',
-    clientName: 'Synapsys Solutions',
-    dueDateLabel: null,
-    isRecurring: true,
-    recurringType: 'standard',
-    priority: 'high',
-  },
-]
-
-
-const personalTasks: PersonalTask[] = [
-  { id: 'personal-school-run', activityType: 'schoolRun', label: 'School Run', duration: '1:00h' },
-  { id: 'personal-lunch', activityType: 'lunch', label: 'Lunch', duration: '1:00h' },
-  { id: 'personal-dentist', activityType: 'dentist', label: 'Dentist', duration: '1:00h' },
-  { id: 'personal-driving', activityType: 'driving', label: 'Driving', duration: '1:00h' },
-  { id: 'personal-gym', activityType: 'gym', label: 'Gym', duration: '1:00h' },
-]
 function roundUpDurationMinutes(minutes: number): number {
   const safeMinutes = Number.isFinite(minutes) ? Math.max(minutes, SLOT_INCREMENT_MINUTES) : 60
   return Math.ceil(safeMinutes / SLOT_INCREMENT_MINUTES) * SLOT_INCREMENT_MINUTES
@@ -145,19 +40,11 @@ function formatDurationLabel(minutes: number): string {
   return `${hours}:${String(remainingMinutes).padStart(2, '0')}h`
 }
 
-/** Parse duration string like "2:05h" into minutes and round up to 15-minute increments. */
-function parseDurationMinutes(dur: string): number {
-  const match = dur.match(/(\d+):(\d+)/)
-  if (!match) return 60
-  const totalMinutes = parseInt(match[1], 10) * 60 + parseInt(match[2], 10)
-  return roundUpDurationMinutes(totalMinutes)
-}
-
-function SidebarTaskCard({ task }: { task: SidebarTask }) {
-  const roundedDurationMinutes = parseDurationMinutes(task.duration)
+function SidebarTaskCard({ task }: { task: Task }) {
+  const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
   const priorityBorderColor = priorityLeftBorderColor[task.priority]
-  const hasStatusBadges = task.isRecurring
+  const hasStatusBadges = !!task.isRecurring
   const metaToggleId = `compact-meta-${task.id}`
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -169,9 +56,9 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     if (!el) return
     const data = makeSidebarDragData(task.id, task.title, roundedDurationMinutes, task.priority, {
       taskMeta: {
-        clientName: task.clientName,
+        clientName: task.clientName ?? '',
         dueDateLabel: task.dueDateLabel ?? null,
-        isRecurring: task.isRecurring,
+        isRecurring: !!task.isRecurring,
         recurringType: task.recurringType,
         durationLabel: roundedDurationLabel,
         priority: task.priority,
@@ -203,7 +90,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
         </span>
       </div>
       <div className="mt-0.5 flex items-center justify-between text-[12px] leading-4 text-zinc-500">
-        <span className="font-medium text-zinc-700">{task.clientName}</span>
+        <span className="font-medium text-zinc-700">{task.clientName ?? ''}</span>
         {task.dueDateLabel && (
           <span className="font-medium text-zinc-500">Due on {task.dueDateLabel}</span>
         )}
@@ -235,10 +122,11 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
   )
 }
 
-function PersonalTaskCard({ task }: { task: PersonalTask }) {
-  const roundedDurationMinutes = parseDurationMinutes(task.duration)
+function PersonalTaskCard({ task }: { task: Task }) {
+  const activityType = task.personalActivityType as PersonalActivityType
+  const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
-  const ActivityIcon = personalActivityIcons[task.activityType]
+  const ActivityIcon = personalActivityIcons[activityType]
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -247,11 +135,11 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
     e.preventDefault()
     const el = ref.current
     if (!el) return
-    const data = makeSidebarDragData(task.id, task.label, roundedDurationMinutes, 'none', {
-      color: personalActivityEventColor[task.activityType],
-      personalActivityType: task.activityType,
+    const data = makeSidebarDragData(task.id, task.title, roundedDurationMinutes, task.priority, {
+      color: task.color,
+      personalActivityType: activityType,
       personalMeta: {
-        activityType: task.activityType,
+        activityType,
         durationLabel: roundedDurationLabel,
       },
     })
@@ -259,7 +147,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     })
-  }, [task.id, task.label, task.activityType, roundedDurationMinutes, roundedDurationLabel])
+  }, [task.id, task.title, task.priority, task.color, activityType, roundedDurationMinutes, roundedDurationLabel])
 
   return (
     <article
@@ -267,7 +155,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       onPointerDown={onPointerDown}
       className={cn(
         'flex w-full min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
-        personalActivityStyles[task.activityType],
+        personalActivityStyles[activityType],
         isDragging && 'opacity-40'
       )}
     >
@@ -278,7 +166,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
         <ActivityIcon className="size-3.5" strokeWidth={2} />
       </span>
       <span className="flex-1 text-[12px] leading-none font-semibold tracking-[0.03em] uppercase">
-        {task.label}
+        {task.title}
       </span>
       <span className="shrink-0 text-[11px] tabular-nums font-medium opacity-70">
         {roundedDurationLabel}
@@ -287,6 +175,9 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
   )
 }
 export function PlannerSidebar() {
+  const workTasks = useUnscheduledTasks('work')
+  const personalTasks = useUnscheduledTasks('personal')
+
   return (
     <Tabs defaultValue="tasks" className="h-full min-h-0 w-full gap-3">
       <TabsList className="h-auto w-full shrink-0 rounded-md border border-zinc-200 bg-zinc-50 p-0.5">
@@ -304,7 +195,7 @@ export function PlannerSidebar() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="tasks" className="sidebar-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
-        {sidebarTasks.map((task) => (
+        {workTasks.map((task) => (
           <SidebarTaskCard key={task.id} task={task} />
         ))}
       </TabsContent>

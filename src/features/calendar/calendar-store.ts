@@ -12,13 +12,14 @@ import type {
 } from './types'
 import { DEFAULT_SLOT_DURATION, DEFAULT_WORK_HOURS } from './constants'
 import { isSameDay, startOfDay } from './utils/date'
-import { seedEvents } from './seed-events'
+import type { Task } from '@/database/schema'
+import { subscribe as dbSubscribe, getSnapshot as dbGetSnapshot } from '@/database/db'
+import { toCalendarEvent } from '@/services/task-service'
 
 // ---------------------------------------------------------------------------
-// Store shape
+// Store shape (UI-only — event data lives in the DB)
 // ---------------------------------------------------------------------------
 type CalendarState = {
-  events: CalendarEvent[]
   view: ViewMode
   activeDate: Date
   slotDuration: SlotDuration
@@ -42,7 +43,6 @@ function todayColumnIndex(weekStartsOn: WeekStartDay): number {
 const DEFAULT_WEEK_STARTS_ON: WeekStartDay = 1
 
 let state: CalendarState = {
-  events: seedEvents(),
   view: 'week',
   activeDate: new Date(),
   slotDuration: DEFAULT_SLOT_DURATION,
@@ -67,22 +67,8 @@ function setState(partial: Partial<CalendarState>) {
 }
 
 // ---------------------------------------------------------------------------
-// Mutations — importable from anywhere, no provider needed
+// Mutations
 // ---------------------------------------------------------------------------
-export function addEvent(event: CalendarEvent) {
-  setState({ events: [...state.events, event] })
-}
-
-export function updateEvent(id: string, patch: Partial<Omit<CalendarEvent, 'id'>>) {
-  setState({
-    events: state.events.map((e) => (e.id === id ? { ...e, ...patch } : e)),
-  })
-}
-
-export function removeEvent(id: string) {
-  setState({ events: state.events.filter((e) => e.id !== id) })
-}
-
 export function setView(view: ViewMode) {
   setState({ view })
 }
@@ -189,20 +175,22 @@ function subscribe(listener: () => void) {
 }
 
 // ---------------------------------------------------------------------------
-// Snapshot helpers
-// useSyncExternalStore compares snapshots with Object.is — derived selectors
-// that call .filter() must return a stable reference when the result is equal.
+// DB-backed event caches
+// Replaces the old in-store events array. Caches are invalidated when the
+// DB snapshot reference changes (same Object.is contract).
 // ---------------------------------------------------------------------------
-
-// Module-level caches
-// Cleared automatically when the events list changes.
-let cachedEventsRef: CalendarEvent[] = []
+let cachedDbRef: Task[] = []
+let scheduledEventsCache: CalendarEvent[] = []
 const dayEventsCache = new Map<string, CalendarEvent[]>()
 let allDayCache: { key: string; result: CalendarEvent[] } | null = null
 
 function invalidateDerivedCaches() {
-  if (state.events !== cachedEventsRef) {
-    cachedEventsRef = state.events
+  const dbSnap = dbGetSnapshot()
+  if (dbSnap !== cachedDbRef) {
+    cachedDbRef = dbSnap
+    scheduledEventsCache = dbSnap
+      .filter((t) => t.schedule != null)
+      .map(toCalendarEvent)
     dayEventsCache.clear()
     allDayCache = null
   }
@@ -214,7 +202,7 @@ function getEventsForDay(dayStart: Date): CalendarEvent[] {
   const cached = dayEventsCache.get(key)
   if (cached) return cached
 
-  const result = state.events.filter(
+  const result = scheduledEventsCache.filter(
     (e) =>
       isSameDay(e.start, dayStart) ||
       isSameDay(e.end, dayStart) ||
@@ -229,7 +217,7 @@ function getAllDayEventsInRange(weekStart: Date, weekEnd: Date): CalendarEvent[]
   const key = `${weekStart.getTime()}-${weekEnd.getTime()}`
   if (allDayCache && allDayCache.key === key) return allDayCache.result
 
-  const result = state.events.filter(
+  const result = scheduledEventsCache.filter(
     (e) => e.isAllDay && e.start <= weekEnd && e.end >= weekStart,
   )
   allDayCache = { key, result }
@@ -251,20 +239,32 @@ function useStoreSelector<T>(selector: (s: CalendarState) => T): T {
 // Public hooks — granular subscriptions
 // ---------------------------------------------------------------------------
 
-/** All events — re-renders when any event changes. */
+/** All scheduled events — re-renders when the DB changes. */
 export function useCalendarEvents(): CalendarEvent[] {
-  return useStoreSelector((s) => s.events)
+  return useSyncExternalStore(
+    dbSubscribe,
+    () => { invalidateDerivedCaches(); return scheduledEventsCache },
+    () => { invalidateDerivedCaches(); return scheduledEventsCache },
+  )
 }
 
 /** Events for a specific day (cached — stable reference). */
 export function useEventsForDay(day: Date): CalendarEvent[] {
   const dayStart = startOfDay(day)
-  return useStoreSelector(() => getEventsForDay(dayStart))
+  return useSyncExternalStore(
+    dbSubscribe,
+    () => getEventsForDay(dayStart),
+    () => getEventsForDay(dayStart),
+  )
 }
 
 /** All-day events within a date range (cached — stable reference). */
 export function useAllDayEvents(weekStart: Date, weekEnd: Date): CalendarEvent[] {
-  return useStoreSelector(() => getAllDayEventsInRange(weekStart, weekEnd))
+  return useSyncExternalStore(
+    dbSubscribe,
+    () => getAllDayEventsInRange(weekStart, weekEnd),
+    () => getAllDayEventsInRange(weekStart, weekEnd),
+  )
 }
 
 export function useCalendarView(): ViewMode {
