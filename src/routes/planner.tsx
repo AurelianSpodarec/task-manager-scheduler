@@ -5,8 +5,6 @@ import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
 import { makeSidebarDragData, startPointerDrag } from '@/features/calendar/hooks/use-calendar-dnd'
 import {
   Briefcase,
-  CalendarDays,
-  Clock3,
   Repeat2,
 } from 'lucide-react'
 
@@ -188,7 +186,7 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
     <article
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`relative cursor-grab overflow-hidden rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
+      className={`relative w-full cursor-grab overflow-hidden rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
     >
       <span
         aria-hidden="true"
@@ -196,25 +194,18 @@ function SidebarTaskCard({ task }: { task: SidebarTask }) {
         style={{ left: 0, top: 0, bottom: 0, width: 3, backgroundColor: priorityBorderColor }}
       />
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="line-clamp-2 text-[14px] leading-5 font-semibold text-zinc-900">
-            {task.title}
-          </h3>
-          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] leading-4 text-zinc-500">
-            <span className="font-medium text-zinc-700">{task.clientName}</span>
-            {task.dueDateLabel && (
-              <>
-                <span aria-hidden="true">•</span>
-                <CalendarDays aria-hidden="true" className="size-3 text-zinc-400" />
-                <span className="font-medium text-zinc-500">{task.dueDateLabel}</span>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md bg-zinc-50 px-1.5 py-0.5 text-[11px] font-medium text-zinc-500">
-          <Clock3 aria-hidden="true" className="size-3.5" />
-          <span className="tabular-nums">{roundedDurationLabel}</span>
-        </div>
+        <h3 className="line-clamp-2 min-w-0 text-[14px] leading-5 font-semibold text-zinc-900">
+          {task.title}
+        </h3>
+        <span className="mt-0.5 shrink-0 text-[11px] tabular-nums font-medium text-zinc-500">
+          {roundedDurationLabel}
+        </span>
+      </div>
+      <div className="mt-0.5 flex items-center justify-between text-[12px] leading-4 text-zinc-500">
+        <span className="font-medium text-zinc-700">{task.clientName}</span>
+        {task.dueDateLabel && (
+          <span className="font-medium text-zinc-500">Due on {task.dueDateLabel}</span>
+        )}
       </div>
       {hasStatusBadges && (
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -274,7 +265,7 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       ref={ref}
       onPointerDown={onPointerDown}
       className={cn(
-        'flex min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
+        'flex w-full min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
         personalActivityStyles[task.activityType],
         isDragging && 'opacity-40'
       )}
@@ -288,9 +279,8 @@ function PersonalTaskCard({ task }: { task: PersonalTask }) {
       <span className="flex-1 text-[12px] leading-none font-semibold tracking-[0.03em] uppercase">
         {task.label}
       </span>
-      <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/50 px-1.5 py-0.5 text-[11px] font-medium opacity-70">
-        <Clock3 aria-hidden="true" className="size-3" />
-        <span className="tabular-nums">{roundedDurationLabel}</span>
+      <span className="shrink-0 text-[11px] tabular-nums font-medium opacity-70">
+        {roundedDurationLabel}
       </span>
     </article>
   )
@@ -312,12 +302,12 @@ export function PlannerSidebar() {
           Personal
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="tasks" className="sidebar-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
+      <TabsContent value="tasks" className="sidebar-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {sidebarTasks.map((task) => (
           <SidebarTaskCard key={task.id} task={task} />
         ))}
       </TabsContent>
-      <TabsContent value="personal" className="sidebar-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+      <TabsContent value="personal" className="sidebar-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {personalTasks.map((task) => (
           <PersonalTaskCard key={task.id} task={task} />
         ))}
