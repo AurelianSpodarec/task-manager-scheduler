@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    tanstackRouter({ target: 'react', autoCodeSplitting: true, routeFileIgnorePattern: '_components' }),
     react(),
     babel({ presets: [reactCompilerPreset()], include: ['./src/**/*.{ts,tsx}'] }),
     tailwindcss(),
