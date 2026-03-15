@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react'
 import { X, SendHorizonal, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import crystalSplash from '@/assets/crystal-splash.gif'
 import './chat.css'
 
 type ChatMessage = {
@@ -10,11 +11,13 @@ type ChatMessage = {
   isError?: boolean
 }
 
-const GREETING = `Welcome to FiveCast! I'm Crystal, your AI assistant.
+const GREETING = `Welcome to FiveCast — I'm Crystal.
 
-Think of me as your crystal ball for time — I help schedule events, track tasks, and keep everything running ahead of schedule.
+Your AI assistant for scheduling, tasks, and time insights.
 
-You can ask things like:
+Think of me as your crystal ball for time — I help organise your schedule, track tasks, and keep everything ahead of plan.
+
+Try asking:
 • "Schedule a meeting tomorrow at 10"
 • "What's on my calendar today?"
 • "How many hours are assigned to Project X?"
@@ -22,7 +25,8 @@ You can ask things like:
 
 What would you like to plan?`
 
-const TYPING_DELAY_MS = 1500
+const STREAM_INTERVAL_MS = 80
+const SPLASH_DURATION_MS = 2000
 
 function LaserLogo({ className }: { className?: string }) {
   return (
@@ -41,86 +45,133 @@ function LaserLogo({ className }: { className?: string }) {
   )
 }
 
-function TypingIndicator() {
-  return (
-    <span className="inline-flex items-center gap-1 text-zinc-400">
-      <span className="chat-typing-dot" />
-      <span className="chat-typing-dot" />
-      <span className="chat-typing-dot" />
-    </span>
-  )
-}
-
 let msgCounter = 0
 function nextId() {
   return `msg-${++msgCounter}`
 }
 
+/** Split text into streamable tokens (words, preserving leading whitespace/newlines). */
+function tokenize(text: string): string[] {
+  const tokens: string[] = []
+  const re = /(\s*\S+)/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) tokens.push(m[1])
+  return tokens
+}
+
+/** Renders text word-by-word with a fade-in animation up to `visibleCount`. */
+function StreamingText({ tokens, visibleCount }: { tokens: string[]; visibleCount: number }) {
+  return (
+    <>
+      {tokens.map((token, i) => {
+        if (i >= visibleCount) return null
+        // Preserve leading newlines as <br/> so whitespace-pre-line isn't needed
+        const newlines = token.match(/^\n+/)
+        return (
+          <span key={i}>
+            {newlines && Array.from({ length: newlines[0].length }, (_, j) => <br key={j} />)}
+            <span className={i === visibleCount - 1 ? 'chat-word-reveal' : undefined}>
+              {newlines ? token.slice(newlines[0].length) : token}
+            </span>
+          </span>
+        )
+      })}
+    </>
+  )
+}
+
 export function ChatWidget() {
   const [open, setOpen] = useState(false)
+  const [splash, setSplash] = useState<'visible' | 'fading' | 'done'>('done')
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isTyping, setIsTyping] = useState(false)
   const [input, setInput] = useState('')
+  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null)
+  const [visibleWords, setVisibleWords] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const tokensRef = useRef<string[]>([])
 
   const scrollToBottom = useCallback(() => {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
   }, [])
 
-  // Kick off greeting sequence when chat opens
+  // Stream words one-by-one with fade-in
+  useEffect(() => {
+    if (!streamingMsgId) return
+
+    const iv = setInterval(() => {
+      setVisibleWords((prev) => {
+        const next = prev + 1
+        if (next >= tokensRef.current.length) {
+          clearInterval(iv)
+          setStreamingMsgId(null)
+        }
+        return next
+      })
+    }, STREAM_INTERVAL_MS)
+
+    return () => clearInterval(iv)
+  }, [streamingMsgId])
+
+  // Show splash then kick off greeting stream
   useEffect(() => {
     if (!open) return
 
-    // Reset state for a fresh conversation each time
+    setSplash('visible')
     setMessages([])
-    setIsTyping(true)
+    setStreamingMsgId(null)
     msgCounter = 0
 
-    const timer = setTimeout(() => {
-      setMessages([{ id: nextId(), role: 'bot', content: GREETING }])
-      setIsTyping(false)
-    }, TYPING_DELAY_MS)
+    const fadeTimer = setTimeout(() => setSplash('fading'), SPLASH_DURATION_MS)
+    // After fade-out animation completes (~400ms), start the chat
+    const doneTimer = setTimeout(() => {
+      setSplash('done')
+      const id = nextId()
+      tokensRef.current = tokenize(GREETING)
+      setVisibleWords(0)
+      setMessages([{ id, role: 'bot', content: GREETING }])
+      setStreamingMsgId(id)
+    }, SPLASH_DURATION_MS + 400)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(fadeTimer)
+      clearTimeout(doneTimer)
+      setStreamingMsgId(null)
+    }
   }, [open])
 
-  // Auto-scroll on new messages or typing state change
+  // Auto-scroll as words reveal
   useEffect(() => {
     scrollToBottom()
-  }, [messages, isTyping, scrollToBottom])
+  }, [visibleWords, messages, scrollToBottom])
 
-  // Focus input when panel opens and greeting finishes
+  // Focus input once streaming finishes
   useEffect(() => {
-    if (open && !isTyping) inputRef.current?.focus()
-  }, [open, isTyping])
+    if (open && !streamingMsgId) inputRef.current?.focus()
+  }, [open, streamingMsgId])
 
   const handleSend = useCallback(
     (e: FormEvent) => {
       e.preventDefault()
       const text = input.trim()
-      if (!text) return
+      if (!text || streamingMsgId) return
 
       const userMsg: ChatMessage = { id: nextId(), role: 'user', content: text }
-      const errorMsg: ChatMessage = {
-        id: nextId(),
-        role: 'bot',
-        content: 'No API Token',
-        isError: true,
-      }
+      const errorId = nextId()
 
       setMessages((prev) => [...prev, userMsg])
       setInput('')
-      setIsTyping(true)
 
-      // Brief delay before showing the error so it feels like a real round-trip
+      // Brief delay then show error (too short to stream)
       setTimeout(() => {
-        setMessages((prev) => [...prev, errorMsg])
-        setIsTyping(false)
+        setMessages((prev) => [
+          ...prev,
+          { id: errorId, role: 'bot', content: 'No API Token', isError: true },
+        ])
       }, 800)
     },
-    [input],
+    [input, streamingMsgId],
   )
 
   return (
@@ -129,18 +180,18 @@ export function ChatWidget() {
       {open && (
         <div
           className={cn(
-            'fixed right-5 bottom-20 z-50 flex w-[360px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl',
+'fixed right-5 bottom-20 z-50 flex w-[420px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl',
             'animate-in fade-in slide-in-from-bottom-4 duration-200',
             'dark:border-zinc-700 dark:bg-zinc-900',
           )}
-          style={{ height: 460 }}
+style={{ height: 490 }}
         >
           {/* Header */}
           <div className="flex items-center justify-between bg-zinc-900 px-4 py-3 dark:bg-zinc-950">
             <div className="flex items-center gap-2">
               <LaserLogo className="size-5 text-red-500" />
               <span className="text-[14px] font-semibold text-white">
-                AI Assistant
+                FiveCast AI Assistant
               </span>
             </div>
             <button
@@ -152,6 +203,22 @@ export function ChatWidget() {
               <X className="size-4" />
             </button>
           </div>
+
+          {/* Splash screen */}
+          {splash !== 'done' && (
+            <div
+              className={cn(
+                'absolute inset-0 z-10 flex items-center justify-center bg-zinc-900',
+                splash === 'fading' && 'chat-splash-fade-out',
+              )}
+            >
+              <img
+                src={crystalSplash}
+                alt="Crystal AI loading"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
 
           {/* Messages */}
           <div
@@ -181,18 +248,15 @@ export function ChatWidget() {
                   {msg.isError && (
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
                   )}
-                  <span>{msg.content}</span>
+                  {msg.id === streamingMsgId ? (
+                    <StreamingText tokens={tokensRef.current} visibleCount={visibleWords} />
+                  ) : (
+                    <span>{msg.content}</span>
+                  )}
                 </div>
               </div>
             ))}
 
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="rounded-xl bg-zinc-100 px-4 py-2.5 dark:bg-zinc-800">
-                  <TypingIndicator />
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Input */}
