@@ -1,15 +1,20 @@
 import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react'
-import { X, SendHorizonal, AlertTriangle } from 'lucide-react'
+import { X, SendHorizonal } from 'lucide-react'
+import { addDays, setHours, setMinutes, startOfDay, startOfWeek } from 'date-fns'
 import { cn } from '@/lib/utils'
 import crystalSplash from '@/assets/crystal-splash.gif'
+import { addEvent } from '@/features/calendar/calendar-store'
+import type { CalendarEvent, EventColor, EventPriority } from '@/features/calendar/types'
 import './chat.css'
 
 type ChatMessage = {
   id: string
   role: 'bot' | 'user'
   content: string
-  isError?: boolean
 }
+
+// Drives the three-state conversation flow
+type ChatPhase = 'greeting' | 'planned' | 'limit'
 
 const GREETING = `Welcome to FiveCast — I'm Crystal.
 
@@ -23,10 +28,134 @@ Try asking:
 • "How many hours are assigned to Project X?"
 • "Generate a weekly report"
 
-What would you like to plan?`
+I can organise your week in seconds. Want me to do that?`
+
+const TOKEN_LIMIT_MSG =
+  `You've hit your free-tier context limit — 512 tokens per session.\n\nUpgrade to FiveCast Pro to keep planning with Crystal — of course.`
 
 const STREAM_INTERVAL_MS = 80
 const SPLASH_DURATION_MS = 2000
+
+// ── Random task generation ────────────────────────────────────────────────
+const TASK_COLORS: EventColor[] = ['teal', 'purple', 'rose', 'amber', 'emerald', 'indigo', 'blue']
+const TASK_PRIORITIES: EventPriority[] = ['none', 'low', 'medium', 'high']
+const TASK_POOL = [
+  'Review project proposal',
+  'Team sync',
+  'Client follow-up',
+  'Deep work session',
+  'Email triage',
+  'Strategy planning',
+  'Code review',
+  'Weekly retrospective',
+  'Content review',
+  'Sprint planning',
+  'Design feedback',
+  'Budget review',
+  'Stakeholder update',
+  'Focus time',
+  'Progress check',
+]
+
+let aiTaskCounter = 0
+
+/** Set hours + minutes on a base date (mirrors seed-events pattern). */
+function at(base: Date, hour: number, minute = 0): Date {
+  return setMinutes(setHours(base, hour), minute)
+}
+
+/** Pick a random element from an array. */
+function rand<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+/**
+ * Build a structured Mon–Fri week:
+ * - Commute (06:00–09:00) + return (17:00–19:00) on every day
+ * - One day replaced with a school run in the morning
+ * - Lunch every day within 12:00–13:30
+ * - One dentist appointment
+ * - Work tasks filling the remaining gaps
+ */
+function generateWeekTasks(): CalendarEvent[] {
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const days      = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i))
+
+  // Randomise the special-day slots
+  const schoolDayIdx  = Math.floor(Math.random() * 4)                           // Mon–Thu
+  const dentistDayIdx = rand([0, 1, 2, 3, 4].filter(i => i !== schoolDayIdx))
+
+  const workQueue = [...TASK_POOL].sort(() => Math.random() - 0.5)
+  let   wi        = 0
+  const events: CalendarEvent[] = []
+
+  function push(fields: Omit<CalendarEvent, 'id'>) {
+    events.push({ ...fields, id: `ai-${Date.now()}-${aiTaskCounter++}` })
+  }
+
+  for (let di = 0; di < 5; di++) {
+    const base        = startOfDay(days[di])
+    const isSchoolDay = di === schoolDayIdx
+    const hasDentist  = di === dentistDayIdx
+
+    // ── Morning: school run OR commute drive (06:00–09:00) ────────────────
+    if (isSchoolDay) {
+      push({ title: 'School Run', start: at(base, 8), end: at(base, 9),
+        isAllDay: false, color: 'amber', status: 'pending', priority: 'none',
+        personalActivityType: 'schoolRun' })
+    } else {
+      // Start randomly at 06:00, 06:30, 07:00 or 07:30; always ~1.5 h
+      const mStart = at(base, Math.random() < 0.5 ? 6 : 7, Math.random() < 0.5 ? 0 : 30)
+      push({ title: 'Driving',
+        start: mStart, end: new Date(mStart.getTime() + 90 * 60_000),
+        isAllDay: false, color: 'indigo', status: 'pending', priority: 'none',
+        personalActivityType: 'driving' })
+    }
+
+    // ── Morning work (09:15–) — shortened on dentist days ─────────────────
+    if (hasDentist) {
+      // Short block before the dentist
+      if (wi < workQueue.length)
+        push({ title: workQueue[wi++], start: at(base, 9, 15), end: at(base, 10, 15),
+          isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+          priority: rand(TASK_PRIORITIES) })
+      push({ title: 'Dentist', start: at(base, 10, 30), end: at(base, 11, 30),
+        isAllDay: false, color: 'emerald', status: 'pending', priority: 'none',
+        personalActivityType: 'dentist' })
+    } else {
+      if (wi < workQueue.length)
+        push({ title: workQueue[wi++], start: at(base, 9, 15), end: at(base, 11, 30),
+          isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+          priority: rand(TASK_PRIORITIES) })
+    }
+
+    // ── Lunch (12:00–13:30 window, 60 min) ────────────────────────────────
+    const lStart = at(base, 12, Math.random() < 0.6 ? 0 : 30)
+    push({ title: 'Lunch',
+      start: lStart, end: new Date(lStart.getTime() + 60 * 60_000),
+      isAllDay: false, color: 'rose', status: 'pending', priority: 'none',
+      personalActivityType: 'lunch' })
+
+    // ── Afternoon work (13:30–17:00, two blocks) ──────────────────────────
+    if (wi < workQueue.length)
+      push({ title: workQueue[wi++], start: at(base, 13, 30), end: at(base, 15),
+        isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+        priority: rand(TASK_PRIORITIES) })
+    if (wi < workQueue.length)
+      push({ title: workQueue[wi++], start: at(base, 15, 15), end: at(base, 17),
+        isAllDay: false, color: rand(TASK_COLORS), status: 'pending',
+        priority: rand(TASK_PRIORITIES) })
+
+    // ── Evening commute (17:00–19:00 window, ~1.5 h) ──────────────────────
+    const eStart = at(base, 17, Math.random() < 0.5 ? 0 : 30)
+    push({ title: 'Driving',
+      start: eStart, end: new Date(eStart.getTime() + 90 * 60_000),
+      isAllDay: false, color: 'indigo', status: 'pending', priority: 'none',
+      personalActivityType: 'driving' })
+  }
+
+  return events
+}
 
 function LaserLogo({ className }: { className?: string }) {
   return (
@@ -84,6 +213,8 @@ export function ChatWidget() {
   const [open, setOpen] = useState(false)
   const [splash, setSplash] = useState<'visible' | 'fading' | 'done'>('done')
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [chatPhase, setChatPhase] = useState<ChatPhase>('greeting')
+  const [isThinking, setIsThinking] = useState(false)
   const [input, setInput] = useState('')
   const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null)
   const [visibleWords, setVisibleWords] = useState(0)
@@ -121,6 +252,8 @@ export function ChatWidget() {
     setSplash('visible')
     setMessages([])
     setStreamingMsgId(null)
+    setChatPhase('greeting')
+    setIsThinking(false)
     msgCounter = 0
 
     const fadeTimer = setTimeout(() => setSplash('fading'), SPLASH_DURATION_MS)
@@ -151,27 +284,51 @@ export function ChatWidget() {
     if (open && !streamingMsgId) inputRef.current?.focus()
   }, [open, streamingMsgId])
 
+  /** Stream a bot reply — shared by both the plan confirmation and the limit gate. */
+  const streamReply = useCallback((content: string) => {
+    const id = nextId()
+    tokensRef.current = tokenize(content)
+    setVisibleWords(0)
+    setMessages((prev) => [...prev, { id, role: 'bot', content }])
+    setStreamingMsgId(id)
+  }, [])
+
   const handleSend = useCallback(
     (e: FormEvent) => {
       e.preventDefault()
       const text = input.trim()
       if (!text || streamingMsgId) return
 
-      const userMsg: ChatMessage = { id: nextId(), role: 'user', content: text }
-      const errorId = nextId()
-
-      setMessages((prev) => [...prev, userMsg])
+      setMessages((prev) => [...prev, { id: nextId(), role: 'user', content: text }])
       setInput('')
 
-      // Brief delay then show error (too short to stream)
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { id: errorId, role: 'bot', content: 'No API Token', isError: true },
-        ])
-      }, 800)
+      if (chatPhase === 'greeting') {
+        const tasks = generateWeekTasks()
+
+        // Show thinking indicator immediately
+        setIsThinking(true)
+
+        // Drip each task onto the calendar ~350ms apart so it visibly fills up
+        const interval = 2400 / tasks.length
+        tasks.forEach((task, i) => {
+          setTimeout(() => addEvent(task), i * interval)
+        })
+
+        // Once the last task has landed, kill the thinking bubble and stream reply
+        setTimeout(() => {
+          setIsThinking(false)
+          streamReply('Your week has been organised.')
+          setChatPhase('planned')
+        }, 2500)
+      } else {
+        // Any subsequent message hits the token gate
+        setTimeout(() => {
+          streamReply(TOKEN_LIMIT_MSG)
+          setChatPhase('limit')
+        }, 400)
+      }
     },
-    [input, streamingMsgId],
+    [input, streamingMsgId, chatPhase, streamReply],
   )
 
   return (
@@ -239,15 +396,9 @@ style={{ height: 490 }}
                     msg.role === 'user' &&
                       'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900',
                     msg.role === 'bot' &&
-                      !msg.isError &&
                       'whitespace-pre-line bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200',
-                    msg.isError &&
-                      'flex items-start gap-1.5 border border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400',
                   )}
                 >
-                  {msg.isError && (
-                    <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                  )}
                   {msg.id === streamingMsgId ? (
                     <StreamingText tokens={tokensRef.current} visibleCount={visibleWords} />
                   ) : (
@@ -256,6 +407,17 @@ style={{ height: 490 }}
                 </div>
               </div>
             ))}
+
+            {/* Thinking indicator — visible while Crystal is planning */}
+            {isThinking && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-1 rounded-xl bg-zinc-100 px-3 py-2.5 text-zinc-500 dark:bg-zinc-800">
+                  <span className="chat-thinking-dot" />
+                  <span className="chat-thinking-dot" />
+                  <span className="chat-thinking-dot" />
+                </div>
+              </div>
+            )}
 
           </div>
 
