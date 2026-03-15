@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState, type ReactNode } from 'react'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { useAllDayEvents } from '../../calendar-store'
+import { useAllDayEvents, useDragRender } from '../../calendar-store'
 import { isSameDay } from '../../utils/date'
 import { EVENT_COLOR_MAP } from '../../constants'
 import type { CalendarEvent } from '../../types'
@@ -22,18 +22,20 @@ export function AllDayRow({ weekDays }: AllDayRowProps) {
         </span>
       </div>
 
-      {weekDays.map((day) => (
-        <DroppableAllDayCell
-          key={day.toISOString()}
-          day={day}
-        >
-          {allDayEvents
-            .filter((e) => isSameDay(e.start, day))
-            .map((event) => (
+      {weekDays.map((day) => {
+        const dayEvents = allDayEvents.filter((e) => isSameDay(e.start, day))
+        return (
+          <DroppableAllDayCell
+            key={day.toISOString()}
+            day={day}
+            eventIds={dayEvents.map((e) => e.id)}
+          >
+            {dayEvents.map((event) => (
               <AllDayEventChip key={event.id} event={event} />
             ))}
-        </DroppableAllDayCell>
-      ))}
+          </DroppableAllDayCell>
+        )
+      })}
 
       {/* Scrollbar spacer */}
       <div aria-hidden="true" />
@@ -71,13 +73,21 @@ function AllDayEventChip({ event }: { event: CalendarEvent }) {
 function DroppableAllDayCell({
   day,
   children,
+  eventIds,
 }: {
   day: Date
   children: ReactNode
+  eventIds: string[]
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [isOver, setIsOver] = useState(false)
+  const [pragmaticOver, setPragmaticOver] = useState(false)
   const isoDay = day.toISOString().split('T')[0]
+  const dragRender = useDragRender()
+
+  const pointerOver = Boolean(
+    dragRender?.slot?.isAllDay && dragRender.slot.isoDay === isoDay,
+  )
+  const isOver = pragmaticOver || pointerOver
 
   useEffect(() => {
     const el = ref.current
@@ -86,11 +96,15 @@ function DroppableAllDayCell({
       element: el,
       canDrop: ({ source }) => isCalendarDrag(source.data),
       getData: () => makeAllDaySlotData(isoDay),
-      onDragEnter: () => setIsOver(true),
-      onDragLeave: () => setIsOver(false),
-      onDrop: () => setIsOver(false),
+      onDragEnter: () => setPragmaticOver(true),
+      onDragLeave: () => setPragmaticOver(false),
+      onDrop: () => setPragmaticOver(false),
     })
   }, [isoDay])
+
+  // Skip ghost when the dragged event already lives in this cell
+  const isOriginCell = dragRender?.eventId != null && eventIds.includes(dragRender.eventId)
+  const ghostColor = pointerOver && !isOriginCell && dragRender ? EVENT_COLOR_MAP[dragRender.color] : null
 
   return (
     <div
@@ -98,6 +112,15 @@ function DroppableAllDayCell({
       className={`min-w-0 border-r border-cal-grid-line p-0.5 transition-colors ${isOver ? 'bg-cal-hover-bg' : ''}`}
     >
       {children}
+      {ghostColor && (
+        <div
+          className="pointer-events-none mb-0.5 truncate rounded-[var(--cal-radius-pill)] px-1.5 py-0.5 text-[11px] font-semibold opacity-50"
+          style={{ backgroundColor: ghostColor.bg, color: ghostColor.text }}
+          aria-hidden="true"
+        >
+          {dragRender!.title ?? 'New Event'}
+        </div>
+      )}
     </div>
   )
 }
