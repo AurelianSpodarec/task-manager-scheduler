@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { CalendarShell } from '@/features/calendar/components/calendar-shell'
 import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
 import { makeSidebarDragData, startPointerDrag } from '@/features/calendar/hooks/use-calendar-dnd'
+import { useDragRender } from '@/features/calendar/calendar-store'
 import {
   Briefcase,
   Repeat2,
@@ -321,9 +322,17 @@ function PlannerContent() {
 }
 
 function PlannerPage() {
+  const dragRender = useDragRender()
+  const sidebarHighlight = dragRender?.sidebarDropHovered
+
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200/80 bg-card md:flex-row">
-      <aside className="flex h-full min-h-0 w-full overflow-hidden p-4 md:w-[20.5rem] md:shrink-0">
+      <aside
+        data-sidebar-dropzone
+        className={`flex h-full min-h-0 w-full overflow-hidden p-4 md:w-[20.5rem] md:shrink-0 transition-colors ${
+          sidebarHighlight ? 'bg-zinc-100 ring-2 ring-inset ring-zinc-300 rounded-l-xl' : ''
+        }`}
+      >
         <PlannerSidebar />
       </aside>
       <section className="h-full min-h-0 flex-1 overflow-hidden border-t border-zinc-200/80 md:border-t-0 md:border-l">

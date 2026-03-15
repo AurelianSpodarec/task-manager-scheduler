@@ -6,6 +6,7 @@
 import {
   addEvent,
   updateEvent,
+  removeEvent,
   setDragState,
   setDragRender,
   clearDragRender,
@@ -207,6 +208,16 @@ function resolveSnapDay(clientX: number): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// Sidebar drop zone detection
+// ---------------------------------------------------------------------------
+function isOverSidebar(clientX: number, clientY: number): boolean {
+  const el = document.querySelector<HTMLElement>('[data-sidebar-dropzone]')
+  if (!el) return false
+  const r = el.getBoundingClientRect()
+  return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom
+}
+
+// ---------------------------------------------------------------------------
 // Slot resolution from pointer coordinates
 // ---------------------------------------------------------------------------
 function resolveSlotFromPointer(clientX: number, clientY: number): SlotDropData | null {
@@ -338,6 +349,7 @@ export function startPointerDrag(
       },
       elementSize: { width: rect.width, height: rect.height },
       slot: resolveSlotFromPointer(startX, startY),
+      sidebarDropHovered: false,
       taskMeta: dragData.taskMeta,
       personalMeta: dragData.personalMeta,
       eventMeta: dragData.eventMeta,
@@ -347,8 +359,10 @@ export function startPointerDrag(
 
   function flushMove() {
     rafId = null
-    const slot = resolveSlotFromPointer(pendingX, pendingY)
-    updateDragRenderFrame({ clientX: pendingX, clientY: pendingY }, slot)
+    const overSidebar = isOverSidebar(pendingX, pendingY)
+    const slot = overSidebar ? null : resolveSlotFromPointer(pendingX, pendingY)
+    const showSidebarHighlight = overSidebar && dragData.source === 'calendar'
+    updateDragRenderFrame({ clientX: pendingX, clientY: pendingY }, slot, showSidebarHighlight)
   }
 
   function onMove(ev: PointerEvent) {
@@ -368,7 +382,13 @@ export function startPointerDrag(
     // Flush any pending RAF so drop uses the latest position
     if (rafId != null) { cancelAnimationFrame(rafId); rafId = null }
     const slot = resolveSlotFromPointer(ev.clientX, ev.clientY)
-    executeDrop(dragData, slot)
+
+    // Calendar → sidebar: remove the event from the calendar
+    if (!slot && dragData.source === 'calendar' && dragData.eventId && isOverSidebar(ev.clientX, ev.clientY)) {
+      removeEvent(dragData.eventId)
+    } else {
+      executeDrop(dragData, slot)
+    }
 
     setDragState(null)
     clearDragRender()

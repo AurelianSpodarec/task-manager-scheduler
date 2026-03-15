@@ -131,15 +131,20 @@ function isSamePointer(a: DragPointer, b: DragPointer): boolean {
   return a.clientX === b.clientX && a.clientY === b.clientY
 }
 
-export function updateDragRenderFrame(pointer: DragPointer, slot: DragSlotCandidate | null) {
+export function updateDragRenderFrame(pointer: DragPointer, slot: DragSlotCandidate | null, sidebarDropHovered = false) {
   const current = state.dragRender
   if (!current) return
-  if (isSamePointer(current.pointer, pointer) && isSameSlotCandidate(current.slot, slot)) return
+  if (
+    isSamePointer(current.pointer, pointer) &&
+    isSameSlotCandidate(current.slot, slot) &&
+    current.sidebarDropHovered === sidebarDropHovered
+  ) return
   setState({
     dragRender: {
       ...current,
       pointer,
       slot,
+      sidebarDropHovered,
     },
   })
 }
