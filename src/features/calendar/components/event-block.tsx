@@ -3,7 +3,7 @@ import { Check } from 'lucide-react'
 import type { EventLayoutRect } from '../types'
 import { EVENT_STATUS_INDICATOR_COLORS } from '../constants'
 import { formatEventTime } from '../utils/date'
-import { makeEventDragData, startPointerDrag } from '../hooks/use-calendar-dnd'
+import { makeEventDragData, startPointerDrag } from '../dnd'
 import { priorityLeftBorderColor } from '@/lib/priority'
 import {
   personalActivityStyles,

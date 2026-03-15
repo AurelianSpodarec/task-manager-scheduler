@@ -6,7 +6,7 @@ import {
   Dumbbell,
   type LucideIcon,
 } from 'lucide-react'
-import type { EventColor } from '@/features/calendar/types'
+import type { EventColor } from '@/types/shared'
 
 export type PersonalActivityType = 'schoolRun' | 'lunch' | 'dentist' | 'driving' | 'gym'
 

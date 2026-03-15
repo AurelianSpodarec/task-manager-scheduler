@@ -115,3 +115,14 @@ export function formatWeekOfYear(date: Date, weekStartsOn: WeekStartDay = 1): st
 }
 
 export { isSameDay, isToday, addDays, startOfDay, getHours, getMinutes, format }
+
+import { WEEK_DAY_LABELS } from '../constants'
+
+/**
+ * Returns day labels and their JS day-of-week indices rotated to match the given week start.
+ * Each entry: { label, dayIndex } where dayIndex is the native 0=Sun value.
+ */
+export function getOrderedWeekDays(weekStartsOn: 0 | 1) {
+  const base = WEEK_DAY_LABELS.map((label, i) => ({ label, dayIndex: i }))
+  return [...base.slice(weekStartsOn), ...base.slice(0, weekStartsOn)]
+}

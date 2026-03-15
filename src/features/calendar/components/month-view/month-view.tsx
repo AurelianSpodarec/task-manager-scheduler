@@ -1,6 +1,5 @@
 import { useActiveDate, useWeekStartsOn } from '../../calendar-store'
-import { getMonthGrid } from '../../utils/date'
-import { getOrderedWeekDays } from '../../constants'
+import { getMonthGrid, getOrderedWeekDays } from '../../utils/date'
 import { MonthDayCell } from './month-day-cell'
 
 export function MonthView() {

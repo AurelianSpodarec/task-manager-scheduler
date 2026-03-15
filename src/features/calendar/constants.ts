@@ -28,14 +28,6 @@ export const EVENT_STATUS_INDICATOR_COLORS = {
 
 export const WEEK_DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const
 
-/**
- * Returns day labels and their JS day-of-week indices rotated to match the given week start.
- * Each entry: { label, dayIndex } where dayIndex is the native 0=Sun value.
- */
-export function getOrderedWeekDays(weekStartsOn: 0 | 1) {
-  const base = WEEK_DAY_LABELS.map((label, i) => ({ label, dayIndex: i }))
-  return [...base.slice(weekStartsOn), ...base.slice(0, weekStartsOn)]
-}
 
 export const DEFAULT_WORK_HOURS: WorkHoursConfig = {
   startHour: 9,

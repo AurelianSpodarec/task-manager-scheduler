@@ -4,7 +4,7 @@ import { useAllDayEvents } from '../../calendar-store'
 import { isSameDay } from '../../utils/date'
 import { EVENT_COLOR_MAP } from '../../constants'
 import type { CalendarEvent } from '../../types'
-import { isCalendarDrag, makeAllDaySlotData, makeEventDragData, startPointerDrag } from '../../hooks/use-calendar-dnd'
+import { isCalendarDrag, makeAllDaySlotData, makeEventDragData, startPointerDrag } from '../../dnd'
 
 type AllDayRowProps = {
   weekDays: Date[]

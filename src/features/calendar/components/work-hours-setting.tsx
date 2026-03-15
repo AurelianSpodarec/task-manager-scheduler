@@ -8,8 +8,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useWorkHours, setWorkHours, useWeekStartsOn, setWeekStartsOn } from '../calendar-store'
-import { getOrderedWeekDays } from '../constants'
-import { formatHour } from '../utils/date'
+import { formatHour, getOrderedWeekDays } from '../utils/date'
 import type { WeekStartDay } from '../types'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)

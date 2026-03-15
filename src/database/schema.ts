@@ -1,4 +1,4 @@
-import type { EventColor, EventStatus, EventPriority, Participant } from '@/features/calendar/types'
+import type { EventColor, EventStatus, EventPriority, Participant } from '@/types/shared'
 import type { PersonalActivityType } from '@/lib/personal-activity'
 
 export type TaskType = 'work' | 'personal' | 'meeting'
