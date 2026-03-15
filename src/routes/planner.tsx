@@ -3,7 +3,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import {
   CalendarShell,
   getSlotDuration,
-  WORKWEEK_CONFIG,
   makeSidebarDragData,
   startPointerDrag,
   useDragRender,
@@ -341,7 +340,6 @@ function renderDragPreview(drag: DragRenderState): React.ReactNode {
 function PlannerContent() {
   return (
     <CalendarShell config={{
-      ...WORKWEEK_CONFIG,
       renderDragPreview,
       eventHandlers: {
         onEventDrop: (id, start, end, allDay) => {

@@ -1,7 +1,7 @@
 import type { ComponentType, CSSProperties } from 'react'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { HOUR_HEIGHT_PX } from '../../constants'
-import { startOfDay, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
+import { startOfDay, addDays, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { useFormatTime } from '../../hooks/use-format-time'
 import type { DragRenderState } from '../../types'
 
@@ -23,10 +23,9 @@ export function getProjectedCard(
 ): ProjectedCard | null {
   if (!dragRender?.slot) return null
   if (dragRender.slot.isAllDay) return null
-  if (dragRender.slot.isoDay !== isoDay) return null
 
-  const day = new Date(dragRender.slot.isoDay)
-  const slotStart = setMinutes(setHours(startOfDay(day), dragRender.slot.hour), dragRender.slot.minute)
+  const slotDay = new Date(dragRender.slot.isoDay)
+  const slotStart = setMinutes(setHours(startOfDay(slotDay), dragRender.slot.hour), dragRender.slot.minute)
 
   const durationMinutes = dragRender.durationMinutes ?? 60
 
@@ -43,12 +42,22 @@ export function getProjectedCard(
   const start = addMinutes(slotStart, -grabOffsetMin)
   const end = addMinutes(start, durationMinutes)
 
+  // Clamp to this column's day bounds — applies to both primary and spillover
+  const colDay = new Date(isoDay)
+  const colStart = startOfDay(colDay)
+  const colEnd = addDays(colStart, 1)
+
+  if (start >= colEnd || end <= colStart) return null
+
+  const visStart = start < colStart ? colStart : start
+  const visEnd = end > colEnd ? colEnd : end
+
   return {
     title: dragRender.title ?? 'New Event',
-    start,
-    end,
-    top: dateToPixelOffset(start, HOUR_HEIGHT_PX),
-    height: durationToPixelHeight(start, end, HOUR_HEIGHT_PX),
+    start: visStart,
+    end: visEnd,
+    top: dateToPixelOffset(visStart, HOUR_HEIGHT_PX),
+    height: durationToPixelHeight(visStart, visEnd, HOUR_HEIGHT_PX),
     className: dragRender.className,
     style: dragRender.style,
     icon: dragRender.icon,

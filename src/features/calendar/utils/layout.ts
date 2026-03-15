@@ -1,6 +1,6 @@
 import type { CalendarEvent, EventLayoutRect } from '../types'
 import { HOUR_HEIGHT_PX } from '../constants'
-import { dateToPixelOffset, durationToPixelHeight } from './date'
+import { dateToPixelOffset, durationToPixelHeight, startOfDay, addDays } from './date'
 
 /**
  * Column-packing layout: assigns each overlapping event a column index and
@@ -15,9 +15,13 @@ import { dateToPixelOffset, durationToPixelHeight } from './date'
  */
 export function layoutEventsForDay(
   events: CalendarEvent[],
+  day: Date,
   hourHeightPx = HOUR_HEIGHT_PX,
 ): EventLayoutRect[] {
   if (events.length === 0) return []
+
+  const dayStart = startOfDay(day)
+  const dayEnd = addDays(dayStart, 1)
 
   // Only layout timed events (all-day events are handled separately)
   const timed = events
@@ -77,12 +81,15 @@ export function layoutEventsForDay(
     const totalColumns = columns.length
 
     for (const { event, column } of assignments) {
+      // Clamp visible range to this day's bounds for cross-day events
+      const visStart = event.start < dayStart ? dayStart : event.start
+      const visEnd = event.end > dayEnd ? dayEnd : event.end
       rects.push({
         event,
         column,
         totalColumns,
-        top: dateToPixelOffset(event.start, hourHeightPx),
-        height: durationToPixelHeight(event.start, event.end, hourHeightPx),
+        top: dateToPixelOffset(visStart, hourHeightPx),
+        height: durationToPixelHeight(visStart, visEnd, hourHeightPx),
       })
     }
   }

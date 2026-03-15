@@ -30,7 +30,7 @@ type DayColumnProps = {
 
 export function DayColumn({ day }: DayColumnProps) {
   const events = useEventsForDay(day)
-  const layouts = layoutEventsForDay(events, HOUR_HEIGHT_PX)
+  const layouts = layoutEventsForDay(events, day, HOUR_HEIGHT_PX)
   const today = isToday(day)
   const slotDuration = useSlotDuration()
   const dragRender = useDragRender()

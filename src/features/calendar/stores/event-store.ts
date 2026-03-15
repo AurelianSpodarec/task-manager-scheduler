@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { CalendarEvent } from '../types'
 import { getDataSource } from '../data'
-import { isSameDay } from '../utils/date'
+import { addDays } from '../utils/date'
 
 // ---------------------------------------------------------------------------
 // Derived caches — invalidated when the data source snapshot changes
@@ -27,11 +27,10 @@ function getEventsForDayISO(isoDate: string): CalendarEvent[] {
   if (cached) return cached
 
   const dayStart = new Date(isoDate + 'T00:00:00')
+  const dayEnd = addDays(dayStart, 1)
+  // Half-open interval overlap: excludes events ending exactly at midnight
   const result = scheduledEventsCache.filter(
-    (e) =>
-      isSameDay(e.start, dayStart) ||
-      isSameDay(e.end, dayStart) ||
-      (e.start < dayStart && e.end > dayStart),
+    (e) => !e.isAllDay && e.start < dayEnd && e.end > dayStart,
   )
   dayEventsCache.set(isoDate, result)
   return result

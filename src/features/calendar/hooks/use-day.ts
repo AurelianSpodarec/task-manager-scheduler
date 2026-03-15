@@ -19,7 +19,7 @@ export function useDay(day: Date): DayInfo {
   const events = useEventsForDay(day)
   const visibleDays = useVisibleDays()
   const workHours = useWorkHours()
-  const layouts = layoutEventsForDay(events, HOUR_HEIGHT_PX)
+  const layouts = layoutEventsForDay(events, day, HOUR_HEIGHT_PX)
   const dayOfWeek = day.getDay()
 
   return {
