@@ -13,7 +13,8 @@ export function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): 
   const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
 
   const slotDur = getSlotDuration()
-  const grabOffsetMin = drag.grabOffsetY != null
+  // Pointer-offset correction only applies to timed slots; all-day drops anchor at midnight.
+  const grabOffsetMin = !isAllDayDrop && drag.grabOffsetY != null
     ? Math.round(((drag.grabOffsetY / HOUR_HEIGHT_PX) * 60) / slotDur) * slotDur
     : 0
   const targetStart = addMinutes(slotStart, -grabOffsetMin)

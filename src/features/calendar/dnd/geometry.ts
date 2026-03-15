@@ -31,6 +31,18 @@ export function clearColumnRects() {
   lastPointerX = 0
 }
 
+/** Simple containment lookup — no hysteresis. Used for all-day row targeting. */
+export function resolveSimpleDay(clientX: number): string | null {
+  for (let i = 0; i < columnRects.length; i++) {
+    if (clientX >= columnRects[i].left && clientX < columnRects[i].right) {
+      currentDay = columnRects[i].isoDay
+      lastPointerX = clientX
+      return currentDay
+    }
+  }
+  return currentDay
+}
+
 export function resolveSnapDay(clientX: number): string | null {
   if (columnRects.length === 0) return null
 
@@ -106,7 +118,7 @@ export function resolveSlotFromPointer(clientX: number, clientY: number): SlotDr
   if (allDayEl) {
     const r = allDayEl.getBoundingClientRect()
     if (clientY >= r.top && clientY <= r.bottom) {
-      const day = resolveSnapDay(clientX)
+      const day = resolveSimpleDay(clientX)
       if (day) return { _type: SLOT_TYPE, isoDay: day, hour: 0, minute: 0, isAllDay: true }
     }
   }
