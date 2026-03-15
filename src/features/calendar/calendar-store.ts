@@ -43,6 +43,13 @@ export {
   useDragState, useDragRender,
 } from './stores/drag-store'
 
+// --- Cell selection state ---
+export {
+  type CellCoord,
+  startSelection, updateSelection, endSelection, clearSelection,
+  isSelectionActive, useIsCellSelected,
+} from './stores/hover-store'
+
 // --- Events ---
 export {
   useCalendarEvents, useEventsForDay, useAllDayEvents,

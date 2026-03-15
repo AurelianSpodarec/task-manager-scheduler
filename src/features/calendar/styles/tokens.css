@@ -87,6 +87,9 @@
   --cal-event-bg-default: var(--cal-brand-teal);
   --cal-event-bg-completed: var(--cal-brand-teal);
   --cal-hover-bg: oklch(0.97 0 0);
+  --cal-cell-highlight: #ecfdff;
+  --cal-cell-hover-bg: var(--cal-cell-highlight);
+  --cal-cell-selected-bg: var(--cal-cell-highlight);
   --cal-offhours-bg: oklch(0.97 0 0 / 80%);
   --cal-focus-ring: var(--cal-brand-blue);
   --cal-week-header-bg: oklch(0.985 0 0);
@@ -104,6 +107,9 @@
 .dark {
   --cal-today-bg: oklch(0.25 0.02 250);
   --cal-hover-bg: oklch(0.25 0 0);
+  --cal-cell-highlight: #ecfdff;
+  --cal-cell-hover-bg: var(--cal-cell-highlight);
+  --cal-cell-selected-bg: var(--cal-cell-highlight);
   --cal-offhours-bg: oklch(0.18 0 0 / 60%);
   --cal-week-header-bg: oklch(0.23 0.01 255);
   --cal-week-header-text: var(--cal-brand-zinc-700);
@@ -157,6 +163,8 @@
   --color-cal-time-indicator: var(--cal-time-indicator);
   --color-cal-event-text: var(--cal-event-text);
   --color-cal-hover-bg: var(--cal-hover-bg);
+  --color-cal-cell-hover-bg: var(--cal-cell-hover-bg);
+  --color-cal-cell-selected-bg: var(--cal-cell-selected-bg);
   --color-cal-offhours-bg: var(--cal-offhours-bg);
   --color-cal-focus-ring: var(--cal-focus-ring);
   --color-cal-week-header-bg: var(--cal-week-header-bg);

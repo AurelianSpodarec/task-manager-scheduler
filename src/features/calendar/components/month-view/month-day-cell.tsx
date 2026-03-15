@@ -18,7 +18,7 @@ export function MonthDayCell({ day, activeMonth }: MonthDayCellProps) {
 
   return (
     <div
-      className={`flex min-h-cal-month-cell flex-col border-b border-r border-cal-grid-line p-1 ${
+      className={`cal-month-cell flex min-h-cal-month-cell flex-col border-b border-r border-cal-grid-line p-1 transition-colors ${
         today ? 'bg-cal-today-bg' : ''
       } ${!inMonth ? 'opacity-40' : ''}`}
       role="gridcell"

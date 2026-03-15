@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { makeSlotData, isCalendarDrag } from '../../dnd'
+import { startSelection, updateSelection, isSelectionActive, useIsCellSelected } from '../../calendar-store'
 
 type DroppableSlotProps = {
   isoDay: string
@@ -42,13 +43,17 @@ export function DroppableSlot({
     })
   }, [isoDay, hour, minute, isDragging])
 
+  const selected = useIsCellSelected(isoDay, hour, minute)
+
   return (
     <div
       ref={ref}
-      className={`${isDragging ? 'transition-none' : 'transition-colors'} ${
+      className={`cal-slot ${isDragging ? 'transition-none' : 'transition-colors'} ${
         showHourBorder ? 'border-b border-cal-grid-line' : showHalfBorder ? 'border-b border-dotted border-cal-grid-line' : ''
-      } ${isOver ? 'bg-cal-hover-bg' : isOffHours ? 'bg-cal-offhours-bg' : ''}`}
+      } ${isOver ? 'bg-cal-hover-bg' : selected ? 'bg-cal-cell-selected-bg' : isOffHours ? 'bg-cal-offhours-bg' : ''}`}
       style={{ height: `${height}px` }}
+      onMouseDown={(e) => startSelection({ isoDay, hour, minute }, e.nativeEvent)}
+      onMouseEnter={() => { if (isSelectionActive()) updateSelection({ isoDay, hour, minute }) }}
     />
   )
 }
