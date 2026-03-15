@@ -10,7 +10,7 @@ import {
   updateDragRenderFrame,
   getSlotDuration,
 } from '../calendar-store'
-import { scheduleTask, unscheduleTask, moveScheduledTask } from '@/services/task-service'
+import { scheduleTask, unscheduleTask, moveScheduledTask, spawnScheduledTask, deleteScheduledTask } from '@/services/task-service'
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
 import { DAY_START_HOUR, HOUR_HEIGHT_PX } from '../constants'
@@ -261,7 +261,12 @@ function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
   if (drag.source === 'sidebar' && drag.eventId) {
     const mins = roundUpToIncrement(drag.durationMinutes ?? 60, slotDur)
     const end = isAllDayDrop ? addMinutes(targetStart, 1440) : addMinutes(targetStart, mins)
-    scheduleTask(drag.eventId, targetStart, end, isAllDayDrop || mins >= 1440)
+    const allDay = isAllDayDrop || mins >= 1440
+    if (drag.personalActivityType != null) {
+      spawnScheduledTask(drag.eventId, targetStart, end, allDay)
+    } else {
+      scheduleTask(drag.eventId, targetStart, end, allDay)
+    }
   } else if (drag.source === 'calendar' && drag.eventId) {
     const durationMinutes =
       drag.originalStart != null && drag.originalEnd != null
@@ -368,9 +373,13 @@ export function startPointerDrag(
     const overSidebar = isOverSidebar(ev.clientX, ev.clientY)
     const slot = overSidebar ? null : resolveSlotFromPointer(ev.clientX, ev.clientY)
 
-    // Calendar → sidebar: unschedule the task so it reappears in sidebar
+    // Calendar → sidebar: personal clones get deleted, work tasks get unscheduled
     if (overSidebar && dragData.source === 'calendar' && dragData.eventId) {
-      unscheduleTask(dragData.eventId)
+      if (dragData.personalActivityType != null) {
+        deleteScheduledTask(dragData.eventId)
+      } else {
+        unscheduleTask(dragData.eventId)
+      }
     } else {
       executeDrop(dragData, slot)
     }

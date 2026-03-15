@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Task, TaskType } from '@/database/schema'
 import type { CalendarEvent } from '@/features/calendar/types'
-import { getAllTasks, getTask, upsertTask, subscribe, getSnapshot } from '@/database/db'
+import { getAllTasks, getTask, upsertTask, deleteTask, subscribe, getSnapshot } from '@/database/db'
 
 // ---------------------------------------------------------------------------
 // Task → CalendarEvent adapter
@@ -78,6 +78,30 @@ export function moveScheduledTask(
     ...task,
     schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
   })
+}
+
+let spawnCounter = 0
+
+/** Clone a personal template task onto the calendar — the original stays unscheduled. */
+export function spawnScheduledTask(
+  templateId: string,
+  start: Date,
+  end: Date,
+  isAllDay: boolean,
+): void {
+  const template = getTask(templateId)
+  if (!template) return
+  const clone: Task = {
+    ...template,
+    id: `${templateId}-spawn-${Date.now()}-${++spawnCounter}`,
+    schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
+  }
+  upsertTask(clone)
+}
+
+/** Remove a spawned calendar clone — personal drags back to sidebar just delete the copy. */
+export function deleteScheduledTask(id: string): void {
+  deleteTask(id)
 }
 
 // ---------------------------------------------------------------------------
