@@ -260,7 +260,7 @@ function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
   const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
 
   const slotDur = getSlotDuration()
-  const grabOffsetMin = drag.source === 'calendar' && drag.grabOffsetY != null
+  const grabOffsetMin = drag.grabOffsetY != null
     ? Math.round(((drag.grabOffsetY / HOUR_HEIGHT_PX) * 60) / slotDur) * slotDur
     : 0
   const targetStart = addMinutes(slotStart, -grabOffsetMin)
@@ -333,6 +333,13 @@ export function startPointerDrag(
     cacheColumnRects()
 
     const rect = element.getBoundingClientRect()
+    const pointerOffsetY = Math.max(0, Math.min(rect.height, startY - rect.top))
+    if (dragData.source === 'calendar') {
+      dragData.grabOffsetY = pointerOffsetY
+    } else {
+      const fraction = rect.height > 0 ? pointerOffsetY / rect.height : 0
+      dragData.grabOffsetY = fraction * ((dragData.durationMinutes ?? 60) / 60) * HOUR_HEIGHT_PX
+    }
     setDragRender({
       source: dragData.source,
       eventId: dragData.eventId,

@@ -205,13 +205,19 @@ function getProjectedCard(
   const day = new Date(dragRender.slot.isoDay)
   const slotStart = setMinutes(setHours(startOfDay(day), dragRender.slot.hour), dragRender.slot.minute)
 
-  // Offset so the card stays anchored at the grab point, not the top
-  const grabOffsetMin = dragRender.source === 'calendar'
-    ? Math.round(((dragRender.pointerOffset.y / HOUR_HEIGHT_PX) * 60) / slotDuration) * slotDuration
-    : 0
-  const start = addMinutes(slotStart, -grabOffsetMin)
-
   const durationMinutes = dragRender.durationMinutes ?? 60
+
+  // Offset so the card stays anchored at the grab point, not the top
+  let grabOffsetMin: number
+  if (dragRender.source === 'calendar') {
+    grabOffsetMin = Math.round(((dragRender.pointerOffset.y / HOUR_HEIGHT_PX) * 60) / slotDuration) * slotDuration
+  } else {
+    const fraction = dragRender.elementSize.height > 0
+      ? dragRender.pointerOffset.y / dragRender.elementSize.height
+      : 0
+    grabOffsetMin = Math.round((fraction * durationMinutes) / slotDuration) * slotDuration
+  }
+  const start = addMinutes(slotStart, -grabOffsetMin)
   const end = addMinutes(start, durationMinutes)
 
   // Resolve priority + status from whichever meta is available
