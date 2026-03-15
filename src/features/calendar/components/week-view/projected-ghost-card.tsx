@@ -1,7 +1,8 @@
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { Check } from 'lucide-react'
 import { HOUR_HEIGHT_PX, EVENT_STATUS_INDICATOR_COLORS } from '../../constants'
-import { startOfDay, formatEventTime, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
+import { startOfDay, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
+import { useFormatTime } from '../../hooks/use-format-time'
 import { priorityLeftBorderColor } from '@/lib/priority'
 import {
   personalActivityStyles,
@@ -65,6 +66,7 @@ export function getProjectedCard(
 }
 
 export function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) {
+  const { formatEventTime } = useFormatTime()
   const isCompact = projected.height < 40
   const priorityBorder = priorityLeftBorderColor[projected.priority]
   const verticalInsetPx = 2

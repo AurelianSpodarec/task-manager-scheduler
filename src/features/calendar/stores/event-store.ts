@@ -1,43 +1,39 @@
 import { useSyncExternalStore } from 'react'
 import type { CalendarEvent } from '../types'
-import type { Task } from '@/database/schema'
-import { subscribe as dbSubscribe, getSnapshot as dbGetSnapshot } from '@/database/db'
-import { toCalendarEvent } from '@/services/task-service'
-import { isSameDay, startOfDay } from '../utils/date'
+import { getDataSource } from '../data'
+import { isSameDay } from '../utils/date'
 
 // ---------------------------------------------------------------------------
-// DB-backed caches — invalidated when the DB snapshot reference changes
+// Derived caches — invalidated when the data source snapshot changes
 // ---------------------------------------------------------------------------
-let cachedDbRef: Task[] = []
+let cachedSnapshotRef: CalendarEvent[] = []
 let scheduledEventsCache: CalendarEvent[] = []
 const dayEventsCache = new Map<string, CalendarEvent[]>()
 let allDayCache: { key: string; result: CalendarEvent[] } | null = null
 
 function invalidateDerivedCaches() {
-  const dbSnap = dbGetSnapshot()
-  if (dbSnap !== cachedDbRef) {
-    cachedDbRef = dbSnap
-    scheduledEventsCache = dbSnap
-      .filter((t) => t.schedule != null)
-      .map(toCalendarEvent)
+  const snap = getDataSource().getSnapshot()
+  if (snap !== cachedSnapshotRef) {
+    cachedSnapshotRef = snap
+    scheduledEventsCache = snap
     dayEventsCache.clear()
     allDayCache = null
   }
 }
 
-function getEventsForDay(dayStart: Date): CalendarEvent[] {
+function getEventsForDayISO(isoDate: string): CalendarEvent[] {
   invalidateDerivedCaches()
-  const key = dayStart.toISOString()
-  const cached = dayEventsCache.get(key)
+  const cached = dayEventsCache.get(isoDate)
   if (cached) return cached
 
+  const dayStart = new Date(isoDate + 'T00:00:00')
   const result = scheduledEventsCache.filter(
     (e) =>
       isSameDay(e.start, dayStart) ||
       isSameDay(e.end, dayStart) ||
       (e.start < dayStart && e.end > dayStart),
   )
-  dayEventsCache.set(key, result)
+  dayEventsCache.set(isoDate, result)
   return result
 }
 
@@ -54,33 +50,50 @@ function getAllDayEventsInRange(weekStart: Date, weekEnd: Date): CalendarEvent[]
 }
 
 // ---------------------------------------------------------------------------
+// Subscribe helper — delegates to the active data source
+// ---------------------------------------------------------------------------
+function dsSubscribe(cb: () => void) {
+  return getDataSource().subscribe(cb)
+}
+
+// ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
 
-/** All scheduled events — re-renders when the DB changes. */
+/** All scheduled events — re-renders when the data source changes. */
 export function useCalendarEvents(): CalendarEvent[] {
   return useSyncExternalStore(
-    dbSubscribe,
+    dsSubscribe,
     () => { invalidateDerivedCaches(); return scheduledEventsCache },
     () => { invalidateDerivedCaches(); return scheduledEventsCache },
   )
 }
 
-/** Events for a specific day (cached — stable reference). */
+/**
+ * Events for a specific day (cached — stable reference).
+ * Normalises to ISO date string early so the selector identity stays stable
+ * across renders even when a new Date object is passed.
+ */
 export function useEventsForDay(day: Date): CalendarEvent[] {
-  const dayStart = startOfDay(day)
+  const iso = day.toISOString().slice(0, 10)
   return useSyncExternalStore(
-    dbSubscribe,
-    () => getEventsForDay(dayStart),
-    () => getEventsForDay(dayStart),
+    dsSubscribe,
+    () => getEventsForDayISO(iso),
+    () => getEventsForDayISO(iso),
   )
 }
 
 /** All-day events within a date range (cached — stable reference). */
 export function useAllDayEvents(weekStart: Date, weekEnd: Date): CalendarEvent[] {
   return useSyncExternalStore(
-    dbSubscribe,
+    dsSubscribe,
     () => getAllDayEventsInRange(weekStart, weekEnd),
     () => getAllDayEventsInRange(weekStart, weekEnd),
   )
+}
+
+/** Data source loading/error state — always resolved for sync adapter. */
+export function useCalendarDataState(): { loading: boolean; error: Error | null } {
+  const ds = getDataSource()
+  return { loading: ds.loading, error: ds.error }
 }

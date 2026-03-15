@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
-import { useActiveDate, useMobileFocusDay, useTimeGuideVisible, useWeekStartsOn } from '../../calendar-store'
-import { getWeekDays, formatWeekOfYear, dateToPixelOffset } from '../../utils/date'
-import { VISIBLE_START_HOUR, HOUR_HEIGHT_PX } from '../../constants'
+import { useActiveDate, useMobileFocusDay, useTimeGuideVisible, useWeekStartsOn, useVisibleStartHour, useConfigLocale, useVisibleDays } from '../../calendar-store'
+import { getVisibleWeekDays, formatWeekOfYear, dateToPixelOffset } from '../../utils/date'
+import { HOUR_HEIGHT_PX } from '../../constants'
 import { useCurrentTime } from '../../hooks/use-current-time'
 import { TimeGutter } from './time-gutter'
 import { DayColumn } from './day-column'
@@ -13,15 +13,19 @@ import { CalendarDragLayer } from './calendar-drag-layer'
 export function WeekView() {
   const activeDate = useActiveDate()
   const weekStartsOn = useWeekStartsOn()
-  const weekDays = getWeekDays(activeDate, weekStartsOn)
-  const weekLabel = formatWeekOfYear(activeDate, weekStartsOn)
+  const locale = useConfigLocale()
+  const visibleDays = useVisibleDays()
+  const weekDays = getVisibleWeekDays(activeDate, weekStartsOn, visibleDays)
+  const weekLabel = formatWeekOfYear(activeDate, weekStartsOn, locale)
   const mobileFocus = useMobileFocusDay()
+  const visibleStartHour = useVisibleStartHour()
+  const dayCount = weekDays.length
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = VISIBLE_START_HOUR * HOUR_HEIGHT_PX - 8
+      scrollRef.current.scrollTop = visibleStartHour * HOUR_HEIGHT_PX - 8
     }
   }, [activeDate])
 
@@ -35,7 +39,7 @@ export function WeekView() {
   }, [])
 
   return (
-    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col" role="grid" aria-colcount={7} aria-label="Week calendar view">
+    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col" role="grid" aria-colcount={dayCount} aria-label="Week calendar view" style={{ '--cal-day-count': dayCount } as React.CSSProperties}>
       {/* Mobile: day strip selector */}
       <DayStripNav weekDays={weekDays} />
 

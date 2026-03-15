@@ -2,8 +2,8 @@ import { useRef, useCallback, useState } from 'react'
 import { Check } from 'lucide-react'
 import type { EventLayoutRect } from '../types'
 import { EVENT_STATUS_INDICATOR_COLORS } from '../constants'
-import { formatEventTime } from '../utils/date'
 import { makeEventDragData, startPointerDrag } from '../dnd'
+import { useFormatTime } from '../hooks/use-format-time'
 import { priorityLeftBorderColor } from '@/lib/priority'
 import {
   personalActivityStyles,
@@ -24,6 +24,7 @@ export function EventBlock({ layout }: EventBlockProps) {
   const isPersonal = event.personalActivityType != null
   const activityType = event.personalActivityType as PersonalActivityType | undefined
 
+  const { formatEventTime } = useFormatTime()
   const priorityBorderColor = priorityLeftBorderColor[event.priority]
 
   // Personal activity styling

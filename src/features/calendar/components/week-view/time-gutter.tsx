@@ -1,14 +1,18 @@
-import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX } from '../../constants'
-import { dateToPixelOffset, formatHour } from '../../utils/date'
+import { HOUR_HEIGHT_PX } from '../../constants'
+import { dateToPixelOffset } from '../../utils/date'
 import { useCurrentTime } from '../../hooks/use-current-time'
-import { setTimeChevronHovered, toggleTimeGuidePinned } from '../../calendar-store'
+import { useFormatTime } from '../../hooks/use-format-time'
+import { setTimeChevronHovered, toggleTimeGuidePinned, useDayStartHour, useDayEndHour } from '../../calendar-store'
 
 export function TimeGutter() {
   const now = useCurrentTime()
   const chevronTop = dateToPixelOffset(now, HOUR_HEIGHT_PX)
+  const { formatHour } = useFormatTime()
+  const dayStartHour = useDayStartHour()
+  const dayEndHour = useDayEndHour()
 
   const hours: number[] = []
-  for (let h = DAY_START_HOUR; h < DAY_END_HOUR; h++) {
+  for (let h = dayStartHour; h < dayEndHour; h++) {
     hours.push(h)
   }
 

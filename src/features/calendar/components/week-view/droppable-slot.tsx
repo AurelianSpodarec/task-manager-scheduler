@@ -26,7 +26,10 @@ export function DroppableSlot({
   const ref = useRef<HTMLDivElement>(null)
   const [isOver, setIsOver] = useState(false)
 
+  // Only register the drop target while a drag is active — avoids 672 idle
+  // Pragmatic DnD subscriptions when nobody is dragging.
   useEffect(() => {
+    if (!isDragging) return
     const el = ref.current
     if (!el) return
     return dropTargetForElements({
@@ -37,7 +40,7 @@ export function DroppableSlot({
       onDragLeave: () => setIsOver(false),
       onDrop: () => setIsOver(false),
     })
-  }, [isoDay, hour, minute])
+  }, [isoDay, hour, minute, isDragging])
 
   return (
     <div

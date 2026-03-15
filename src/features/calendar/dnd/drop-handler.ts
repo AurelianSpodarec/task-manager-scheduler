@@ -1,6 +1,6 @@
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
-import { getSlotDuration } from '../stores/ui-store'
+import { getSlotDuration } from '../config'
 import { HOUR_HEIGHT_PX } from '../constants'
 import { scheduleTask, moveScheduledTask, spawnScheduledTask } from '@/services/task-service'
 import { roundUpToIncrement, type CalendarDragData, type SlotDropData } from './types'

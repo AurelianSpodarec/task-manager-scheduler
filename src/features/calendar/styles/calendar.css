@@ -14,13 +14,13 @@
 @layer components {
   .cal-week-grid {
     display: grid;
-    grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr));
+    grid-template-columns: var(--cal-gutter-w) repeat(var(--cal-day-count, 7), minmax(0, 1fr));
   }
 
   /* Header variant: trailing spacer column matching the scrollbar gutter */
   .cal-week-grid-header {
     display: grid;
-    grid-template-columns: var(--cal-gutter-w) repeat(7, minmax(0, 1fr)) var(--cal-scrollbar-w);
+    grid-template-columns: var(--cal-gutter-w) repeat(var(--cal-day-count, 7), minmax(0, 1fr)) var(--cal-scrollbar-w);
   }
 
   /* Mobile: narrower gutter + single day column, no spacer */

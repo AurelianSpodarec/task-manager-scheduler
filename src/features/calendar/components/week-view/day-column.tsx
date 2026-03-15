@@ -1,11 +1,28 @@
-import { useEventsForDay, useSlotDuration, useDragRender, useWorkHours, isWithinWorkHours } from '../../calendar-store'
-import { DAY_START_HOUR, DAY_END_HOUR, HOUR_HEIGHT_PX } from '../../constants'
+import { useEventsForDay, useSlotDuration, useDragRender, useWorkHours, isWithinWorkHours, useDayStartHour, useDayEndHour } from '../../calendar-store'
+import { HOUR_HEIGHT_PX } from '../../constants'
 import { isToday } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
 import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
 import { DroppableSlot } from './droppable-slot'
 import { ProjectedGhostCard, getProjectedCard } from './projected-ghost-card'
+
+// Cached slot grid — only reallocates when the parameters actually change
+type SlotEntry = { hour: number; minute: number }
+let _slotCache: { key: string; slots: SlotEntry[] } | null = null
+
+function getSlots(startHour: number, endHour: number, duration: number): SlotEntry[] {
+  const key = `${startHour}-${endHour}-${duration}`
+  if (_slotCache?.key === key) return _slotCache.slots
+  const slots: SlotEntry[] = []
+  for (let h = startHour; h < endHour; h++) {
+    for (let m = 0; m < 60; m += duration) {
+      slots.push({ hour: h, minute: m })
+    }
+  }
+  _slotCache = { key, slots }
+  return slots
+}
 
 type DayColumnProps = {
   day: Date
@@ -18,17 +35,13 @@ export function DayColumn({ day }: DayColumnProps) {
   const slotDuration = useSlotDuration()
   const dragRender = useDragRender()
   const workHours = useWorkHours()
+  const dayStartHour = useDayStartHour()
+  const dayEndHour = useDayEndHour()
   const isoDay = day.toISOString().split('T')[0]
   const dayOfWeek = day.getDay()
   const isDragging = dragRender != null
   const projected = getProjectedCard(dragRender, isoDay, slotDuration)
-
-  const slots: { hour: number; minute: number }[] = []
-  for (let h = DAY_START_HOUR; h < DAY_END_HOUR; h++) {
-    for (let m = 0; m < 60; m += slotDuration) {
-      slots.push({ hour: h, minute: m })
-    }
-  }
+  const slots = getSlots(dayStartHour, dayEndHour, slotDuration)
 
   return (
     <div

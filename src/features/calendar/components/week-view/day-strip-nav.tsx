@@ -1,7 +1,6 @@
-import { useMobileFocusDay, setMobileFocusDay } from '../../calendar-store'
-import { isToday, formatDayHeader } from '../../utils/date'
-
-const SHORT_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
+import { useMobileFocusDay, setMobileFocusDay, useConfigLocale } from '../../calendar-store'
+import { isToday, format } from '../../utils/date'
+import { useFormatTime } from '../../hooks/use-format-time'
 
 type DayStripNavProps = {
   weekDays: Date[]
@@ -9,6 +8,8 @@ type DayStripNavProps = {
 
 export function DayStripNav({ weekDays }: DayStripNavProps) {
   const focusIndex = useMobileFocusDay()
+  const { formatDayHeader } = useFormatTime()
+  const locale = useConfigLocale()
 
   return (
     <nav
@@ -18,7 +19,6 @@ export function DayStripNav({ weekDays }: DayStripNavProps) {
       {weekDays.map((day, i) => {
         const today = isToday(day)
         const selected = i === focusIndex
-        const dayIndex = day.getDay()
 
         return (
           <button
@@ -35,7 +35,7 @@ export function DayStripNav({ weekDays }: DayStripNavProps) {
             }`}
           >
             <span className="text-[10px] font-semibold uppercase leading-none">
-              {SHORT_DAYS[dayIndex]}
+              {format(day, 'EEEEE', { locale })}
             </span>
             <span className={`text-[13px] font-bold leading-none ${selected ? '' : ''}`}>
               {formatDayHeader(day)}

@@ -1,11 +1,4 @@
-import type { EventColor, SlotDuration, WorkHoursConfig } from './types'
-
-export const SLOT_INCREMENT_MINUTES: SlotDuration = 15
-export const DEFAULT_SLOT_DURATION: SlotDuration = SLOT_INCREMENT_MINUTES
-export const DAY_START_HOUR = 0
-export const DAY_END_HOUR = 24
-export const VISIBLE_START_HOUR = 7
-export const VISIBLE_END_HOUR = 22
+import type { EventColor } from './types'
 
 /** Pixel height of one 60-min slot (matches --cal-slot-h: 3.5rem ≈ 56px) */
 export const HOUR_HEIGHT_PX = 56
@@ -26,11 +19,3 @@ export const EVENT_STATUS_INDICATOR_COLORS = {
   completedFill: 'var(--cal-brand-emerald)',
 } as const
 
-export const WEEK_DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const
-
-
-export const DEFAULT_WORK_HOURS: WorkHoursConfig = {
-  startHour: 9,
-  endHour: 17,
-  daysOfWeek: [1, 2, 3, 4, 5],
-}

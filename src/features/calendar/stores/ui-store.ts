@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
-import type { ViewMode, SlotDuration, WorkHoursConfig, WeekStartDay } from '../types'
-import { DEFAULT_SLOT_DURATION, DEFAULT_WORK_HOURS } from '../constants'
+import type { ViewMode, WeekStartDay } from '../types'
+import { getConfig } from '../config'
 
 // ---------------------------------------------------------------------------
 // State
@@ -8,27 +8,19 @@ import { DEFAULT_SLOT_DURATION, DEFAULT_WORK_HOURS } from '../constants'
 type UIState = {
   view: ViewMode
   activeDate: Date
-  slotDuration: SlotDuration
-  workHours: WorkHoursConfig
-  weekStartsOn: WeekStartDay
   mobileFocusDay: number
   timeChevronHovered: boolean
   timeGuidePinned: boolean
 }
 
-function todayColumnIndex(weekStartsOn: WeekStartDay): number {
+export function todayColumnIndex(weekStartsOn: WeekStartDay): number {
   return (new Date().getDay() - weekStartsOn + 7) % 7
 }
-
-const DEFAULT_WEEK_STARTS_ON: WeekStartDay = 1
 
 let state: UIState = {
   view: 'week',
   activeDate: new Date(),
-  slotDuration: DEFAULT_SLOT_DURATION,
-  workHours: DEFAULT_WORK_HOURS,
-  weekStartsOn: DEFAULT_WEEK_STARTS_ON,
-  mobileFocusDay: todayColumnIndex(DEFAULT_WEEK_STARTS_ON),
+  mobileFocusDay: todayColumnIndex(getConfig().weekStartsOn),
   timeChevronHovered: false,
   timeGuidePinned: false,
 }
@@ -72,24 +64,8 @@ export function navigateToToday() {
   setState({ activeDate: new Date() })
 }
 
-export function setSlotDuration(duration: SlotDuration) {
-  setState({ slotDuration: duration })
-}
-
-export function getSlotDuration(): SlotDuration {
-  return state.slotDuration
-}
-
 export function setMobileFocusDay(index: number) {
   setState({ mobileFocusDay: index })
-}
-
-export function setWorkHours(config: WorkHoursConfig) {
-  setState({ workHours: config })
-}
-
-export function setWeekStartsOn(day: WeekStartDay) {
-  setState({ weekStartsOn: day, mobileFocusDay: todayColumnIndex(day) })
 }
 
 export function setTimeChevronHovered(hovered: boolean) {
@@ -112,16 +88,8 @@ export function useActiveDate(): Date {
   return useSelector((s) => s.activeDate)
 }
 
-export function useSlotDuration(): SlotDuration {
-  return useSelector((s) => s.slotDuration)
-}
-
 export function useMobileFocusDay(): number {
   return useSelector((s) => s.mobileFocusDay)
-}
-
-export function useWorkHours(): WorkHoursConfig {
-  return useSelector((s) => s.workHours)
 }
 
 export function useTimeGuideVisible(): boolean {
@@ -130,8 +98,4 @@ export function useTimeGuideVisible(): boolean {
 
 export function useTimeGuidePinned(): boolean {
   return useSelector((s) => s.timeGuidePinned)
-}
-
-export function useWeekStartsOn(): WeekStartDay {
-  return useSelector((s) => s.weekStartsOn)
 }

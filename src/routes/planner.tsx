@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { CalendarShell } from '@/features/calendar/components/calendar-shell'
-import { SLOT_INCREMENT_MINUTES } from '@/features/calendar/constants'
+import { getSlotDuration } from '@/features/calendar/config'
 import { makeSidebarDragData, startPointerDrag } from '@/features/calendar/dnd'
 import { useDragRender } from '@/features/calendar/calendar-store'
 import { useUnscheduledTasks } from '@/services/task-service'
@@ -30,8 +30,9 @@ import {
 } from '@/lib/personal-activity'
 
 function roundUpDurationMinutes(minutes: number): number {
-  const safeMinutes = Number.isFinite(minutes) ? Math.max(minutes, SLOT_INCREMENT_MINUTES) : 60
-  return Math.ceil(safeMinutes / SLOT_INCREMENT_MINUTES) * SLOT_INCREMENT_MINUTES
+  const slot = getSlotDuration()
+  const safeMinutes = Number.isFinite(minutes) ? Math.max(minutes, slot) : 60
+  return Math.ceil(safeMinutes / slot) * slot
 }
 
 function formatDurationLabel(minutes: number): string {

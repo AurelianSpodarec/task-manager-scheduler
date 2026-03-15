@@ -1,5 +1,5 @@
-import { getSlotDuration } from '../stores/ui-store'
-import { DAY_START_HOUR, HOUR_HEIGHT_PX } from '../constants'
+import { getSlotDuration, getDayStartHour } from '../config'
+import { HOUR_HEIGHT_PX } from '../constants'
 import { SLOT_TYPE, type SlotDropData } from './types'
 
 // ---------------------------------------------------------------------------
@@ -120,9 +120,10 @@ export function resolveSlotFromPointer(clientX: number, clientY: number): SlotDr
   const rect = colEl.getBoundingClientRect()
   const slotDuration = getSlotDuration()
   const yInColumn = clientY - rect.top
-  const rawMinutes = DAY_START_HOUR * 60 + (yInColumn / HOUR_HEIGHT_PX) * 60
+  const dayStart = getDayStartHour()
+  const rawMinutes = dayStart * 60 + (yInColumn / HOUR_HEIGHT_PX) * 60
   const snappedMinutes = Math.floor(rawMinutes / slotDuration) * slotDuration
-  const clamped = Math.max(DAY_START_HOUR * 60, snappedMinutes)
+  const clamped = Math.max(dayStart * 60, snappedMinutes)
   const hour = Math.floor(clamped / 60)
   const minute = clamped % 60
 

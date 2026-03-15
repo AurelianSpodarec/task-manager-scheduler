@@ -1,35 +1,22 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  useCalendarView,
-  useActiveDate,
-  setActiveDate,
-  navigateToToday,
-  useWeekStartsOn,
-} from '../calendar-store'
-import { getWeekDays, navigateWeek, navigateMonth, formatDateRange, format } from '../utils/date'
+import { useWeekStartsOn } from '../calendar-store'
+import { getWeekDays } from '../utils/date'
+import { useFormatTime } from '../hooks/use-format-time'
+import { useCalendarNavigation } from '../hooks/use-calendar-navigation'
 
 export function CalendarHeader() {
-  const view = useCalendarView()
-  const activeDate = useActiveDate()
+  const { view, activeDate, goNext, goPrev, goToday } = useCalendarNavigation()
   const weekStartsOn = useWeekStartsOn()
 
+  const { formatRange, formatMonthYear, formatFullDate } = useFormatTime()
   const weekDays = getWeekDays(activeDate, weekStartsOn)
   const rangeLabel =
     view === 'week'
-      ? formatDateRange(weekDays[0], weekDays[6])
-      : format(activeDate, 'MMMM yyyy')
+      ? formatRange(weekDays[0], weekDays[6])
+      : formatMonthYear(activeDate)
 
-  function handleNavigate(direction: 'prev' | 'next') {
-    const next =
-      view === 'week'
-        ? navigateWeek(activeDate, direction)
-        : navigateMonth(activeDate, direction)
-    setActiveDate(next)
-  }
-
-  // Count events for today (simplified — shell-level summary)
-  const todayLabel = format(new Date(), 'MMMM dd, yyyy')
+  const todayLabel = formatFullDate(new Date())
 
   return (
     <header
@@ -48,7 +35,7 @@ export function CalendarHeader() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigateToToday()}
+          onClick={goToday}
           aria-label="Go to today"
         >
           Today
@@ -58,7 +45,7 @@ export function CalendarHeader() {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => handleNavigate('prev')}
+            onClick={goPrev}
             aria-label={`Previous ${view}`}
           >
             <ChevronLeft className="size-4" />
@@ -71,7 +58,7 @@ export function CalendarHeader() {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => handleNavigate('next')}
+            onClick={goNext}
             aria-label={`Next ${view}`}
           >
             <ChevronRight className="size-4" />

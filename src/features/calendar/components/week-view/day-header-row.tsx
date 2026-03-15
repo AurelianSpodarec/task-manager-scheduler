@@ -1,7 +1,6 @@
-import { WEEK_DAY_LABELS } from '../../constants'
-import { isToday, formatDayHeader } from '../../utils/date'
-
-const FULL_DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const
+import { isToday, format } from '../../utils/date'
+import { useConfigLocale } from '../../calendar-store'
+import { useFormatTime } from '../../hooks/use-format-time'
 
 type DayHeaderRowProps = {
   weekDays: Date[]
@@ -9,6 +8,9 @@ type DayHeaderRowProps = {
 }
 
 export function DayHeaderRow({ weekDays, weekLabel }: DayHeaderRowProps) {
+  const { formatDayHeader } = useFormatTime()
+  const locale = useConfigLocale()
+
   return (
     <div role="row" className="cal-week-grid-header hidden border-b border-cal-week-header-separator bg-cal-week-header-bg md:grid">
       <div className="flex items-center justify-center border-r border-cal-week-header-separator bg-cal-week-header-control-bg px-1.5">
@@ -18,15 +20,14 @@ export function DayHeaderRow({ weekDays, weekLabel }: DayHeaderRowProps) {
       </div>
 
       {weekDays.map((day) => {
-        const dayIndex = day.getDay()
         const today = isToday(day)
-        const dayLabel = `${WEEK_DAY_LABELS[dayIndex]}.`
+        const dayLabel = format(day, 'EEE', { locale }).toUpperCase() + '.'
 
         return (
           <div
             key={day.toISOString()}
             role="columnheader"
-            aria-label={FULL_DAY_NAMES[dayIndex]}
+            aria-label={format(day, 'EEEE', { locale })}
             aria-current={today ? 'date' : undefined}
             className={`flex items-center justify-center border-r border-cal-week-header-separator px-2 py-2 ${
               today

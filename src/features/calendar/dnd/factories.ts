@@ -1,5 +1,5 @@
 import type { CalendarEvent, EventColor, EventPriority, TaskDragMeta, PersonalDragMeta } from '../types'
-import { getSlotDuration } from '../stores/ui-store'
+import { getSlotDuration } from '../config'
 import { DRAG_TYPE, SLOT_TYPE, roundUpToIncrement, type CalendarDragData, type SlotDropData } from './types'
 
 /** Build drag data for an existing calendar event. */

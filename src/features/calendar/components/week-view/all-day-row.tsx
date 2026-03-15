@@ -11,7 +11,7 @@ type AllDayRowProps = {
 }
 
 export function AllDayRow({ weekDays }: AllDayRowProps) {
-  const allDayEvents = useAllDayEvents(weekDays[0], weekDays[6])
+  const allDayEvents = useAllDayEvents(weekDays[0], weekDays[weekDays.length - 1])
 
   return (
     <div data-allday-row className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid">

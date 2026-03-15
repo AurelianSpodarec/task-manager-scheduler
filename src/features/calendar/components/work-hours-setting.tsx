@@ -7,8 +7,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useWorkHours, setWorkHours, useWeekStartsOn, setWeekStartsOn } from '../calendar-store'
-import { formatHour, getOrderedWeekDays } from '../utils/date'
+import { useWorkHours, setWorkHours, useWeekStartsOn, setWeekStartsOn, useConfigLocale } from '../calendar-store'
+import { getOrderedWeekDays } from '../utils/date'
+import { useFormatTime } from '../hooks/use-format-time'
 import type { WeekStartDay } from '../types'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -16,7 +17,9 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i)
 export function WorkHoursSetting() {
   const workHours = useWorkHours()
   const weekStartsOn = useWeekStartsOn()
-  const orderedDays = getOrderedWeekDays(weekStartsOn)
+  const { formatHour } = useFormatTime()
+  const locale = useConfigLocale()
+  const orderedDays = getOrderedWeekDays(weekStartsOn, locale)
 
   function handleStartChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setWorkHours({ ...workHours, startHour: Number(e.target.value) })
@@ -55,9 +58,9 @@ export function WorkHoursSetting() {
 
         {/* Time range selects */}
         <div className="mt-2 flex items-center gap-2">
-          <HourSelect label="Start" value={workHours.startHour} onChange={handleStartChange} />
+          <HourSelect label="Start" value={workHours.startHour} onChange={handleStartChange} formatHour={formatHour} />
           <span className="text-xs text-cal-text-muted">–</span>
-          <HourSelect label="End" value={workHours.endHour} onChange={handleEndChange} />
+          <HourSelect label="End" value={workHours.endHour} onChange={handleEndChange} formatHour={formatHour} />
         </div>
 
         {/* Day-of-week toggles */}
@@ -120,10 +123,12 @@ function HourSelect({
   label,
   value,
   onChange,
+  formatHour,
 }: {
   label: string
   value: number
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  formatHour: (h: number) => string
 }) {
   return (
     <label className="flex flex-1 flex-col gap-1">
