@@ -130,7 +130,7 @@ let columnRects: ColumnRect[] = []
 let currentDay: string | null = null
 let lastPointerX = 0
 
-const ADVANCE_ZONE = 0.13
+const ADVANCE_ZONE = 0.115
 const COMMIT_ZONE = 0.35
 const MIN_DELTA = 2
 
