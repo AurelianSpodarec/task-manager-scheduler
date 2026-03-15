@@ -36,6 +36,32 @@ function RootLayout() {
                     <Grip aria-hidden="true" className="size-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-44">
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 rounded-md px-1 py-1.5"
+                      onSelect={(event) => event.preventDefault()}
+                    >
+                      <span className="inline-flex size-6 shrink-0 items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          xmlSpace="preserve"
+                          x="0"
+                          y="0"
+                          version="1.1"
+                          viewBox="0 0 45.1 45.1"
+                          className="size-[22px]"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill="#d90000"
+                            d="m32.1 19.1-6.6 13.2 6.4 12.9H26l-6.4-12.9 6.6-13.2-3.6-7.2-14 27.8H16l2.7 5.4H0L22.5 0zm3.6 7.2-3 5.9 6.4 12.9H45z"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span className="truncate text-[14px] leading-5 font-semibold tracking-tight text-zinc-900">
+                        Laser Red Team
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate({ to: '/' })}>
                       Home Page
                     </DropdownMenuItem>
@@ -50,30 +76,6 @@ function RootLayout() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <div className="flex items-center gap-1 rounded-md px-1">
-                  <span className="inline-flex size-6 shrink-0 items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      xmlSpace="preserve"
-                      x="0"
-                      y="0"
-                      version="1.1"
-                      viewBox="0 0 45.1 45.1"
-                      className="size-[22px]"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill="#d90000"
-                        d="m32.1 19.1-6.6 13.2 6.4 12.9H26l-6.4-12.9 6.6-13.2-3.6-7.2-14 27.8H16l2.7 5.4H0L22.5 0zm3.6 7.2-3 5.9 6.4 12.9H45z"
-                      ></path>
-                    </svg>
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-[14px] leading-5 font-semibold tracking-tight text-zinc-900">
-                      Laser Red Team
-                    </p>
-                  </div>
-                </div>
               </div>
               <div className="flex items-center gap-2">
                 <DropdownMenu>
