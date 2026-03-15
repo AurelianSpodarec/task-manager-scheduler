@@ -20,7 +20,7 @@ export type CalendarDragData = {
   /** Consumer-provided inline styles */
   style?: CSSProperties
   /** Consumer-provided icon component */
-  icon?: ComponentType<{ className?: string }>
+  icon?: ComponentType<{ className?: string; animate?: boolean }>
   /** Opaque consumer data — passed to renderDragPreview */
   dragMeta?: unknown
 }

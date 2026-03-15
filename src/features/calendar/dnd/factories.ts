@@ -33,7 +33,7 @@ export function makeSidebarDragData(
     color?: EventColor
     className?: string
     style?: CSSProperties
-    icon?: ComponentType<{ className?: string }>
+    icon?: ComponentType<{ className?: string; animate?: boolean }>
     dragMeta?: unknown
   },
 ): CalendarDragData {

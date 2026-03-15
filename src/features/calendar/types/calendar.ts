@@ -32,7 +32,7 @@ export type CalendarEvent = {
   /** Consumer inline styles (borders, backgrounds, etc.) */
   style?: CSSProperties
   /** Consumer-provided leading icon component */
-  icon?: ComponentType<{ className?: string }>
+  icon?: ComponentType<{ className?: string; animate?: boolean }>
 }
 
 export type TimeSlot = {

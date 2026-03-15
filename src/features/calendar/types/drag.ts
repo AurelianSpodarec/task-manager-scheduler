@@ -44,7 +44,7 @@ export type DragRenderState = {
   /** Consumer-provided inline styles for the dragged event */
   style?: CSSProperties
   /** Consumer-provided icon component for the dragged event */
-  icon?: ComponentType<{ className?: string }>
+  icon?: ComponentType<{ className?: string; animate?: boolean }>
   /** Opaque consumer data — passed through to renderDragPreview */
   dragMeta?: unknown
 }

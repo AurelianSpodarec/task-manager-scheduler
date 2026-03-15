@@ -19,6 +19,7 @@ export function EventBlock({ layout }: EventBlockProps) {
   const isCompact = height < 40
   const ref = useRef<HTMLButtonElement>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [justCompleted, setJustCompleted] = useState(false)
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon
@@ -45,6 +46,7 @@ export function EventBlock({ layout }: EventBlockProps) {
   const onStatusClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
     e.stopPropagation()
     const nextStatus = toggleTaskStatus(event.id)
+    setJustCompleted(nextStatus === 'completed')
     if (nextStatus === 'completed') {
       fireConfetti(e.clientX, e.clientY)
     }
@@ -78,7 +80,7 @@ export function EventBlock({ layout }: EventBlockProps) {
           aria-label={`Toggle ${event.title} completion`}
           title="Toggle task completion"
         >
-          <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+          <Icon aria-hidden="true" className="size-3.5 shrink-0" animate={justCompleted} />
         </span>
       )}
       <div className="flex min-w-0 flex-1 flex-col">

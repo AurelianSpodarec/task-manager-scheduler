@@ -13,7 +13,7 @@ export type ProjectedCard = {
   height: number
   className?: string
   style?: CSSProperties
-  icon?: ComponentType<{ className?: string }>
+  icon?: ComponentType<{ className?: string; animate?: boolean }>
 }
 
 export function getProjectedCard(

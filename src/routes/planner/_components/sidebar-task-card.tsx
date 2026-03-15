@@ -17,6 +17,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
   const metaToggleId = `compact-meta-${task.id}`
   const ref = useRef<HTMLElement>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [justCompleted, setJustCompleted] = useState(false)
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return
@@ -60,6 +61,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
           onClick={(e) => {
             e.stopPropagation()
             const next = toggleTaskStatus(task.id)
+            setJustCompleted(next === 'completed')
             if (next === 'completed') fireConfetti(e.clientX, e.clientY)
           }}
           className="relative z-10 mt-0.5 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
@@ -67,7 +69,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
           title="Toggle task completion"
         >
           {task.status === 'completed'
-            ? <CompletedStatusIcon className="size-3.5" />
+            ? <CompletedStatusIcon className="size-3.5" animate={justCompleted} />
             : <PendingStatusIcon className="size-3.5" />}
         </span>
         <div className="min-w-0 flex-1">
