@@ -8,6 +8,7 @@ import {
   personalActivityIcons,
   type PersonalActivityType,
 } from '@/lib/personal-activity'
+import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
 
 // ---------------------------------------------------------------------------
 // Task → CalendarEvent adapter
@@ -28,11 +29,13 @@ export function toCalendarEvent(task: Task): CalendarEvent {
     color: task.color,
     className: isPersonal && activityType
       ? personalActivityStyles[activityType]
-      : 'border-zinc-200 bg-white hover:border-zinc-300',
+      : 'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]',
     style: isPersonal
       ? undefined
       : { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
-    icon: activityType ? personalActivityIcons[activityType] : undefined,
+    icon: activityType
+      ? personalActivityIcons[activityType]
+      : task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
   }
 }
 

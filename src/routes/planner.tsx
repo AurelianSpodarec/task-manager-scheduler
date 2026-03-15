@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { priorityLeftBorderColor } from "@/lib/priority"
+import { PendingStatusIcon } from '@/lib/task-status-icons'
 import {
   personalActivityStyles,
   personalActivityIcons,
@@ -76,8 +77,9 @@ function SidebarTaskCard({ task }: { task: Task }) {
     const el = ref.current
     if (!el) return
     const data = makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
-      className: 'border-zinc-200 bg-white hover:border-zinc-300',
+      className: 'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]',
       style: { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
+      icon: PendingStatusIcon,
       dragMeta: {
         kind: 'task' as const,
         clientName: task.clientName ?? '',
