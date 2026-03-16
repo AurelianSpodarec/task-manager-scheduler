@@ -1,5 +1,5 @@
-import { useSyncExternalStore } from 'react'
 import type { DragPayload, DragRenderState, DragPointer, DragSlotCandidate } from '../types'
+import { createStore } from './create-store'
 
 // ---------------------------------------------------------------------------
 // State
@@ -9,34 +9,10 @@ type DragStoreState = {
   dragRender: DragRenderState | null
 }
 
-let state: DragStoreState = {
+const { getState, setState, useSelector } = createStore<DragStoreState>({
   dragState: null,
   dragRender: null,
-}
-
-const listeners = new Set<() => void>()
-
-function emit() {
-  listeners.forEach((l) => l())
-}
-
-function setState(partial: Partial<DragStoreState>) {
-  state = { ...state, ...partial }
-  emit()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function useSelector<T>(selector: (s: DragStoreState) => T): T {
-  return useSyncExternalStore(
-    subscribe,
-    () => selector(state),
-    () => selector(state),
-  )
-}
+})
 
 // ---------------------------------------------------------------------------
 // Mutations
@@ -50,7 +26,7 @@ export function setDragRender(dragRender: DragRenderState | null) {
 }
 
 export function clearDragRender() {
-  if (state.dragRender == null) return
+  if (getState().dragRender == null) return
   setState({ dragRender: null })
 }
 
@@ -70,7 +46,7 @@ function isSamePointer(a: DragPointer, b: DragPointer): boolean {
 }
 
 export function updateDragRenderFrame(pointer: DragPointer, slot: DragSlotCandidate | null, sidebarDropHovered = false) {
-  const current = state.dragRender
+  const current = getState().dragRender
   if (!current) return
   if (
     isSamePointer(current.pointer, pointer) &&
@@ -96,4 +72,14 @@ export function useDragState(): DragPayload | null {
 
 export function useDragRender(): DragRenderState | null {
   return useSelector((s) => s.dragRender)
+}
+
+/** Narrow selector — only re-renders when the targeted day changes (or drag starts/stops). */
+export function useDragSlotDay(): string | null {
+  return useSelector((s) => s.dragRender?.slot?.isoDay ?? null)
+}
+
+/** Narrow boolean — only re-renders on drag start/stop, not every pointer move. */
+export function useIsDragging(): boolean {
+  return useSelector((s) => s.dragRender != null)
 }

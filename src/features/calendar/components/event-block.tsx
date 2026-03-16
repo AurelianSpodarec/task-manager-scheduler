@@ -2,8 +2,7 @@ import { useRef, useCallback, useState } from 'react'
 import type { EventLayoutRect } from '../types'
 import { makeEventDragData, startPointerDrag } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
-import { fireConfetti } from '@/lib/confetti'
-import { toggleTaskStatus } from '@/services/task-service'
+import { getConfig } from '../config'
 
 type EventBlockProps = {
   layout: EventLayoutRect
@@ -19,7 +18,6 @@ export function EventBlock({ layout }: EventBlockProps) {
   const isCompact = height < 40
   const ref = useRef<HTMLButtonElement>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [justCompleted, setJustCompleted] = useState(false)
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon
@@ -45,11 +43,7 @@ export function EventBlock({ layout }: EventBlockProps) {
 
   const onStatusClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
     e.stopPropagation()
-    const nextStatus = toggleTaskStatus(event.id)
-    setJustCompleted(nextStatus === 'completed')
-    if (nextStatus === 'completed') {
-      fireConfetti(e.clientX, e.clientY)
-    }
+    getConfig().eventHandlers.onIconClick?.(event.id, e)
   }, [event.id])
 
   const widthPercent = 100 / totalColumns
@@ -77,10 +71,9 @@ export function EventBlock({ layout }: EventBlockProps) {
           onPointerDown={onStatusPointerDown}
           onClick={onStatusClick}
           className="relative z-10 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
-          aria-label={`Toggle ${event.title} completion`}
-          title="Toggle task completion"
+          aria-label={`${event.title} action`}
         >
-          <Icon aria-hidden="true" className="size-3.5 shrink-0" animate={justCompleted} />
+          <Icon aria-hidden="true" className="size-3.5 shrink-0" />
         </span>
       )}
       <div className="flex min-w-0 flex-1 flex-col">

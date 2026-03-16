@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { createStore } from './create-store'
 
 // ---------------------------------------------------------------------------
 // State
@@ -14,32 +15,16 @@ type SelectionState = {
   originY: number
 }
 
-let state: SelectionState = {
+const DISMISS_DISTANCE = 250
+
+const store = createStore<SelectionState>({
   anchor: null,
   current: null,
   active: false,
   dragged: false,
   originX: 0,
   originY: 0,
-}
-
-const DISMISS_DISTANCE = 250
-
-const listeners = new Set<() => void>()
-
-function emit() {
-  listeners.forEach((l) => l())
-}
-
-function setState(next: SelectionState) {
-  state = next
-  emit()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
+})
 
 // ---------------------------------------------------------------------------
 // Range helpers
@@ -51,7 +36,7 @@ function linearKey(isoDay: string, hour: number, minute: number): string {
 }
 
 function isInRange(isoDay: string, hour: number, minute: number): boolean {
-  const { anchor, current } = state
+  const { anchor, current } = store.getState()
   if (!anchor || !current) return false
 
   const kA = linearKey(anchor.isoDay, anchor.hour, anchor.minute)
@@ -68,51 +53,50 @@ function isInRange(isoDay: string, hour: number, minute: number): boolean {
 
 /** Called on mousedown — records anchor but doesn't highlight until user drags. */
 export function startSelection(coord: CellCoord, e: MouseEvent) {
-  e.preventDefault() // prevent native drag (no-drop cursor on borders)
-  setState({ anchor: coord, current: coord, active: true, dragged: false, originX: e.clientX, originY: e.clientY })
+  e.preventDefault()
+  store.setState({ anchor: coord, current: coord, active: true, dragged: false, originX: e.clientX, originY: e.clientY })
   document.addEventListener('mouseup', endSelection, { once: true })
 }
 
-/** Called on mouseenter while the selection is active — marks as dragged on first move. */
 export function updateSelection(coord: CellCoord) {
-  if (!state.active) return
+  const s = store.getState()
+  if (!s.active) return
   if (
-    state.current?.isoDay === coord.isoDay &&
-    state.current?.hour === coord.hour &&
-    state.current?.minute === coord.minute
+    s.current?.isoDay === coord.isoDay &&
+    s.current?.hour === coord.hour &&
+    s.current?.minute === coord.minute
   ) return
-  setState({ ...state, current: coord, dragged: true })
+  store.setState({ current: coord, dragged: true })
 }
 
-/** Dismiss selection when the cursor drifts far from the origin. */
 function onDismissMove(e: MouseEvent) {
-  const dx = e.clientX - state.originX
-  const dy = e.clientY - state.originY
+  const s = store.getState()
+  const dx = e.clientX - s.originX
+  const dy = e.clientY - s.originY
   if (dx * dx + dy * dy > DISMISS_DISTANCE * DISMISS_DISTANCE) {
     document.removeEventListener('mousemove', onDismissMove)
     clearSelection()
   }
 }
 
-/** Called on mouseup — keeps selection visible and starts dismiss tracking from release point. */
 export function endSelection(e?: Event) {
-  if (!state.active) return
+  const s = store.getState()
+  if (!s.active) return
   const me = e as MouseEvent | undefined
-  const ox = me?.clientX ?? state.originX
-  const oy = me?.clientY ?? state.originY
-  setState({ ...state, active: false, originX: ox, originY: oy })
+  const ox = me?.clientX ?? s.originX
+  const oy = me?.clientY ?? s.originY
+  store.setState({ active: false, originX: ox, originY: oy })
   document.addEventListener('mousemove', onDismissMove)
 }
 
-/** Clears the selection entirely. */
 export function clearSelection() {
-  if (!state.anchor) return
+  if (!store.getState().anchor) return
   document.removeEventListener('mousemove', onDismissMove)
-  setState({ anchor: null, current: null, active: false, dragged: false, originX: 0, originY: 0 })
+  store.setState({ anchor: null, current: null, active: false, dragged: false, originX: 0, originY: 0 })
 }
 
 export function isSelectionActive(): boolean {
-  return state.active
+  return store.getState().active
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +104,7 @@ export function isSelectionActive(): boolean {
 // ---------------------------------------------------------------------------
 export function useIsCellSelected(isoDay: string, hour: number, minute: number): boolean {
   return useSyncExternalStore(
-    subscribe,
+    store.subscribe,
     () => isInRange(isoDay, hour, minute),
     () => false,
   )

@@ -40,7 +40,7 @@ export function setWeekStartsOn(day: WeekStartDay) {
 // --- Drag state ---
 export {
   setDragState, setDragRender, clearDragRender, updateDragRenderFrame,
-  useDragState, useDragRender,
+  useDragState, useDragRender, useDragSlotDay, useIsDragging,
 } from './stores/drag-store'
 
 // --- Cell selection state ---

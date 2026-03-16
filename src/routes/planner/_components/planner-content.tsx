@@ -6,7 +6,9 @@ import {
   spawnScheduledTask,
   unscheduleTask,
   deleteScheduledTask,
+  toggleTaskStatus,
 } from '@/services/task-service'
+import { fireConfetti } from '@/lib/confetti'
 import { renderDragPreview } from './drag-previews/render-drag-preview'
 
 export function PlannerContent() {
@@ -27,6 +29,10 @@ export function PlannerContent() {
           task?.personalActivityType
             ? deleteScheduledTask(id)
             : unscheduleTask(id)
+        },
+        onIconClick: (id, e) => {
+          const status = toggleTaskStatus(id)
+          if (status === 'completed') fireConfetti(e.clientX, e.clientY)
         },
       },
     }} />

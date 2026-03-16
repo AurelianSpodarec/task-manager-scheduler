@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 /** Re-renders once per minute, returning the current Date for the time indicator. */
 export function useCurrentTime(): Date {
   const [now, setNow] = useState(() => new Date())
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    // Align the first tick to the start of the next minute
     const msUntilNextMinute = (60 - new Date().getSeconds()) * 1000
     const timeout = setTimeout(() => {
       setNow(new Date())
-      // Then tick every 60s
-      const interval = setInterval(() => setNow(new Date()), 60_000)
-      return () => clearInterval(interval)
+      intervalRef.current = setInterval(() => setNow(new Date()), 60_000)
     }, msUntilNextMinute)
-
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(timeout)
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
   }, [])
 
   return now

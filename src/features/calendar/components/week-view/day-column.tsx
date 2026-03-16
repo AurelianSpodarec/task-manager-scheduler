@@ -1,4 +1,4 @@
-import { useEventsForDay, useSlotDuration, useDragRender, useWorkHours, isWithinWorkHours, useDayStartHour, useDayEndHour } from '../../calendar-store'
+import { useEventsForDay, useSlotDuration, useDragRender, useDragSlotDay, useIsDragging, useWorkHours, isWithinWorkHours, useDayStartHour, useDayEndHour } from '../../calendar-store'
 import { HOUR_HEIGHT_PX } from '../../constants'
 import { isToday } from '../../utils/date'
 import { layoutEventsForDay } from '../../utils/layout'
@@ -33,14 +33,19 @@ export function DayColumn({ day }: DayColumnProps) {
   const layouts = layoutEventsForDay(events, day, HOUR_HEIGHT_PX)
   const today = isToday(day)
   const slotDuration = useSlotDuration()
-  const dragRender = useDragRender()
+  const isDragging = useIsDragging()
+  const dragSlotDay = useDragSlotDay()
   const workHours = useWorkHours()
   const dayStartHour = useDayStartHour()
   const dayEndHour = useDayEndHour()
   const isoDay = day.toISOString().split('T')[0]
   const dayOfWeek = day.getDay()
-  const isDragging = dragRender != null
-  const projected = getProjectedCard(dragRender, isoDay, slotDuration)
+
+  // Only subscribe to the full drag render state when this column is targeted
+  const dragRender = useDragRender()
+  const projected = dragSlotDay === isoDay
+    ? getProjectedCard(dragRender, isoDay, slotDuration)
+    : null
   const slots = getSlots(dayStartHour, dayEndHour, slotDuration)
 
   return (

@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { type CalendarConfig, useCalendarView, applyConfig } from '../calendar-store'
-import { useCalendarDropMonitor } from '../dnd'
 import { CalendarHeader } from './calendar-header'
 import { WeekView } from './week-view/week-view'
 import { MonthView } from './month-view/month-view'
@@ -12,7 +11,6 @@ type CalendarShellProps = {
 
 export function CalendarShell({ config }: CalendarShellProps) {
   const view = useCalendarView()
-  useCalendarDropMonitor()
 
   useEffect(() => {
     if (config) applyConfig(config)

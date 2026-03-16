@@ -1,6 +1,6 @@
-import { useSyncExternalStore } from 'react'
 import type { ViewMode, WeekStartDay } from '../types'
 import { getConfig } from '../config'
+import { createStore } from './create-store'
 
 // ---------------------------------------------------------------------------
 // State
@@ -17,37 +17,13 @@ export function todayColumnIndex(weekStartsOn: WeekStartDay): number {
   return (new Date().getDay() - weekStartsOn + 7) % 7
 }
 
-let state: UIState = {
+const { getState, setState, useSelector } = createStore<UIState>({
   view: 'week',
   activeDate: new Date(),
   mobileFocusDay: todayColumnIndex(getConfig().weekStartsOn),
   timeChevronHovered: false,
   timeGuidePinned: false,
-}
-
-const listeners = new Set<() => void>()
-
-function emit() {
-  listeners.forEach((l) => l())
-}
-
-function setState(partial: Partial<UIState>) {
-  state = { ...state, ...partial }
-  emit()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function useSelector<T>(selector: (s: UIState) => T): T {
-  return useSyncExternalStore(
-    subscribe,
-    () => selector(state),
-    () => selector(state),
-  )
-}
+})
 
 // ---------------------------------------------------------------------------
 // Mutations
@@ -69,12 +45,12 @@ export function setMobileFocusDay(index: number) {
 }
 
 export function setTimeChevronHovered(hovered: boolean) {
-  if (state.timeChevronHovered === hovered) return
+  if (getState().timeChevronHovered === hovered) return
   setState({ timeChevronHovered: hovered })
 }
 
 export function toggleTimeGuidePinned() {
-  setState({ timeGuidePinned: !state.timeGuidePinned })
+  setState({ timeGuidePinned: !getState().timeGuidePinned })
 }
 
 // ---------------------------------------------------------------------------

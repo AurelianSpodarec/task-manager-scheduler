@@ -3,6 +3,7 @@ import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { HOUR_HEIGHT_PX } from '../../constants'
 import { startOfDay, addDays, dateToPixelOffset, durationToPixelHeight } from '../../utils/date'
 import { useFormatTime } from '../../hooks/use-format-time'
+import { computeGrabOffsetMinutes } from '../../dnd/offset'
 import type { DragRenderState } from '../../types'
 
 export type ProjectedCard = {
@@ -29,16 +30,13 @@ export function getProjectedCard(
 
   const durationMinutes = dragRender.durationMinutes ?? 60
 
-  // Offset so the card stays anchored at the grab point, not the top
-  let grabOffsetMin: number
-  if (dragRender.source === 'calendar') {
-    grabOffsetMin = Math.round(((dragRender.pointerOffset.y / HOUR_HEIGHT_PX) * 60) / slotDuration) * slotDuration
-  } else {
-    const fraction = dragRender.elementSize.height > 0
-      ? dragRender.pointerOffset.y / dragRender.elementSize.height
-      : 0
-    grabOffsetMin = Math.round((fraction * durationMinutes) / slotDuration) * slotDuration
-  }
+  const grabOffsetMin = computeGrabOffsetMinutes(
+    dragRender.source,
+    dragRender.pointerOffset.y,
+    dragRender.elementSize.height,
+    durationMinutes,
+    slotDuration,
+  )
   const start = addMinutes(slotStart, -grabOffsetMin)
   const end = addMinutes(start, durationMinutes)
 

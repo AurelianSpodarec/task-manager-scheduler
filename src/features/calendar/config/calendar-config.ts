@@ -1,8 +1,8 @@
-import { useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import type { Locale } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import type { SlotDuration, WorkHoursConfig, WeekStartDay, DragRenderState } from '../types'
+import { createStore } from '../stores/create-store'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -11,6 +11,7 @@ export type CalendarEventHandlers = {
   onEventDrop: (eventId: string, start: Date, end: Date, isAllDay: boolean) => void
   onEventMove: (eventId: string, start: Date, end: Date, isAllDay: boolean) => void
   onEventRemove: (eventId: string) => void
+  onIconClick?: (eventId: string, e: React.MouseEvent) => void
 }
 
 const NOOP_HANDLERS: CalendarEventHandlers = {
@@ -53,31 +54,7 @@ export const DEFAULT_CONFIG: CalendarConfig = {
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
-let state: CalendarConfig = { ...DEFAULT_CONFIG }
-
-const listeners = new Set<() => void>()
-
-function emit() {
-  listeners.forEach((l) => l())
-}
-
-function setState(partial: Partial<CalendarConfig>) {
-  state = { ...state, ...partial }
-  emit()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function useSelector<T>(selector: (s: CalendarConfig) => T): T {
-  return useSyncExternalStore(
-    subscribe,
-    () => selector(state),
-    () => selector(state),
-  )
-}
+const { getState, setState, useSelector } = createStore<CalendarConfig>({ ...DEFAULT_CONFIG })
 
 // ---------------------------------------------------------------------------
 // Mutations
@@ -112,23 +89,23 @@ export function setVisibleDays(days: number[]) {
 // Non-hook getters (for use outside React — dnd, geometry, etc.)
 // ---------------------------------------------------------------------------
 export function getSlotDuration(): SlotDuration {
-  return state.slotDuration
+  return getState().slotDuration
 }
 
 export function getDayStartHour(): number {
-  return state.dayStartHour
+  return getState().dayStartHour
 }
 
 export function getDayEndHour(): number {
-  return state.dayEndHour
+  return getState().dayEndHour
 }
 
 export function getVisibleStartHour(): number {
-  return state.visibleStartHour
+  return getState().visibleStartHour
 }
 
 export function getConfig(): CalendarConfig {
-  return state
+  return getState()
 }
 
 // ---------------------------------------------------------------------------

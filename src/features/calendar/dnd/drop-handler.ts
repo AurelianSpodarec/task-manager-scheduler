@@ -1,8 +1,8 @@
 import { addMinutes, setHours, setMinutes } from 'date-fns'
 import { startOfDay } from '../utils/date'
 import { getSlotDuration, getConfig } from '../config'
-import { HOUR_HEIGHT_PX } from '../constants'
 import { roundUpToIncrement, type CalendarDragData, type SlotDropData } from './types'
+import { pixelOffsetToSnappedMinutes } from './offset'
 
 export function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): void {
   if (!slot) return
@@ -13,9 +13,8 @@ export function executeDrop(drag: CalendarDragData, slot: SlotDropData | null): 
   const slotStart = setMinutes(setHours(startOfDay(day), slot.hour), slot.minute)
 
   const slotDur = getSlotDuration()
-  // Pointer-offset correction only applies to timed slots; all-day drops anchor at midnight.
   const grabOffsetMin = !isAllDayDrop && drag.grabOffsetY != null
-    ? Math.round(((drag.grabOffsetY / HOUR_HEIGHT_PX) * 60) / slotDur) * slotDur
+    ? pixelOffsetToSnappedMinutes(drag.grabOffsetY, slotDur)
     : 0
   const targetStart = addMinutes(slotStart, -grabOffsetMin)
 

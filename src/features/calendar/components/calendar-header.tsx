@@ -20,13 +20,7 @@ export function CalendarHeader() {
             <ChevronLeft className="size-4" />
           </button>
 
-          {/* <span className="hidden min-w-[12rem] text-center text-[13px] font-medium text-cal-text tabular-nums sm:inline">
-            {rangeLabel}
-          </span> */}
-
-
-
-           <button
+          <button
           type="button"
           onClick={goToday}
           aria-label="Go to today"
@@ -45,15 +39,7 @@ export function CalendarHeader() {
           </button>
         </div>
 
-      {/* <div className="flex items-center gap-2">
-        <span className="hidden text-[13px] text-cal-text-muted sm:inline">
-          {todayLabel}
-        </span>
-      </div> */}
-
       <div className="flex items-center gap-1.5">
-       
-
         <button
           type="button"
           aria-label="View colleague"

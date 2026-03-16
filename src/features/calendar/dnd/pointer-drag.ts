@@ -120,6 +120,3 @@ export function startPointerDrag(
   window.addEventListener('pointerup', onUp)
   window.addEventListener('pointercancel', onUp)
 }
-
-/** No-op — kept for CalendarShell compatibility. */
-export function useCalendarDropMonitor() {}
