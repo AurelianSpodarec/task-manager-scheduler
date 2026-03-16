@@ -1,21 +1,8 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useWeekStartsOn } from '../calendar-store'
-import { getWeekDays } from '../utils/date'
-import { useFormatTime } from '../hooks/use-format-time'
+import { ChevronLeft, ChevronRight, Settings, UserRound } from 'lucide-react'
 import { useCalendarNavigation } from '../hooks/use-calendar-navigation'
 
 export function CalendarHeader() {
-  const { view, activeDate, goNext, goPrev, goToday } = useCalendarNavigation()
-  const weekStartsOn = useWeekStartsOn()
-
-  const { formatRange, formatMonthYear, formatFullDate } = useFormatTime()
-  const weekDays = getWeekDays(activeDate, weekStartsOn)
-  const rangeLabel =
-    view === 'week'
-      ? formatRange(weekDays[0], weekDays[6])
-      : formatMonthYear(activeDate)
-
-  const todayLabel = formatFullDate(new Date())
+  const { view, goNext, goPrev, goToday } = useCalendarNavigation()
 
   return (
     <header
@@ -23,24 +10,7 @@ export function CalendarHeader() {
       role="toolbar"
       aria-label="Calendar navigation"
     >
-      <div className="flex items-center gap-2">
-        <h1 className="text-[15px] font-semibold text-cal-text">Calendar</h1>
-        <span className="hidden text-[13px] text-cal-text-muted sm:inline">
-          {todayLabel}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={goToday}
-          aria-label="Go to today"
-          className="inline-flex h-7 items-center rounded-md border border-cal-grid-line bg-cal-bg px-2.5 text-[13px] font-medium text-cal-text transition-colors hover:bg-cal-bg-subtle"
-        >
-          Today
-        </button>
-
-        <div className="mx-1 flex items-center gap-0.5">
+      <div className="mx-1 flex items-center gap-0.5">
           <button
             type="button"
             onClick={goPrev}
@@ -50,9 +20,20 @@ export function CalendarHeader() {
             <ChevronLeft className="size-4" />
           </button>
 
-          <span className="hidden min-w-[12rem] text-center text-[13px] font-medium text-cal-text tabular-nums sm:inline">
+          {/* <span className="hidden min-w-[12rem] text-center text-[13px] font-medium text-cal-text tabular-nums sm:inline">
             {rangeLabel}
-          </span>
+          </span> */}
+
+
+
+           <button
+          type="button"
+          onClick={goToday}
+          aria-label="Go to today"
+          className="inline-flex h-7 items-center rounded-md border border-cal-grid-line bg-cal-bg px-2.5 text-[13px] font-medium text-cal-text transition-colors hover:bg-cal-bg-subtle"
+        >
+          Today
+        </button>
 
           <button
             type="button"
@@ -63,6 +44,34 @@ export function CalendarHeader() {
             <ChevronRight className="size-4" />
           </button>
         </div>
+
+      {/* <div className="flex items-center gap-2">
+        <span className="hidden text-[13px] text-cal-text-muted sm:inline">
+          {todayLabel}
+        </span>
+      </div> */}
+
+      <div className="flex items-center gap-1.5">
+       
+
+        <button
+          type="button"
+          aria-label="View colleague"
+          title="View colleague"
+          className="inline-flex size-7 items-center justify-center rounded-md text-cal-text-muted transition-colors hover:bg-cal-bg-subtle hover:text-cal-text"
+        >
+          <UserRound aria-hidden="true" className="size-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Settings"
+          title="Settings"
+          className="inline-flex size-7 items-center justify-center rounded-md text-cal-text-muted transition-colors hover:bg-cal-bg-subtle hover:text-cal-text"
+        >
+          <Settings aria-hidden="true" className="size-4" />
+        </button>
+
+        
       </div>
     </header>
   )
