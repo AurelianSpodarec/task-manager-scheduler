@@ -1,4 +1,4 @@
-import { getSlotDuration, getDayStartHour } from '../config'
+import { getSlotDuration, getDayStartHour, getInteractionSettings } from '../config'
 import { HOUR_HEIGHT_PX } from '../constants'
 import { SLOT_TYPE, type SlotDropData } from './types'
 
@@ -9,10 +9,9 @@ type ColumnRect = { isoDay: string; left: number; right: number }
 let columnRects: ColumnRect[] = []
 let currentDay: string | null = null
 let lastPointerX = 0
+let currentTimedMinutes: number | null = null
+let lastPointerY = 0
 
-const ADVANCE_ZONE = 0.20
-const COMMIT_ZONE = 0.35
-const MIN_DELTA = 2
 
 export function cacheColumnRects() {
   const els = document.querySelectorAll<HTMLElement>('[data-date]')
@@ -29,6 +28,8 @@ export function clearColumnRects() {
   columnRects = []
   currentDay = null
   lastPointerX = 0
+  currentTimedMinutes = null
+  lastPointerY = 0
 }
 
 /** Simple containment lookup — no hysteresis. Used for all-day row targeting. */
@@ -45,6 +46,7 @@ export function resolveSimpleDay(clientX: number): string | null {
 
 export function resolveSnapDay(clientX: number): string | null {
   if (columnRects.length === 0) return null
+  const interaction = getInteractionSettings()
 
   const delta = clientX - lastPointerX
   lastPointerX = clientX
@@ -63,12 +65,12 @@ export function resolveSnapDay(clientX: number): string | null {
     return currentDay
   }
 
-  if (Math.abs(delta) < MIN_DELTA) return currentDay
+  if (Math.abs(delta) < interaction.dragHorizontalMinDeltaPx) return currentDay
 
   const col = columnRects[idx]
   const colWidth = col.right - col.left
   const posInCol = clientX - col.left
-  const margin = colWidth * ADVANCE_ZONE
+  const margin = colWidth * interaction.dragHorizontalAdvanceZone
 
   const curDayIdx = columnRects.findIndex((c) => c.isoDay === currentDay)
   if (curDayIdx === -1) {
@@ -85,7 +87,7 @@ export function resolveSnapDay(clientX: number): string | null {
     return currentDay
   }
 
-  const commitPx = colWidth * COMMIT_ZONE
+  const commitPx = colWidth * interaction.dragHorizontalCommitZone
   if (idx === curDayIdx + 1) {
     if (posInCol > commitPx) currentDay = col.isoDay
     return currentDay
@@ -97,6 +99,48 @@ export function resolveSnapDay(clientX: number): string | null {
 
   currentDay = col.isoDay
   return currentDay
+}
+
+function resolveSnapMinutes(
+  clientY: number,
+  columnTop: number,
+  slotDuration: number,
+  dayStartHour: number,
+): number {
+  const interaction = getInteractionSettings()
+  const dayStartMinutes = dayStartHour * 60
+  const slotHeightPx = (HOUR_HEIGHT_PX / 60) * slotDuration
+  const yInColumn = clientY - columnTop
+  const rawSlotIndex = yInColumn / slotHeightPx
+  const slotIndex = Math.floor(rawSlotIndex)
+  const posInSlotPx = (rawSlotIndex - slotIndex) * slotHeightPx
+  const snappedMinutes = Math.max(dayStartMinutes, dayStartMinutes + slotIndex * slotDuration)
+
+  if (currentTimedMinutes == null) {
+    currentTimedMinutes = snappedMinutes
+    lastPointerY = clientY
+    return currentTimedMinutes
+  }
+
+  const delta = clientY - lastPointerY
+  lastPointerY = clientY
+
+  if (Math.abs(delta) < interaction.dragVerticalMinDeltaPx) return currentTimedMinutes
+  if (snappedMinutes === currentTimedMinutes) return currentTimedMinutes
+  const commitPx = Math.max(slotHeightPx * interaction.dragVerticalCommitZone, interaction.dragVerticalMinCommitPx)
+
+  if (snappedMinutes === currentTimedMinutes + slotDuration) {
+    if (delta > 0 && posInSlotPx > commitPx) currentTimedMinutes = snappedMinutes
+    return currentTimedMinutes
+  }
+
+  if (snappedMinutes === currentTimedMinutes - slotDuration) {
+    if (delta < 0 && posInSlotPx < slotHeightPx - commitPx) currentTimedMinutes = snappedMinutes
+    return currentTimedMinutes
+  }
+
+  currentTimedMinutes = snappedMinutes
+  return currentTimedMinutes
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +162,8 @@ export function resolveSlotFromPointer(clientX: number, clientY: number): SlotDr
   if (allDayEl) {
     const r = allDayEl.getBoundingClientRect()
     if (clientY >= r.top && clientY <= r.bottom) {
+      currentTimedMinutes = null
+      lastPointerY = clientY
       const day = resolveSimpleDay(clientX)
       if (day) return { _type: SLOT_TYPE, isoDay: day, hour: 0, minute: 0, isAllDay: true }
     }
@@ -131,13 +177,10 @@ export function resolveSlotFromPointer(clientX: number, clientY: number): SlotDr
 
   const rect = colEl.getBoundingClientRect()
   const slotDuration = getSlotDuration()
-  const yInColumn = clientY - rect.top
   const dayStart = getDayStartHour()
-  const rawMinutes = dayStart * 60 + (yInColumn / HOUR_HEIGHT_PX) * 60
-  const snappedMinutes = Math.floor(rawMinutes / slotDuration) * slotDuration
-  const clamped = Math.max(dayStart * 60, snappedMinutes)
-  const hour = Math.floor(clamped / 60)
-  const minute = clamped % 60
+  const snappedMinutes = resolveSnapMinutes(clientY, rect.top, slotDuration, dayStart)
+  const hour = Math.floor(snappedMinutes / 60)
+  const minute = snappedMinutes % 60
 
   return { _type: SLOT_TYPE, isoDay: day, hour, minute }
 }

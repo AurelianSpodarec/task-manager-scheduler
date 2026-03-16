@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { createStore } from './create-store'
+import { getInteractionSettings } from '../config'
 
 // ---------------------------------------------------------------------------
 // State
@@ -15,7 +16,6 @@ type SelectionState = {
   originY: number
 }
 
-const DISMISS_DISTANCE = 250
 
 const store = createStore<SelectionState>({
   anchor: null,
@@ -71,9 +71,10 @@ export function updateSelection(coord: CellCoord) {
 
 function onDismissMove(e: MouseEvent) {
   const s = store.getState()
+  const dismissDistance = getInteractionSettings().mouseAwayRadiusPx
   const dx = e.clientX - s.originX
   const dy = e.clientY - s.originY
-  if (dx * dx + dy * dy > DISMISS_DISTANCE * DISMISS_DISTANCE) {
+  if (dx * dx + dy * dy > dismissDistance * dismissDistance) {
     document.removeEventListener('mousemove', onDismissMove)
     clearSelection()
   }

@@ -12,13 +12,16 @@ export {
 // --- Config (locale, time format, visible days, work hours, slot duration) ---
 export {
   type CalendarConfig,
+  type CalendarConfigUpdate,
   type CalendarEventHandlers,
+  type CalendarInteractionConfig,
   applyConfig,
   setSlotDuration, getSlotDuration,
   setWorkHours, useWorkHours,
   useWeekStartsOn, useSlotDuration,
   setUse24HourTime, useUse24HourTime,
   setVisibleDays, useVisibleDays,
+  setInteractionSettings, getInteractionSettings, useInteractionSettings,
   useConfigLocale,
   useDayStartHour, useDayEndHour, useVisibleStartHour,
   getDayStartHour, getDayEndHour, getVisibleStartHour,

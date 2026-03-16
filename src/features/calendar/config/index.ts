@@ -1,6 +1,8 @@
 export {
   type CalendarConfig,
+  type CalendarConfigUpdate,
   type CalendarEventHandlers,
+  type CalendarInteractionConfig,
   DEFAULT_CONFIG,
   applyConfig,
   setWeekStartsOn,
@@ -8,11 +10,13 @@ export {
   setWorkHours,
   setUse24HourTime,
   setVisibleDays,
+  setInteractionSettings,
   getSlotDuration,
   getDayStartHour,
   getDayEndHour,
   getVisibleStartHour,
   getConfig,
+  getInteractionSettings,
   useConfigLocale,
   useUse24HourTime,
   useWeekStartsOn,
@@ -22,6 +26,7 @@ export {
   useDayStartHour,
   useDayEndHour,
   useVisibleStartHour,
+  useInteractionSettings,
 } from './calendar-config'
 
 export { US_CONFIG, GB_CONFIG, WORKWEEK_CONFIG } from './presets'
