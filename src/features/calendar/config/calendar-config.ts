@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import type { Locale } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import type { SlotDuration, WorkHoursConfig, WeekStartDay, DragRenderState } from '../types'
+import type { DragPointer } from '../types'
+import type { CalendarDragData, SlotDropData } from '../dnd/types'
 import { createStore } from '../stores/create-store'
 import {
   MOUSE_AWAY_RADIUS_PX,
@@ -33,6 +35,13 @@ export type CalendarInteractionConfig = {
   dragVerticalMinCommitPx: number
 }
 
+export type CalendarDragMonitors = {
+  onDragStart?: (drag: DragRenderState) => void
+  onDragMove?: (payload: { pointer: DragPointer; slot: SlotDropData | null; overSidebar: boolean }) => void
+  onDragDrop?: (payload: { dragData: CalendarDragData; slot: SlotDropData | null; overSidebar: boolean }) => void
+  onDragEnd?: () => void
+}
+
 export type CalendarConfigUpdate = Omit<Partial<CalendarConfig>, 'interaction'> & {
   interaction?: Partial<CalendarInteractionConfig>
 }
@@ -54,6 +63,7 @@ export type CalendarConfig = {
   dayEndHour: number
   visibleStartHour: number
   interaction: CalendarInteractionConfig
+  dragMonitors: CalendarDragMonitors
   eventHandlers: CalendarEventHandlers
   /** Consumer-provided floating drag preview. Calendar falls back to a minimal default. */
   renderDragPreview?: (drag: DragRenderState) => ReactNode
@@ -82,6 +92,7 @@ export const DEFAULT_CONFIG: CalendarConfig = {
   dayEndHour: 24,
   visibleStartHour: 7,
   interaction: DEFAULT_INTERACTION,
+  dragMonitors: {},
   eventHandlers: NOOP_HANDLERS,
 }
 
@@ -118,9 +129,18 @@ export function applyConfig(partial: CalendarConfigUpdate) {
       ...getState().interaction,
       ...partial.interaction,
     })
+    const mergedMonitors = partial.dragMonitors
+      ? { ...getState().dragMonitors, ...partial.dragMonitors }
+      : getState().dragMonitors
     const rest = { ...partial }
     delete rest.interaction
-    setState({ ...(rest as Partial<CalendarConfig>), interaction: mergedInteraction })
+    setState({ ...(rest as Partial<CalendarConfig>), interaction: mergedInteraction, dragMonitors: mergedMonitors })
+    return
+  }
+  if (partial.dragMonitors) {
+    const rest = { ...partial }
+    delete rest.dragMonitors
+    setState({ ...(rest as Partial<CalendarConfig>), dragMonitors: { ...getState().dragMonitors, ...partial.dragMonitors } })
     return
   }
   setState(partial as Partial<CalendarConfig>)
@@ -150,6 +170,10 @@ export function setInteractionSettings(partial: Partial<CalendarInteractionConfi
   const current = getState().interaction
   const next = sanitizeInteractionConfig({ ...current, ...partial })
   setState({ interaction: next })
+}
+
+export function setDragMonitors(partial: Partial<CalendarDragMonitors>) {
+  setState({ dragMonitors: { ...getState().dragMonitors, ...partial } })
 }
 
 // ---------------------------------------------------------------------------

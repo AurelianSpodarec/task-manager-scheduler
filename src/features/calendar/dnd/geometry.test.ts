@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { applyConfig, setSlotDuration } from '../config'
 import { cacheColumnRects, clearColumnRects, resolveSnapDay, resolveSlotFromPointer } from './geometry'
+import { registerDayColumn } from './region-registry'
+
+const INSTANCE_ID = 'geometry-test'
+const unregisterFns: Array<() => void> = []
 
 type RectShape = { left: number; right: number; top: number; bottom: number }
 
@@ -25,6 +29,7 @@ function addDayColumn(isoDay: string, rect: RectShape) {
   el.dataset.date = isoDay
   setRect(el, rect)
   document.body.appendChild(el)
+  unregisterFns.push(registerDayColumn(INSTANCE_ID, isoDay, el))
 }
 
 function toMinutes(slot: ReturnType<typeof resolveSlotFromPointer>) {
@@ -33,7 +38,8 @@ function toMinutes(slot: ReturnType<typeof resolveSlotFromPointer>) {
 }
 
 afterEach(() => {
-  clearColumnRects()
+  clearColumnRects(INSTANCE_ID)
+  unregisterFns.splice(0).forEach((fn) => fn())
   document.body.innerHTML = ''
   setSlotDuration(15)
   applyConfig({ dayStartHour: 0 })
@@ -44,22 +50,22 @@ describe('geometry slot snapping', () => {
     setSlotDuration(15)
     applyConfig({ dayStartHour: 0 })
     addDayColumn('2026-03-16', { left: 0, right: 120, top: 100, bottom: 1200 })
-    cacheColumnRects()
+    cacheColumnRects(INSTANCE_ID)
 
-    expect(toMinutes(resolveSlotFromPointer(60, 103))).toBe(0)
-    expect(toMinutes(resolveSlotFromPointer(60, 116))).toBe(0)
-    expect(toMinutes(resolveSlotFromPointer(60, 121))).toBe(15)
+    expect(toMinutes(resolveSlotFromPointer(60, 103, INSTANCE_ID))).toBe(0)
+    expect(toMinutes(resolveSlotFromPointer(60, 116, INSTANCE_ID))).toBe(0)
+    expect(toMinutes(resolveSlotFromPointer(60, 121, INSTANCE_ID))).toBe(15)
   })
 
   it('requires deeper upward movement before switching to the previous timed slot', () => {
     setSlotDuration(15)
     applyConfig({ dayStartHour: 0 })
     addDayColumn('2026-03-16', { left: 0, right: 120, top: 100, bottom: 1200 })
-    cacheColumnRects()
+    cacheColumnRects(INSTANCE_ID)
 
-    expect(toMinutes(resolveSlotFromPointer(60, 124))).toBe(15)
-    expect(toMinutes(resolveSlotFromPointer(60, 112))).toBe(15)
-    expect(toMinutes(resolveSlotFromPointer(60, 106))).toBe(0)
+    expect(toMinutes(resolveSlotFromPointer(60, 124, INSTANCE_ID))).toBe(15)
+    expect(toMinutes(resolveSlotFromPointer(60, 112, INSTANCE_ID))).toBe(15)
+    expect(toMinutes(resolveSlotFromPointer(60, 106, INSTANCE_ID))).toBe(0)
   })
 })
 
@@ -68,9 +74,9 @@ describe('geometry day snapping', () => {
     addDayColumn('2026-03-16', { left: 0, right: 100, top: 100, bottom: 1200 })
     addDayColumn('2026-03-17', { left: 100, right: 200, top: 100, bottom: 1200 })
     addDayColumn('2026-03-18', { left: 200, right: 300, top: 100, bottom: 1200 })
-    cacheColumnRects()
+    cacheColumnRects(INSTANCE_ID)
 
-    expect(resolveSnapDay(50)).toBe('2026-03-16')
-    expect(resolveSnapDay(95)).toBe('2026-03-17')
+    expect(resolveSnapDay(50, INSTANCE_ID)).toBe('2026-03-16')
+    expect(resolveSnapDay(95, INSTANCE_ID)).toBe('2026-03-17')
   })
 })

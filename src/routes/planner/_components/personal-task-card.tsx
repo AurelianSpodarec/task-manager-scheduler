@@ -1,5 +1,4 @@
-import { useRef, useCallback, useState } from 'react'
-import { makeSidebarDragData, startPointerDrag } from '@/features/calendar'
+import { makeSidebarDragData, useCalendarDragSource } from '@/features/calendar'
 import type { Task } from '@/database/schema'
 import { cn } from '@/lib/utils'
 import {
@@ -14,15 +13,8 @@ export function PersonalTaskCard({ task }: { task: Task }) {
   const activityType = task.personalActivityType as PersonalActivityType
   const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
-  const ref = useRef<HTMLElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
-
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0) return
-    e.preventDefault()
-    const el = ref.current
-    if (!el) return
-    const data = makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
+  const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLElement>({
+    createDragData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
       color: task.color,
       className: personalActivityStyles[activityType],
       icon: personalActivityIcons[activityType],
@@ -31,12 +23,8 @@ export function PersonalTaskCard({ task }: { task: Task }) {
         activityType,
         durationLabel: roundedDurationLabel,
       },
-    })
-    startPointerDrag(el, e.nativeEvent, data, {
-      onDragStart: () => setIsDragging(true),
-      onDrop: () => setIsDragging(false),
-    })
-  }, [task.id, task.title, task.priority, task.color, activityType, roundedDurationMinutes, roundedDurationLabel])
+    }),
+  })
 
   return (
     <article

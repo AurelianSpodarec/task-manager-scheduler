@@ -1,8 +1,9 @@
-import { useRef, useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import type { EventLayoutRect } from '../types'
-import { makeEventDragData, startPointerDrag } from '../dnd'
+import { makeEventDragData } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
 import { getConfig } from '../config'
+import { useCalendarDragSource } from '../hooks/use-dnd-behaviors'
 
 type EventBlockProps = {
   layout: EventLayoutRect
@@ -16,26 +17,15 @@ type EventBlockProps = {
 export function EventBlock({ layout }: EventBlockProps) {
   const { event, column, totalColumns, top, height } = layout
   const isCompact = height < 40
-  const ref = useRef<HTMLButtonElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon
-
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0) return
-    e.preventDefault()
-    const el = ref.current
-    if (!el) return
-    const data = {
+  const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLButtonElement>({
+    createDragData: ({ element, event: pointerEvent }) => ({
       ...makeEventDragData(event),
-      grabOffsetY: Math.max(0, e.clientY - el.getBoundingClientRect().top),
-    }
-    startPointerDrag(el, e.nativeEvent, data, {
-      onDragStart: () => setIsDragging(true),
-      onDrop: () => setIsDragging(false),
-    })
-  }, [event.id, event.start.getTime(), event.end.getTime()])
+      grabOffsetY: Math.max(0, pointerEvent.clientY - element.getBoundingClientRect().top),
+    }),
+  })
 
   const onStatusPointerDown = useCallback((e: React.PointerEvent<HTMLSpanElement>) => {
     e.stopPropagation()

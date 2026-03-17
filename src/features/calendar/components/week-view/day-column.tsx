@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useEventsForDay, useSlotDuration, useDragRender, useDragSlotDay, useIsDragging, useWorkHours, isWithinWorkHours, useDayStartHour, useDayEndHour } from '../../calendar-store'
 import { HOUR_HEIGHT_PX } from '../../constants'
 import { isToday } from '../../utils/date'
@@ -6,6 +7,8 @@ import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
 import { DroppableSlot } from './droppable-slot'
 import { ProjectedGhostCard, getProjectedCard } from './projected-ghost-card'
+import { registerDayColumn } from '../../dnd/region-registry'
+import { useCalendarInstanceId } from '../../core/calendar-instance'
 
 // Cached slot grid — only reallocates when the parameters actually change
 type SlotEntry = { hour: number; minute: number }
@@ -39,6 +42,8 @@ export function DayColumn({ day }: DayColumnProps) {
   const dayStartHour = useDayStartHour()
   const dayEndHour = useDayEndHour()
   const isoDay = day.toISOString().split('T')[0]
+  const instanceId = useCalendarInstanceId()
+  const rootRef = useRef<HTMLDivElement>(null)
   const dayOfWeek = day.getDay()
 
   // Only subscribe to the full drag render state when this column is targeted
@@ -48,8 +53,15 @@ export function DayColumn({ day }: DayColumnProps) {
     : null
   const slots = getSlots(dayStartHour, dayEndHour, slotDuration)
 
+  useEffect(() => {
+    const element = rootRef.current
+    if (!element) return
+    return registerDayColumn(instanceId, isoDay, element)
+  }, [instanceId, isoDay])
+
   return (
     <div
+      ref={rootRef}
       className="relative min-w-0 border-r border-cal-grid-line"
       role="gridcell"
       data-date={isoDay}

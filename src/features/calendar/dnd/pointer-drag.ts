@@ -16,7 +16,9 @@ export function startPointerDrag(
   e: PointerEvent,
   dragData: CalendarDragData,
   callbacks: { onDragStart?: () => void; onDrop?: () => void },
+  context?: { instanceId?: string },
 ) {
+  const instanceId = context?.instanceId ?? 'calendar-default'
   const startX = e.clientX
   const startY = e.clientY
   const pointerId = e.pointerId
@@ -33,7 +35,7 @@ export function startPointerDrag(
     active = true
     setDragState({ source: dragData.source, eventId: dragData.eventId, title: dragData.title })
     document.body.classList.add('cal-dragging')
-    cacheColumnRects()
+    cacheColumnRects(instanceId)
 
     const rect = element.getBoundingClientRect()
     const pointerOffsetY = Math.max(0, Math.min(rect.height, startY - rect.top))
@@ -43,7 +45,8 @@ export function startPointerDrag(
       const fraction = rect.height > 0 ? pointerOffsetY / rect.height : 0
       dragData.grabOffsetY = fraction * ((dragData.durationMinutes ?? 60) / 60) * HOUR_HEIGHT_PX
     }
-    setDragRender({
+
+    const nextDragRender = {
       source: dragData.source,
       eventId: dragData.eventId,
       title: dragData.title,
@@ -57,22 +60,26 @@ export function startPointerDrag(
         y: Math.max(0, Math.min(rect.height, startY - rect.top)),
       },
       elementSize: { width: rect.width, height: rect.height },
-      slot: resolveSlotFromPointer(startX, startY),
+      slot: resolveSlotFromPointer(startX, startY, instanceId),
       sidebarDropHovered: false,
       className: dragData.className,
       style: dragData.style,
       icon: dragData.icon,
       dragMeta: dragData.dragMeta,
-    })
+    }
+
+    setDragRender(nextDragRender)
+    getConfig().dragMonitors.onDragStart?.(nextDragRender)
     callbacks.onDragStart?.()
   }
 
   function flushMove() {
     rafId = null
-    const overSidebar = isOverSidebar(pendingX, pendingY)
-    const slot = overSidebar ? null : resolveSlotFromPointer(pendingX, pendingY)
+    const overSidebar = isOverSidebar(pendingX, pendingY, instanceId)
+    const slot = overSidebar ? null : resolveSlotFromPointer(pendingX, pendingY, instanceId)
     const showSidebarHighlight = overSidebar && dragData.source === 'calendar'
     updateDragRenderFrame({ clientX: pendingX, clientY: pendingY }, slot, showSidebarHighlight)
+    getConfig().dragMonitors.onDragMove?.({ pointer: { clientX: pendingX, clientY: pendingY }, slot, overSidebar })
   }
 
   function onMove(ev: PointerEvent) {
@@ -91,8 +98,8 @@ export function startPointerDrag(
 
     // Flush any pending RAF so drop uses the latest position
     if (rafId != null) { cancelAnimationFrame(rafId); rafId = null }
-    const overSidebar = isOverSidebar(ev.clientX, ev.clientY)
-    const slot = overSidebar ? null : resolveSlotFromPointer(ev.clientX, ev.clientY)
+    const overSidebar = isOverSidebar(ev.clientX, ev.clientY, instanceId)
+    const slot = overSidebar ? null : resolveSlotFromPointer(ev.clientX, ev.clientY, instanceId)
 
     // Calendar → sidebar: consumer decides unschedule vs delete
     if (overSidebar && dragData.source === 'calendar' && dragData.eventId) {
@@ -101,10 +108,12 @@ export function startPointerDrag(
       executeDrop(dragData, slot)
     }
 
+    getConfig().dragMonitors.onDragDrop?.({ dragData, slot, overSidebar })
     setDragState(null)
     clearDragRender()
     document.body.classList.remove('cal-dragging')
-    clearColumnRects()
+    clearColumnRects(instanceId)
+    getConfig().dragMonitors.onDragEnd?.()
     callbacks.onDrop?.()
   }
 

@@ -1,10 +1,12 @@
-import { useEffect, useRef, useCallback, useState, type ReactNode } from 'react'
-import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useAllDayEvents, useDragRender } from '../../calendar-store'
 import { isSameDay } from '../../utils/date'
 import { EVENT_COLOR_MAP } from '../../constants'
 import type { CalendarEvent } from '../../types'
-import { isCalendarDrag, makeAllDaySlotData, makeEventDragData, startPointerDrag } from '../../dnd'
+import { isCalendarDrag, makeAllDaySlotData, makeEventDragData } from '../../dnd'
+import { useCalendarDragSource, useCalendarDropTarget } from '../../hooks/use-dnd-behaviors'
+import { registerAllDayRow } from '../../dnd/region-registry'
+import { useCalendarInstanceId } from '../../core/calendar-instance'
 
 type AllDayRowProps = {
   weekDays: Date[]
@@ -12,9 +14,21 @@ type AllDayRowProps = {
 
 export function AllDayRow({ weekDays }: AllDayRowProps) {
   const allDayEvents = useAllDayEvents(weekDays[0], weekDays[weekDays.length - 1])
+  const rowRef = useRef<HTMLDivElement>(null)
+  const instanceId = useCalendarInstanceId()
+
+  useEffect(() => {
+    const element = rowRef.current
+    if (!element) return
+    return registerAllDayRow(instanceId, element)
+  }, [instanceId])
 
   return (
-    <div data-allday-row className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid">
+    <div
+      ref={rowRef}
+      data-allday-row
+      className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid"
+    >
       {/* Gutter */}
       <div className="flex items-start justify-end border-r border-cal-grid-line pr-2 pt-1" aria-hidden="true">
         <span className="text-[11px] font-medium text-cal-text-muted">
@@ -44,20 +58,10 @@ export function AllDayRow({ weekDays }: AllDayRowProps) {
 }
 
 function AllDayEventChip({ event }: { event: CalendarEvent }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
   const colors = EVENT_COLOR_MAP[event.color]
-
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0) return
-    e.preventDefault()
-    const el = ref.current
-    if (!el) return
-    startPointerDrag(el, e.nativeEvent, makeEventDragData(event), {
-      onDragStart: () => setIsDragging(true),
-      onDrop: () => setIsDragging(false),
-    })
-  }, [event])
+  const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLDivElement>({
+    createDragData: () => makeEventDragData(event),
+  })
 
   return (
     <div
@@ -70,6 +74,7 @@ function AllDayEventChip({ event }: { event: CalendarEvent }) {
     </div>
   )
 }
+
 function DroppableAllDayCell({
   day,
   children,
@@ -79,28 +84,17 @@ function DroppableAllDayCell({
   children: ReactNode
   eventIds: string[]
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [pragmaticOver, setPragmaticOver] = useState(false)
   const isoDay = day.toISOString().split('T')[0]
   const dragRender = useDragRender()
+  const { ref, isOver: pragmaticOver } = useCalendarDropTarget<HTMLDivElement, ReturnType<typeof makeAllDaySlotData>>({
+    canDrop: isCalendarDrag,
+    getData: () => makeAllDaySlotData(isoDay),
+  })
 
   const pointerOver = Boolean(
     dragRender?.slot?.isAllDay && dragRender.slot.isoDay === isoDay,
   )
   const isOver = pragmaticOver || pointerOver
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    return dropTargetForElements({
-      element: el,
-      canDrop: ({ source }) => isCalendarDrag(source.data),
-      getData: () => makeAllDaySlotData(isoDay),
-      onDragEnter: () => setPragmaticOver(true),
-      onDragLeave: () => setPragmaticOver(false),
-      onDrop: () => setPragmaticOver(false),
-    })
-  }, [isoDay])
 
   // Skip ghost when the dragged event already lives in this cell
   const isOriginCell = dragRender?.eventId != null && eventIds.includes(dragRender.eventId)

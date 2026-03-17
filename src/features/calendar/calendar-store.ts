@@ -15,6 +15,7 @@ export {
   type CalendarConfigUpdate,
   type CalendarEventHandlers,
   type CalendarInteractionConfig,
+  type CalendarDragMonitors,
   applyConfig,
   setSlotDuration, getSlotDuration,
   setWorkHours, useWorkHours,
@@ -22,6 +23,7 @@ export {
   setUse24HourTime, useUse24HourTime,
   setVisibleDays, useVisibleDays,
   setInteractionSettings, getInteractionSettings, useInteractionSettings,
+  setDragMonitors,
   useConfigLocale,
   useDayStartHour, useDayEndHour, useVisibleStartHour,
   getDayStartHour, getDayEndHour, getVisibleStartHour,
@@ -61,5 +63,7 @@ export {
 
 // --- Data adapter ---
 export { type CalendarDataSource, setDataSource, getDataSource } from './data'
+// --- Slice-style grouped contracts ---
+export { calendarSlices } from './stores/slices'
 
 export { isWithinWorkHours } from './utils/work-hours'

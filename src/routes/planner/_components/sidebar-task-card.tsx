@@ -1,5 +1,5 @@
-import { useRef, useCallback, useState } from 'react'
-import { makeSidebarDragData, startPointerDrag } from '@/features/calendar'
+import { useState } from 'react'
+import { makeSidebarDragData, useCalendarDragSource } from '@/features/calendar'
 import { toggleTaskStatus } from '@/services/task-service'
 import type { Task } from '@/database/schema'
 import { priorityLeftBorderColor } from '@/lib/priority'
@@ -12,16 +12,9 @@ export function SidebarTaskCard({ task }: { task: Task }) {
   const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
   const priorityBorderColor = priorityLeftBorderColor[task.priority]
-  const ref = useRef<HTMLElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
   const [justCompleted, setJustCompleted] = useState(false)
-
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0) return
-    e.preventDefault()
-    const el = ref.current
-    if (!el) return
-    const data = makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
+  const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLElement>({
+    createDragData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
       className: 'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]',
       style: { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
       icon: PendingStatusIcon,
@@ -34,12 +27,8 @@ export function SidebarTaskCard({ task }: { task: Task }) {
         durationLabel: roundedDurationLabel,
         priorityBorderColor: priorityLeftBorderColor[task.priority],
       },
-    })
-    startPointerDrag(el, e.nativeEvent, data, {
-      onDragStart: () => setIsDragging(true),
-      onDrop: () => setIsDragging(false),
-    })
-  }, [task.id, task.title, task.priority, task.clientName, task.dueDateLabel, task.isRecurring, task.recurringType, roundedDurationMinutes, roundedDurationLabel])
+    }),
+  })
 
   return (
     <article
