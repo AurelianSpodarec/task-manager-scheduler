@@ -14,7 +14,7 @@ export function DayHeaderRow({ weekDays, weekLabel }: DayHeaderRowProps) {
   return (
     <div role="row" className="cal-week-grid-header hidden border-b border-cal-week-header-separator bg-cal-week-header-bg md:grid">
       <div className="flex items-center justify-center border-r border-cal-week-header-separator bg-cal-week-header-control-bg px-1.5">
-        <span className="text-[10px] font-semibold tracking-[0.04em] text-cal-week-header-text-muted uppercase">
+        <span className="text-[9px] font-semibold tracking-[0.04em] text-cal-week-header-text-muted uppercase">
           {weekLabel}
         </span>
       </div>
@@ -37,14 +37,14 @@ export function DayHeaderRow({ weekDays, weekLabel }: DayHeaderRowProps) {
           >
             <span aria-hidden="true" className="inline-flex items-baseline gap-1">
               <span
-                className={`text-[10px] font-semibold tracking-[0.06em] uppercase ${
+                className={`text-[9px] font-semibold tracking-[0.06em] uppercase ${
                   today ? 'text-cal-week-header-active-text' : 'text-cal-week-header-text-muted'
                 }`}
               >
                 {dayLabel}
               </span>
               <span
-                className={`text-[13px] font-semibold leading-none tabular-nums ${
+                className={`text-[12px] font-semibold leading-none tabular-nums ${
                   today ? 'text-cal-week-header-active-text' : 'text-cal-week-header-text'
                 }`}
               >

@@ -24,7 +24,7 @@ export function CalendarHeader() {
           type="button"
           onClick={goToday}
           aria-label="Go to today"
-          className="inline-flex h-7 items-center rounded-md border border-cal-grid-line bg-cal-bg px-2.5 text-[13px] font-medium text-cal-text transition-colors hover:bg-cal-bg-subtle"
+          className="inline-flex h-7 items-center rounded-md border border-cal-grid-line bg-cal-bg px-2.5 text-[12px] font-medium text-cal-text transition-colors hover:bg-cal-bg-subtle"
         >
           Today
         </button>

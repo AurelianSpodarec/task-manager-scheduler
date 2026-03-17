@@ -35,7 +35,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
     <article
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`relative w-full cursor-grab overflow-hidden rounded-[10px] border border-zinc-200 bg-card px-3 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
+      className={`relative w-full cursor-grab overflow-hidden rounded-[8px] border border-zinc-200 bg-card px-[0.6rem] py-[0.6rem] shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
     >
       <TaskCardContent
         title={task.title}
@@ -66,13 +66,13 @@ export function SidebarTaskCard({ task }: { task: Task }) {
                 })
               }
             }}
-            className="relative z-10 mt-0.5 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
+            className="relative z-10 mt-[0.1rem] inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
             aria-label={`Toggle ${task.title} completion`}
             title="Toggle task completion"
           >
             {task.status === 'completed'
-              ? <CompletedStatusIcon className="size-3.5" animate={justCompleted} />
-              : <PendingStatusIcon className="size-3.5" />}
+              ? <CompletedStatusIcon className="size-[0.7rem]" animate={justCompleted} />
+              : <PendingStatusIcon className="size-[0.7rem]" />}
           </span>
         }
       />

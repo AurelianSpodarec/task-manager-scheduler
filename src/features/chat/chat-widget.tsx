@@ -420,27 +420,27 @@ export function ChatWidget() {
       {open && (
         <div
           className={cn(
-'fixed right-5 bottom-20 z-50 flex w-[420px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl',
+            'fixed right-4 bottom-16 z-50 flex w-[336px] flex-col overflow-hidden rounded-[0.8rem] border border-zinc-200 bg-white shadow-xl',
             'animate-in fade-in slide-in-from-bottom-4 duration-200',
             'dark:border-zinc-700 dark:bg-zinc-900',
           )}
-style={{ height: 490 }}
+          style={{ height: 392 }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between bg-zinc-900 px-4 py-3 dark:bg-zinc-950">
-            <div className="flex items-center gap-2">
-              <LaserLogo className="size-5 text-red-500" />
-              <span className="text-[14px] font-semibold text-white">
+          <div className="flex items-center justify-between bg-zinc-900 px-[0.8rem] py-[0.6rem] dark:bg-zinc-950">
+            <div className="flex items-center gap-[0.4rem]">
+              <LaserLogo className="size-[1rem] text-red-500" />
+              <span className="text-[11.2px] font-semibold text-white">
                 FiveCast AI Assistant
               </span>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex size-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+              className="inline-flex size-[1.4rem] items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
               aria-label="Close chat"
             >
-              <X className="size-4" />
+              <X className="size-[0.8rem]" />
             </button>
           </div>
 
@@ -463,7 +463,7 @@ style={{ height: 490 }}
           {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+            className="flex-1 space-y-[0.6rem] overflow-y-auto px-[0.8rem] py-[0.8rem]"
           >
             {messages.map((msg) => (
               <div
@@ -475,7 +475,7 @@ style={{ height: 490 }}
               >
                 <div
                   className={cn(
-                    'max-w-[85%] rounded-xl px-3 py-2 text-[13px] leading-relaxed',
+                    'max-w-[85%] rounded-[0.6rem] px-[0.6rem] py-[0.4rem] text-[10.4px] leading-relaxed',
                     msg.role === 'user' &&
                       'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900',
                     msg.role === 'bot' &&
@@ -494,7 +494,7 @@ style={{ height: 490 }}
             {/* Thinking indicator — visible while Crystal is planning */}
             {isThinking && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-1 rounded-xl bg-zinc-100 px-3 py-2.5 text-zinc-500 dark:bg-zinc-800">
+                <div className="flex items-center gap-[0.2rem] rounded-[0.6rem] bg-zinc-100 px-[0.6rem] py-[0.5rem] text-zinc-500 dark:bg-zinc-800">
                   <span className="chat-thinking-dot" />
                   <span className="chat-thinking-dot" />
                   <span className="chat-thinking-dot" />
@@ -507,7 +507,7 @@ style={{ height: 490 }}
           {/* Input */}
           <form
             onSubmit={handleSend}
-            className="flex items-center gap-2 border-t border-zinc-200 px-3 py-2.5 dark:border-zinc-700"
+            className="flex items-center gap-[0.4rem] border-t border-zinc-200 px-[0.6rem] py-[0.5rem] dark:border-zinc-700"
           >
             <input
               ref={inputRef}
@@ -515,15 +515,15 @@ style={{ height: 490 }}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message…"
-              className="h-9 flex-1 rounded-lg border border-zinc-200 bg-transparent px-3 text-[13px] text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-300 dark:border-zinc-700 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-600"
+              className="h-[1.8rem] flex-1 rounded-lg border border-zinc-200 bg-transparent px-[0.6rem] text-[10.4px] text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-300 dark:border-zinc-700 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-600"
             />
             <button
               type="submit"
               disabled={!input.trim()}
-              className="inline-flex size-9 items-center justify-center rounded-lg bg-zinc-900 text-white transition-colors hover:bg-zinc-800 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="inline-flex size-[1.8rem] items-center justify-center rounded-lg bg-zinc-900 text-white transition-colors hover:bg-zinc-800 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
               aria-label="Send message"
             >
-              <SendHorizonal className="size-4" />
+              <SendHorizonal className="size-[0.8rem]" />
             </button>
           </form>
         </div>
@@ -534,7 +534,7 @@ style={{ height: 490 }}
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          'fixed right-5 bottom-5 z-50 inline-flex size-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500',
+          'fixed right-4 bottom-4 z-50 inline-flex size-[2.8rem] items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500',
           open
             ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
             : 'bg-red-600 text-white hover:bg-red-700',
@@ -542,9 +542,9 @@ style={{ height: 490 }}
         aria-label={open ? 'Close chat' : 'Open chat'}
       >
         {open ? (
-          <X className="size-5" />
+          <X className="size-[1rem]" />
         ) : (
-          <LaserLogo className="size-6" />
+          <LaserLogo className="size-[1.2rem]" />
         )}
       </button>
     </>

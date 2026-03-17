@@ -20,7 +20,7 @@ export function PlannerLayout() {
       <aside
         ref={sidebarRef}
         data-sidebar-dropzone
-        className={`flex h-full min-h-0 w-full overflow-hidden p-4 md:w-[20.5rem] md:shrink-0 transition-colors ${
+        className={`flex h-full min-h-0 w-full overflow-hidden p-[0.8rem] md:w-[16.4rem] md:shrink-0 transition-colors ${
           sidebarHighlight ? 'bg-zinc-100 ring-2 ring-inset ring-zinc-300 rounded-l-xl' : ''
         }`}
       >

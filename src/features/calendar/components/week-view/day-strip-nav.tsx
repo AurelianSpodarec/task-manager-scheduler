@@ -34,10 +34,10 @@ export function DayStripNav({ weekDays }: DayStripNavProps) {
                   : 'text-cal-text-muted'
             }`}
           >
-            <span className="text-[10px] font-semibold uppercase leading-none">
+            <span className="text-[9px] font-semibold uppercase leading-none">
               {format(day, 'EEEEE', { locale })}
             </span>
-            <span className={`text-[13px] font-bold leading-none ${selected ? '' : ''}`}>
+            <span className={`text-[12px] font-bold leading-none ${selected ? '' : ''}`}>
               {formatDayHeader(day)}
             </span>
           </button>

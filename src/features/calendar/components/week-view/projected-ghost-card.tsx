@@ -83,11 +83,11 @@ export function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) 
     >
       {Icon && <Icon aria-hidden="true" className="size-3.5 shrink-0" />}
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className={`block truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}>
+        <span className={`block truncate font-semibold leading-tight ${isCompact ? 'text-[9px]' : 'text-[11px]'}`}>
           {projected.title}
         </span>
         {!isCompact && (
-          <span className="block text-[10px] leading-tight text-zinc-500">
+          <span className="block text-[9px] leading-tight text-zinc-500">
             {formatEventTime(projected.start)} – {formatEventTime(projected.end)}
           </span>
         )}

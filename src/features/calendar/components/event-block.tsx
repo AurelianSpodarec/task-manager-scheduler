@@ -84,7 +84,7 @@ export function EventBlock({ layout }: EventBlockProps) {
       <div className="flex min-w-0 flex-1 flex-col">
         <span
           data-completed={isCompleted}
-          className={`completion-title relative block min-w-0 font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompleted ? 'text-zinc-500' : 'text-zinc-900'}`}
+          className={`completion-title relative block min-w-0 font-semibold leading-tight ${isCompact ? 'text-[9px]' : 'text-[11px]'} ${isCompleted ? 'text-zinc-500' : 'text-zinc-900'}`}
         >
           <span className="completion-title-strike-wrap truncate">
             <span className="relative z-10">{event.title}</span>
@@ -92,7 +92,7 @@ export function EventBlock({ layout }: EventBlockProps) {
           </span>
         </span>
         {!isCompact && (
-          <span className={`block text-[10px] leading-tight transition-colors duration-200 ${isCompleted ? 'text-zinc-400' : 'text-zinc-500'}`}>
+          <span className={`block text-[9px] leading-tight transition-colors duration-200 ${isCompleted ? 'text-zinc-400' : 'text-zinc-500'}`}>
             {formatEventTime(event.start)} – {formatEventTime(event.end)}
           </span>
         )}

@@ -31,7 +31,7 @@ export function PersonalTaskCard({ task }: { task: Task }) {
       ref={ref}
       onPointerDown={onPointerDown}
       className={cn(
-        'flex w-full min-h-11 cursor-grab items-center gap-2 rounded-[10px] border px-3 py-2.5 transition-colors',
+        'flex w-full min-h-[2.2rem] cursor-grab items-center gap-[0.4rem] rounded-[8px] border px-[0.6rem] py-[0.5rem] transition-colors',
         personalActivityStyles[activityType],
         isDragging && 'opacity-40'
       )}

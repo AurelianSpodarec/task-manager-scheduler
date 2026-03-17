@@ -32,7 +32,7 @@ export function TimeGutter() {
 
           {/* Hour label — centered between top border and half-hour line */}
           <div className="absolute inset-x-0 top-0 flex h-1/2 items-center justify-end pr-1 md:pr-2">
-            <span className="text-[11px] leading-none text-cal-text-muted">
+            <span className="text-[10px] leading-none text-cal-text-muted">
               {formatHour(hour)}
             </span>
           </div>
