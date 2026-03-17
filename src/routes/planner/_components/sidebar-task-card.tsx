@@ -41,6 +41,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
         durationLabel={roundedDurationLabel}
         clientName={task.clientName ?? ''}
         dueDateLabel={task.dueDateLabel ?? null}
+        isCompleted={task.status === 'completed'}
         priorityBorderColor={priorityBorderColor}
         isRecurring={!!task.isRecurring}
         recurringType={task.recurringType}

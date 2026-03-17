@@ -18,7 +18,7 @@ export function CompletedStatusIcon({ className, animate }: StatusIconProps) {
       style={{
         backgroundColor: 'var(--cal-brand-emerald)',
         borderRadius: 4,
-        ...(animate ? { animation: 'checkmark-bg-pop 0.3s ease-out both' } : {}),
+        ...(animate ? { animation: 'checkmark-bg-pop var(--completion-checkbox-pop-ms) var(--completion-strike-ease) both' } : {}),
       }}
     >
       <svg
@@ -34,7 +34,7 @@ export function CompletedStatusIcon({ className, animate }: StatusIconProps) {
           strokeLinecap="round"
           strokeLinejoin="round"
           {...(animate
-            ? { strokeDasharray: 16, strokeDashoffset: 16, style: { animation: 'checkmark-draw 0.3s 0.15s ease-out forwards' } }
+            ? { strokeDasharray: 16, strokeDashoffset: 16, style: { animation: 'checkmark-draw var(--completion-check-draw-ms) var(--completion-check-draw-delay-ms) ease-out forwards' } }
             : {})}
         />
       </svg>

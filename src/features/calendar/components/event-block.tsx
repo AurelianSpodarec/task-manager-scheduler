@@ -1,8 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import type { EventLayoutRect } from '../types'
 import { makeEventDragData } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
-import { useCurrentTime } from '../hooks/use-current-time'
 import { getConfig } from '../config'
 import { useCalendarDragSource } from '../hooks/use-dnd-behaviors'
 
@@ -18,8 +17,8 @@ type EventBlockProps = {
 export function EventBlock({ layout }: EventBlockProps) {
   const { event, column, totalColumns, top, height } = layout
   const isCompact = height < 40
-  const now = useCurrentTime()
-  const isCompleted = Boolean(event.isCompleted && event.end.getTime() <= now.getTime())
+  const isCompleted = Boolean(event.isCompleted)
+  const [justCompleted, setJustCompleted] = useState(false)
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon
@@ -36,8 +35,9 @@ export function EventBlock({ layout }: EventBlockProps) {
 
   const onStatusClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
     e.stopPropagation()
+    setJustCompleted(!isCompleted)
     getConfig().eventHandlers.onIconClick?.(event.id, e)
-  }, [event.id])
+  }, [event.id, isCompleted])
 
   const widthPercent = 100 / totalColumns
   const leftPercent = column * widthPercent
@@ -66,17 +66,17 @@ export function EventBlock({ layout }: EventBlockProps) {
           className="relative z-10 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
           aria-label={`${event.title} action`}
         >
-          <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+          <Icon aria-hidden="true" className="size-3.5 shrink-0" animate={justCompleted && isCompleted} />
         </span>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className={`relative block min-w-0 font-semibold leading-tight transition-colors duration-200 ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompleted ? 'text-zinc-500' : 'text-zinc-900'}`}>
-          <span className="relative inline-block max-w-full truncate align-top">
+        <span
+          data-completed={isCompleted}
+          className={`completion-title relative block min-w-0 font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompleted ? 'text-zinc-500' : 'text-zinc-900'}`}
+        >
+          <span className="completion-title-strike-wrap truncate">
             <span className="relative z-10">{event.title}</span>
-            <span
-              aria-hidden="true"
-              className={`pointer-events-none absolute top-[46%] left-0 -right-[2px] z-0 h-px origin-left rounded-full bg-current rotate-[0.6deg] transition-opacity duration-150 ${isCompleted ? 'opacity-60 delay-[50ms]' : 'opacity-0 delay-0'}`}
-            />
+            <span aria-hidden="true" className="completion-title-strike" />
           </span>
         </span>
         {!isCompact && (

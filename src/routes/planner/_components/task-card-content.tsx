@@ -7,6 +7,7 @@ type TaskCardContentProps = {
   durationLabel: string
   clientName: string
   dueDateLabel: string | null
+  isCompleted?: boolean
   priorityBorderColor: string
   isRecurring: boolean
   recurringType?: 'standard' | 'retainer'
@@ -22,6 +23,7 @@ type TaskCardContentProps = {
  */
 export function TaskCardContent({
   title, durationLabel, clientName, dueDateLabel,
+  isCompleted = false,
   priorityBorderColor, isRecurring, recurringType,
   statusSlot, metaToggleId,
 }: TaskCardContentProps) {
@@ -40,8 +42,14 @@ export function TaskCardContent({
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="line-clamp-2 min-w-0 text-[14px] leading-5 font-semibold text-zinc-900">
-              {title}
+            <h3
+              data-completed={isCompleted}
+              className={`completion-title line-clamp-2 min-w-0 text-[14px] leading-5 font-semibold ${isCompleted ? 'text-zinc-700' : 'text-zinc-900'}`}
+            >
+              <span className="completion-title-strike-wrap">
+                <span className="relative z-10">{title}</span>
+                <span aria-hidden="true" className="completion-title-strike" />
+              </span>
             </h3>
             <span className="mt-0.5 shrink-0 text-[11px] tabular-nums font-medium text-zinc-500">
               {durationLabel}

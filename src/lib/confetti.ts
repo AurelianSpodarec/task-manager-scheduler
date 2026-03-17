@@ -8,6 +8,10 @@ type ConfettiContainer = Awaited<ReturnType<typeof tsParticles.load>> & {
 
 let container: ConfettiContainer | null = null
 let initPromise: Promise<void> | null = null
+const CONFETTI_PARTICLE_LIFE_SECONDS = 0.9
+const CONFETTI_OPACITY_FADE_SPEED = 2.2
+const CONFETTI_BURST_COUNT = 12
+const CONFETTI_EMITTER_LIFE_SECONDS = 0.08
 
 async function init() {
   await loadEmojiShape(tsParticles, false)
@@ -24,12 +28,12 @@ async function init() {
           },
         },
         life: {
-          duration: { sync: true, value: 1.5 },
+          duration: { sync: true, value: CONFETTI_PARTICLE_LIFE_SECONDS },
           count: 1,
         },
         opacity: {
           value: { min: 0, max: 1 },
-          animation: { enable: true, speed: 1.5, startValue: 'max', destroy: 'min' },
+          animation: { enable: true, speed: CONFETTI_OPACITY_FADE_SPEED, startValue: 'max', destroy: 'min' },
         },
       },
       preset: 'confetti',
@@ -56,9 +60,9 @@ export function fireConfetti(x: number, y: number): void {
         y: (y / window.innerHeight) * 100,
       },
       size: { width: 0, height: 0 },
-      startCount: 20,
+      startCount: CONFETTI_BURST_COUNT,
       rate: { delay: 0, quantity: 0 },
-      life: { duration: 0.1, count: 1 },
+      life: { duration: CONFETTI_EMITTER_LIFE_SECONDS, count: 1 },
     })
   })
 }

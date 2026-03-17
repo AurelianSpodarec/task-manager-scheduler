@@ -2,6 +2,16 @@
  * # Cheat - Temporary styles added as a hotfix
  * ============================================================================ */
 @layer components {
+  :root {
+    --completion-checkbox-pop-ms: 140ms;
+    --completion-check-draw-ms: 170ms;
+    --completion-check-draw-delay-ms: 28ms;
+    --completion-strike-delay-ms: 60ms;
+    --completion-strike-draw-ms: 170ms;
+    --completion-fade-ms: 180ms;
+    --completion-fade-opacity: 0.82;
+    --completion-strike-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
   .sidebar-scrollbar {
     scrollbar-gutter: stable;
     scrollbar-width: thin;
@@ -40,12 +50,59 @@
   .task-meta-toggle:checked ~ .task-meta-badge .task-meta-label {
     display: none;
   }
+
+  .completion-title {
+    transition:
+      color 0.2s ease,
+      opacity var(--completion-fade-ms) ease-out;
+  }
+
+  .completion-title[data-completed='false'] {
+    opacity: 1;
+  }
+
+  .completion-title[data-completed='true'] {
+    opacity: var(--completion-fade-opacity);
+  }
+
+  .completion-title-strike-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: top;
+  }
+
+  .completion-title-strike {
+    pointer-events: none;
+    position: absolute;
+    top: 46%;
+    left: 0;
+    right: -2px;
+    z-index: 0;
+    height: 1px;
+    border-radius: 999px;
+    background: currentColor;
+    transform-origin: left center;
+    transform: scaleX(0);
+    opacity: 0;
+    rotate: 0.6deg;
+    transition-property: transform, opacity;
+    transition-duration: var(--completion-strike-draw-ms), 120ms;
+    transition-timing-function: var(--completion-strike-ease), linear;
+    transition-delay: 0ms, 0ms;
+  }
+
+  .completion-title[data-completed='true'] .completion-title-strike {
+    transform: scaleX(1);
+    opacity: 0.6;
+    transition-delay: var(--completion-strike-delay-ms), var(--completion-strike-delay-ms);
+  }
 }
 
 /* Checkmark toggle animations */
 @keyframes checkmark-bg-pop {
-  0%   { transform: scale(0); opacity: 0; }
-  60%  { transform: scale(1.15); opacity: 1; }
+  0%   { transform: scale(0.72); opacity: 0; }
+  70%  { transform: scale(1.05); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
 
