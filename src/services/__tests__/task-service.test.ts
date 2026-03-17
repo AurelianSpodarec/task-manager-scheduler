@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { toCalendarEvent } from '../task-service'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { toCalendarEvent, moveScheduledTask } from '../task-service'
+import { getTask, upsertTask, deleteTask } from '@/database/db'
 import type { Task } from '@/database/schema'
 import type { EventPriority } from '@/types/shared'
 
@@ -100,5 +101,55 @@ describe('toCalendarEvent', () => {
       const icons = activityTypes.map((t) => toCalendarEvent(makePersonalTask(t)).icon)
       expect(new Set(icons).size).toBe(activityTypes.length)
     })
+  })
+})
+
+describe('moveScheduledTask', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('marks a pending personal task completed when moved into elapsed time', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-17T12:00:00.000Z'))
+    const id = 'personal-retro-completion-test'
+    upsertTask({
+      ...makePersonalTask('gym'),
+      id,
+      schedule: { start: '2026-03-17T14:00:00.000Z', end: '2026-03-17T15:00:00.000Z', isAllDay: false },
+    })
+
+    moveScheduledTask(
+      id,
+      new Date('2026-03-17T09:00:00.000Z'),
+      new Date('2026-03-17T10:00:00.000Z'),
+      false,
+    )
+
+    const updated = getTask(id)
+    expect(updated?.status).toBe('completed')
+    deleteTask(id)
+  })
+
+  it('keeps work tasks pending when moved into elapsed time', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-17T12:00:00.000Z'))
+    const id = 'work-retro-completion-test'
+    upsertTask({
+      ...makeWorkTask(),
+      id,
+      schedule: { start: '2026-03-17T14:00:00.000Z', end: '2026-03-17T15:00:00.000Z', isAllDay: false },
+    })
+
+    moveScheduledTask(
+      id,
+      new Date('2026-03-17T09:00:00.000Z'),
+      new Date('2026-03-17T10:00:00.000Z'),
+      false,
+    )
+
+    const updated = getTask(id)
+    expect(updated?.status).toBe('pending')
+    deleteTask(id)
   })
 })

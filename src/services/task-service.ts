@@ -74,8 +74,10 @@ export function scheduleTask(
 ): void {
   const task = getTask(id)
   if (!task) return
+  const status = shouldAutoCompletePersonalTask(task, end) ? 'completed' : task.status
   upsertTask({
     ...task,
+    status,
     schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
   })
 }
@@ -94,8 +96,10 @@ export function moveScheduledTask(
 ): void {
   const task = getTask(id)
   if (!task) return
+  const status = shouldAutoCompletePersonalTask(task, end) ? 'completed' : task.status
   upsertTask({
     ...task,
+    status,
     schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
   })
 }
@@ -114,9 +118,17 @@ export function spawnScheduledTask(
   const clone: Task = {
     ...template,
     id: `${templateId}-spawn-${Date.now()}-${++spawnCounter}`,
+    status: shouldAutoCompletePersonalTask(template, end) ? 'completed' : template.status,
     schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
   }
   upsertTask(clone)
+}
+
+function shouldAutoCompletePersonalTask(task: Task, nextEnd: Date): boolean {
+  // Personal activities moved/scheduled into elapsed time are assumed done.
+  return task.type === 'personal'
+    && task.status !== 'completed'
+    && nextEnd.getTime() <= Date.now()
 }
 
 /** Remove a spawned calendar clone — personal drags back to sidebar just delete the copy. */
