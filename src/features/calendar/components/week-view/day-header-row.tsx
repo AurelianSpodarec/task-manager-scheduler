@@ -29,7 +29,7 @@ export function DayHeaderRow({ weekDays, weekLabel }: DayHeaderRowProps) {
             role="columnheader"
             aria-label={format(day, 'EEEE', { locale })}
             aria-current={today ? 'date' : undefined}
-            className={`flex items-center justify-center border-r border-cal-week-header-separator px-2 py-2 ${
+            className={`flex items-center justify-center border-r border-cal-week-header-separator px-2 py-1 ${
               today
                 ? 'bg-cal-week-header-active-bg shadow-[inset_0_-2px_0_0_var(--cal-week-header-active-underline)]'
                 : 'bg-cal-week-header-bg'

@@ -128,9 +128,9 @@
  * Scoped to specific calendar components.
  * -------------------------------------------------------------------------- */
 :root {
-  --cal-header-h: 3.25rem;
-  --cal-allday-row-min-h: 2rem;
-  --cal-day-header-h: 2.75rem;
+  --cal-header-h: 2.75rem;
+  --cal-allday-row-min-h: 1.5rem;
+  --cal-day-header-h: 2.25rem;
   --cal-event-min-h: 1.25rem;
   --cal-event-padding-x: 0.375rem;
   --cal-event-padding-y: 0.125rem;

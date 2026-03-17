@@ -27,11 +27,11 @@ export function AllDayRow({ weekDays }: AllDayRowProps) {
     <div
       ref={rowRef}
       data-allday-row
-      className="cal-week-grid-header sticky top-0 z-20 hidden min-h-cal-allday shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid"
+      className="cal-week-grid-header sticky top-0 z-20 hidden shrink-0 border-b-2 border-cal-grid-line bg-cal-bg md:grid"
     >
       {/* Gutter */}
-      <div className="flex items-start justify-end border-r border-cal-grid-line pr-2 pt-1" aria-hidden="true">
-        <span className="text-[11px] font-medium text-cal-text-muted">
+      <div className="flex items-start justify-end border-r border-cal-grid-line pr-2 pt-0.5" aria-hidden="true">
+        <span className="text-[9px] font-medium text-cal-text-muted">
           All-day
         </span>
       </div>
