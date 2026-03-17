@@ -26,21 +26,23 @@ const HOURS = Array.from({ length: 25 }, (_, i) => i)
 
 export function CalendarSettingsPanel() {
   return (
-    <aside className="flex h-full flex-col overflow-hidden border-l border-cal-grid-line bg-cal-bg">
-      <header className="flex h-cal-header shrink-0 items-center justify-between border-b border-cal-grid-line px-4">
-        <h2 className="text-xs font-semibold text-cal-text">Settings</h2>
+    <aside className="flex h-full flex-col overflow-hidden border-l border-cal-grid-line bg-gradient-to-b from-cal-bg to-cal-bg-subtle">
+      {/* Panel header */}
+      <header className="flex shrink-0 items-center justify-between border-b border-cal-grid-line px-5 py-3.5">
+        <h2 className="text-[13px] font-semibold tracking-tight text-cal-text">Calendar Settings</h2>
         <button
           type="button"
           onClick={toggleSettingsPanel}
-          className="inline-flex size-7 items-center justify-center rounded-md text-cal-text-muted transition-colors hover:bg-cal-bg-subtle hover:text-cal-text"
+          className="inline-flex size-7 items-center justify-center rounded-lg text-cal-text-muted transition-all hover:bg-cal-bg-subtle hover:text-cal-text active:scale-95"
           aria-label="Close settings"
         >
-          <X className="size-4" />
+          <X className="size-3.5" />
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-5">
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="space-y-6">
           <TimeFormatSection />
           <Divider />
           <WeekStartSection />
@@ -84,8 +86,8 @@ function WeekStartSection() {
     <SettingRow label="Week Starts On">
       <ToggleGroup
         options={[
-          { value: 1 as WeekStartDay, label: 'Monday' },
-          { value: 0 as WeekStartDay, label: 'Sunday' },
+          { value: 1 as WeekStartDay, label: 'Mon' },
+          { value: 0 as WeekStartDay, label: 'Sun' },
         ]}
         value={weekStartsOn}
         onChange={setWeekStartsOn}
@@ -117,18 +119,18 @@ function WorkHoursSection() {
   }
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-3.5">
       <SectionLabel>Work Hours</SectionLabel>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <HourSelect label="Start" value={workHours.startHour} onChange={handleStartChange} formatHour={formatHour} />
-        <span className="mt-4 text-xs text-cal-text-muted">–</span>
+        <span className="mt-5 text-[11px] font-medium text-cal-text-dimmed">–</span>
         <HourSelect label="End" value={workHours.endHour} onChange={handleEndChange} formatHour={formatHour} />
       </div>
 
       <div>
-        <span className="mb-1.5 block text-[11px] font-medium text-cal-text-muted">Work Days</span>
-        <div className="flex gap-1">
+        <span className="mb-2 block text-[10.5px] font-medium tracking-wide text-cal-text-muted uppercase">Work Days</span>
+        <div className="flex gap-1.5">
           {orderedDays.map(({ label, dayIndex }) => {
             const active = workHours.daysOfWeek.includes(dayIndex)
             return (
@@ -136,10 +138,10 @@ function WorkHoursSection() {
                 key={dayIndex}
                 type="button"
                 onClick={() => toggleDay(dayIndex)}
-                className={`flex size-7 items-center justify-center rounded-md text-[11px] font-medium transition-colors ${
+                className={`flex size-[1.85rem] items-center justify-center rounded-lg text-[10.5px] font-semibold transition-all ${
                   active
-                    ? 'bg-cal-today-text text-white'
-                    : 'bg-cal-bg-subtle text-cal-text-muted hover:text-cal-text'
+                    ? 'bg-cal-today-text text-white shadow-sm shadow-cal-today-text/25'
+                    : 'bg-cal-bg text-cal-text-muted ring-1 ring-cal-grid-line hover:ring-cal-text-dimmed hover:text-cal-text'
                 }`}
                 aria-pressed={active}
                 aria-label={label}
@@ -169,9 +171,11 @@ function VisibleDaysSection() {
 
   return (
     <section className="space-y-2">
-      <SectionLabel>Visible Days</SectionLabel>
-      <p className="text-[11px] text-cal-text-muted">Which days appear in the grid.</p>
-      <div className="flex gap-1">
+      <div>
+        <SectionLabel>Visible Days</SectionLabel>
+        <p className="mt-0.5 text-[10.5px] leading-relaxed text-cal-text-muted">Choose which days appear in the calendar grid.</p>
+      </div>
+      <div className="flex gap-1.5">
         {orderedDays.map(({ label, dayIndex }) => {
           const active = visibleDays.includes(dayIndex)
           return (
@@ -179,10 +183,10 @@ function VisibleDaysSection() {
               key={dayIndex}
               type="button"
               onClick={() => toggleDay(dayIndex)}
-              className={`flex size-7 items-center justify-center rounded-md text-[11px] font-medium transition-colors ${
+              className={`flex size-[1.85rem] items-center justify-center rounded-lg text-[10.5px] font-semibold transition-all ${
                 active
-                  ? 'bg-cal-today-text text-white'
-                  : 'bg-cal-bg-subtle text-cal-text-muted hover:text-cal-text'
+                  ? 'bg-cal-today-text text-white shadow-sm shadow-cal-today-text/25'
+                  : 'bg-cal-bg text-cal-text-muted ring-1 ring-cal-grid-line hover:ring-cal-text-dimmed hover:text-cal-text'
               }`}
               aria-pressed={active}
               aria-label={label}
@@ -221,17 +225,19 @@ function DayWindowSection() {
 
   return (
     <section className="space-y-3">
-      <SectionLabel>Day Window</SectionLabel>
-      <p className="text-[11px] text-cal-text-muted">Grid hour range and initial scroll position.</p>
+      <div>
+        <SectionLabel>Day Window</SectionLabel>
+        <p className="mt-0.5 text-[10.5px] leading-relaxed text-cal-text-muted">Grid hour range and initial scroll position.</p>
+      </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <HourSelect
           label="Grid Start"
           value={dayStartHour}
           onChange={(e) => applyConfig({ dayStartHour: Number(e.target.value) })}
           formatHour={formatHour}
         />
-        <span className="mt-4 text-xs text-cal-text-muted">–</span>
+        <span className="mt-5 text-[11px] font-medium text-cal-text-dimmed">–</span>
         <HourSelect
           label="Grid End"
           value={dayEndHour}
@@ -253,12 +259,12 @@ function DayWindowSection() {
 // ─── Shared primitives ───────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-[11px] font-semibold text-cal-text">{children}</h3>
+  return <h3 className="text-[11.5px] font-semibold tracking-tight text-cal-text">{children}</h3>
 }
 
 function SettingRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <SectionLabel>{label}</SectionLabel>
       {children}
     </div>
@@ -266,7 +272,7 @@ function SettingRow({ label, children }: { label: string; children: React.ReactN
 }
 
 function Divider() {
-  return <div className="h-px bg-cal-grid-line" />
+  return <div className="h-px bg-cal-grid-line/60" />
 }
 
 function ToggleGroup<T>({
@@ -279,7 +285,7 @@ function ToggleGroup<T>({
   onChange: (v: T) => void
 }) {
   return (
-    <div className="flex gap-0.5 rounded-md bg-cal-bg-subtle p-0.5">
+    <div className="flex gap-0.5 rounded-lg bg-cal-bg-subtle p-[3px] ring-1 ring-cal-grid-line/50">
       {options.map((opt) => {
         const active = opt.value === value
         return (
@@ -287,9 +293,9 @@ function ToggleGroup<T>({
             key={String(opt.value)}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+            className={`rounded-md px-2.5 py-[3px] text-[11px] font-semibold transition-all ${
               active
-                ? 'bg-cal-bg text-cal-text shadow-sm'
+                ? 'bg-cal-bg text-cal-text shadow-sm ring-1 ring-cal-grid-line/60'
                 : 'text-cal-text-muted hover:text-cal-text'
             }`}
             aria-pressed={active}
@@ -314,12 +320,12 @@ function HourSelect({
   formatHour: (h: number) => string
 }) {
   return (
-    <label className="flex flex-1 flex-col gap-1">
-      <span className="text-[10px] font-medium text-cal-text-muted">{label}</span>
+    <label className="flex flex-1 flex-col gap-1.5">
+      <span className="text-[10px] font-semibold tracking-wide text-cal-text-muted uppercase">{label}</span>
       <select
         value={value}
         onChange={onChange}
-        className="h-7 w-full rounded-md border border-cal-grid-line bg-transparent px-1.5 text-[12px] text-cal-text focus:border-cal-focus-ring focus:outline-none"
+        className="h-8 w-full rounded-lg border border-cal-grid-line bg-cal-bg px-2 text-[11.5px] font-medium text-cal-text shadow-sm transition-colors focus:border-cal-focus-ring focus:ring-2 focus:ring-cal-focus-ring/20 focus:outline-none"
       >
         {HOURS.map((h) => (
           <option key={h} value={h}>
