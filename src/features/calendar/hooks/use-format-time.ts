@@ -19,5 +19,38 @@ export function useFormatTime() {
     formatDayHeader: (date: Date) => _formatDayHeader(date, locale),
     formatMonthYear: (date: Date) => format(date, 'MMMM yyyy', { locale }),
     formatFullDate: (date: Date) => format(date, 'MMMM dd, yyyy', { locale }),
+
+    /** Compact week range: "March 1 – 7", "Mar 31 – Apr 6", or with year when needed. */
+    formatWeekRange: (weekDays: Date[]) => {
+      if (weekDays.length === 0) return ''
+      const first = weekDays[0]
+      const last = weekDays[weekDays.length - 1]
+      const now = new Date()
+      const firstYear = first.getFullYear()
+      const lastYear = last.getFullYear()
+      const currentYear = now.getFullYear()
+      const crossYear = firstYear !== lastYear
+      const nonCurrentYear = firstYear !== currentYear || lastYear !== currentYear
+
+      if (crossYear) {
+        return `${format(first, 'MMM d, yyyy', { locale })} – ${format(last, 'MMM d, yyyy', { locale })}`
+      }
+      if (nonCurrentYear) {
+        const sameMonth = first.getMonth() === last.getMonth()
+        if (sameMonth) return `${format(first, 'MMMM d', { locale })} – ${format(last, 'd, yyyy', { locale })}`
+        return `${format(first, 'MMM d', { locale })} – ${format(last, 'MMM d, yyyy', { locale })}`
+      }
+      const sameMonth = first.getMonth() === last.getMonth()
+      if (sameMonth) return `${format(first, 'MMMM d', { locale })} – ${format(last, 'd', { locale })}`
+      return `${format(first, 'MMM d', { locale })} – ${format(last, 'MMM d', { locale })}`
+    },
+
+    /** Month label: "March" (current year) or "March 2026" (different year). */
+    formatMonthLabel: (date: Date) => {
+      const currentYear = new Date().getFullYear()
+      return date.getFullYear() === currentYear
+        ? format(date, 'MMMM', { locale })
+        : format(date, 'MMMM yyyy', { locale })
+    },
   }
 }
