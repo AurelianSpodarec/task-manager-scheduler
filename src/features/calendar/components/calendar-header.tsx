@@ -1,8 +1,10 @@
 import { ChevronLeft, ChevronRight, Settings, UserRound } from 'lucide-react'
 import { useCalendarNavigation } from '../hooks/use-calendar-navigation'
+import { toggleSettingsPanel, useSettingsPanelOpen } from '../calendar-store'
 
 export function CalendarHeader() {
   const { view, goNext, goPrev, goToday } = useCalendarNavigation()
+  const settingsOpen = useSettingsPanelOpen()
 
   return (
     <header
@@ -50,14 +52,18 @@ export function CalendarHeader() {
         </button>
         <button
           type="button"
-          aria-label="Settings"
-          title="Settings"
-          className="inline-flex size-7 items-center justify-center rounded-md text-cal-text-muted transition-colors hover:bg-cal-bg-subtle hover:text-cal-text"
+          onClick={toggleSettingsPanel}
+          aria-label="Calendar settings"
+          title="Calendar settings"
+          aria-pressed={settingsOpen}
+          className={`inline-flex size-7 items-center justify-center rounded-md transition-colors ${
+            settingsOpen
+              ? 'bg-cal-bg-subtle text-cal-text'
+              : 'text-cal-text-muted hover:bg-cal-bg-subtle hover:text-cal-text'
+          }`}
         >
           <Settings aria-hidden="true" className="size-4" />
         </button>
-
-        
       </div>
     </header>
   )

@@ -5,6 +5,7 @@ import type { SlotDuration, WorkHoursConfig, WeekStartDay, DragRenderState } fro
 import type { DragPointer } from '../types'
 import type { CalendarDragData, SlotDropData } from '../dnd/types'
 import { createStore } from '../stores/create-store'
+import { loadSettings, saveSettings, type SidebarPosition } from './persistence'
 import {
   MOUSE_AWAY_RADIUS_PX,
   DRAG_HORIZONTAL_ADVANCE_ZONE,
@@ -62,6 +63,7 @@ export type CalendarConfig = {
   dayStartHour: number
   dayEndHour: number
   visibleStartHour: number
+  sidebarPosition: SidebarPosition
   interaction: CalendarInteractionConfig
   dragMonitors: CalendarDragMonitors
   eventHandlers: CalendarEventHandlers
@@ -91,15 +93,49 @@ export const DEFAULT_CONFIG: CalendarConfig = {
   dayStartHour: 0,
   dayEndHour: 24,
   visibleStartHour: 7,
+  sidebarPosition: 'left',
   interaction: DEFAULT_INTERACTION,
   dragMonitors: {},
   eventHandlers: NOOP_HANDLERS,
 }
 
 // ---------------------------------------------------------------------------
-// Store
+// Store (hydrate persisted prefs over defaults)
 // ---------------------------------------------------------------------------
-const { getState, setState, useSelector } = createStore<CalendarConfig>({ ...DEFAULT_CONFIG })
+function buildInitialConfig(): CalendarConfig {
+  const saved = loadSettings()
+  if (!saved) return { ...DEFAULT_CONFIG }
+  return {
+    ...DEFAULT_CONFIG,
+    ...(saved.use24HourTime != null && { use24HourTime: saved.use24HourTime }),
+    ...(saved.weekStartsOn != null && { weekStartsOn: saved.weekStartsOn }),
+    ...(saved.visibleDays != null && { visibleDays: saved.visibleDays }),
+    ...(saved.workHours != null && { workHours: saved.workHours }),
+    ...(saved.slotDuration != null && { slotDuration: saved.slotDuration }),
+    ...(saved.dayStartHour != null && { dayStartHour: saved.dayStartHour }),
+    ...(saved.dayEndHour != null && { dayEndHour: saved.dayEndHour }),
+    ...(saved.visibleStartHour != null && { visibleStartHour: saved.visibleStartHour }),
+    ...(saved.sidebarPosition != null && { sidebarPosition: saved.sidebarPosition }),
+  }
+}
+
+const { getState, setState, subscribe: _subscribe, useSelector } = createStore<CalendarConfig>(buildInitialConfig())
+
+// Persist user-facing prefs whenever store changes
+_subscribe(() => {
+  const s = getState()
+  saveSettings({
+    use24HourTime: s.use24HourTime,
+    weekStartsOn: s.weekStartsOn,
+    visibleDays: s.visibleDays,
+    workHours: s.workHours,
+    slotDuration: s.slotDuration,
+    dayStartHour: s.dayStartHour,
+    dayEndHour: s.dayEndHour,
+    visibleStartHour: s.visibleStartHour,
+    sidebarPosition: s.sidebarPosition,
+  })
+})
 
 // ---------------------------------------------------------------------------
 // Mutations
@@ -164,6 +200,10 @@ export function setUse24HourTime(enabled: boolean) {
 
 export function setVisibleDays(days: number[]) {
   setState({ visibleDays: days })
+}
+
+export function setSidebarPosition(position: SidebarPosition) {
+  setState({ sidebarPosition: position })
 }
 
 export function setInteractionSettings(partial: Partial<CalendarInteractionConfig>) {
@@ -244,4 +284,8 @@ export function useVisibleStartHour(): number {
 
 export function useInteractionSettings(): CalendarInteractionConfig {
   return useSelector((s) => s.interaction)
+}
+
+export function useSidebarPosition(): SidebarPosition {
+  return useSelector((s) => s.sidebarPosition)
 }

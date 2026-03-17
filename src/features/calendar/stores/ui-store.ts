@@ -11,6 +11,7 @@ type UIState = {
   mobileFocusDay: number
   timeChevronHovered: boolean
   timeGuidePinned: boolean
+  settingsPanelOpen: boolean
 }
 
 export function todayColumnIndex(weekStartsOn: WeekStartDay): number {
@@ -23,6 +24,7 @@ const { getState, setState, useSelector } = createStore<UIState>({
   mobileFocusDay: todayColumnIndex(getConfig().weekStartsOn),
   timeChevronHovered: false,
   timeGuidePinned: false,
+  settingsPanelOpen: false,
 })
 
 // ---------------------------------------------------------------------------
@@ -53,6 +55,10 @@ export function toggleTimeGuidePinned() {
   setState({ timeGuidePinned: !getState().timeGuidePinned })
 }
 
+export function toggleSettingsPanel() {
+  setState({ settingsPanelOpen: !getState().settingsPanelOpen })
+}
+
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
@@ -74,4 +80,8 @@ export function useTimeGuideVisible(): boolean {
 
 export function useTimeGuidePinned(): boolean {
   return useSelector((s) => s.timeGuidePinned)
+}
+
+export function useSettingsPanelOpen(): boolean {
+  return useSelector((s) => s.settingsPanelOpen)
 }

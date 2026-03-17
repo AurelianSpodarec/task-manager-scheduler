@@ -29,6 +29,10 @@ export {
   useDayEndHour,
   useVisibleStartHour,
   useInteractionSettings,
+  setSidebarPosition,
+  useSidebarPosition,
 } from './calendar-config'
+
+export type { SidebarPosition } from './persistence'
 
 export { US_CONFIG, GB_CONFIG, WORKWEEK_CONFIG } from './presets'

@@ -45,6 +45,6 @@ export function PlannerContent() {
           }
         },
       },
-    }} />
+    }} showSettingsPanel={false} />
   )
 }

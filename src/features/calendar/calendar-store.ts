@@ -5,8 +5,10 @@ export {
   setView, setActiveDate, navigateToToday,
   setMobileFocusDay,
   setTimeChevronHovered, toggleTimeGuidePinned,
+  toggleSettingsPanel,
   useCalendarView, useActiveDate, useMobileFocusDay,
   useTimeGuideVisible, useTimeGuidePinned,
+  useSettingsPanelOpen,
 } from './stores/ui-store'
 
 // --- Config (locale, time format, visible days, work hours, slot duration) ---
@@ -28,6 +30,8 @@ export {
   useDayStartHour, useDayEndHour, useVisibleStartHour,
   getDayStartHour, getDayEndHour, getVisibleStartHour,
   getConfig,
+  setSidebarPosition, useSidebarPosition,
+  type SidebarPosition,
 } from './config'
 
 export { US_CONFIG, GB_CONFIG, WORKWEEK_CONFIG } from './config'
