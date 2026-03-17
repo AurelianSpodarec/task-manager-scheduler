@@ -26,6 +26,8 @@ export type CalendarEvent = {
   start: Date
   end: Date
   isAllDay: boolean
+  /** Completion state used for staged visual transitions in event renderers. */
+  isCompleted?: boolean
   color: EventColor
   /** Consumer CSS classes applied to the event card */
   className?: string

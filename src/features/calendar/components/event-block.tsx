@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import type { EventLayoutRect } from '../types'
 import { makeEventDragData } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
+import { useCurrentTime } from '../hooks/use-current-time'
 import { getConfig } from '../config'
 import { useCalendarDragSource } from '../hooks/use-dnd-behaviors'
 
@@ -17,6 +18,8 @@ type EventBlockProps = {
 export function EventBlock({ layout }: EventBlockProps) {
   const { event, column, totalColumns, top, height } = layout
   const isCompact = height < 40
+  const now = useCurrentTime()
+  const isCompleted = Boolean(event.isCompleted && event.end.getTime() <= now.getTime())
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon
@@ -46,7 +49,7 @@ export function EventBlock({ layout }: EventBlockProps) {
     <button
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow duration-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${event.className ?? 'border-zinc-200 bg-white hover:border-zinc-300'} ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
+      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-[opacity,color,border-color,box-shadow] duration-200 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${event.className ?? 'border-zinc-200 bg-white hover:border-zinc-300'} ${isCompleted ? 'opacity-60' : 'opacity-100'} ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
       style={{
         top: `${top + verticalInsetPx}px`,
         height: `${renderedHeightPx}px`,
@@ -67,13 +70,17 @@ export function EventBlock({ layout }: EventBlockProps) {
         </span>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
-        <span
-          className={`block truncate font-semibold leading-tight ${isCompact ? 'text-[10px]' : 'text-[12px]'}`}
-        >
-          {event.title}
+        <span className={`relative block min-w-0 font-semibold leading-tight transition-colors duration-200 ${isCompact ? 'text-[10px]' : 'text-[12px]'} ${isCompleted ? 'text-zinc-500' : 'text-zinc-900'}`}>
+          <span className="relative inline-block max-w-full truncate align-top">
+            <span className="relative z-10">{event.title}</span>
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute top-[46%] left-0 -right-[2px] z-0 h-px origin-left rounded-full bg-current rotate-[0.6deg] transition-opacity duration-150 ${isCompleted ? 'opacity-60 delay-[50ms]' : 'opacity-0 delay-0'}`}
+            />
+          </span>
         </span>
         {!isCompact && (
-          <span className="block text-[10px] leading-tight text-zinc-500">
+          <span className={`block text-[10px] leading-tight transition-colors duration-200 ${isCompleted ? 'text-zinc-400' : 'text-zinc-500'}`}>
             {formatEventTime(event.start)} – {formatEventTime(event.end)}
           </span>
         )}

@@ -58,6 +58,15 @@ describe('toCalendarEvent', () => {
       expect(pending.icon).not.toBe(completed.icon)
     })
 
+    it('maps completed visual state contract for calendar events', () => {
+      const pending = toCalendarEvent(makeWorkTask({ status: 'pending' }))
+      const completed = toCalendarEvent(makeWorkTask({ status: 'completed' }))
+      expect(pending.isCompleted).toBe(false)
+      expect(completed.isCompleted).toBe(true)
+      expect(pending.className).toContain('border-zinc-200')
+      expect(completed.className).toContain('border-zinc-200')
+    })
+
     it('produces a distinct style per priority level', () => {
       const priorities: EventPriority[] = ['none', 'low', 'medium', 'high', 'critical']
       const styles = priorities.map((p) => {

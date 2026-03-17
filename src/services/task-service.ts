@@ -20,6 +20,9 @@ export function toCalendarEvent(task: Task): CalendarEvent {
   const s = task.schedule!
   const isPersonal = task.personalActivityType != null
   const activityType = task.personalActivityType as PersonalActivityType | undefined
+  const isCompleted = task.status === 'completed'
+  const workBaseClass =
+    'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]'
 
   return {
     id: task.id,
@@ -27,10 +30,11 @@ export function toCalendarEvent(task: Task): CalendarEvent {
     start: new Date(s.start),
     end: new Date(s.end),
     isAllDay: s.isAllDay,
+    isCompleted,
     color: task.color,
     className: isPersonal && activityType
       ? personalActivityStyles[activityType]
-      : 'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]',
+      : workBaseClass,
     style: isPersonal
       ? undefined
       : { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
