@@ -1,4 +1,4 @@
-import { useUnscheduledTasks } from '@/services/task-service'
+import { useSidebarTasksTabTasks, useUnscheduledTasks } from '@/services/task-service'
 import {
   Tabs,
   TabsContent,
@@ -7,9 +7,10 @@ import {
 } from '@/components/ui/tabs'
 import { SidebarTaskCard } from './sidebar-task-card'
 import { PersonalTaskCard } from './personal-task-card'
+import { MeetingTaskCard } from './meeting-task-card'
 
 export function PlannerSidebar() {
-  const workTasks = useUnscheduledTasks('work')
+  const sidebarTasks = useSidebarTasksTabTasks()
   const personalTasks = useUnscheduledTasks('personal')
 
   return (
@@ -29,8 +30,10 @@ export function PlannerSidebar() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="tasks" className="sidebar-scrollbar min-h-0 flex-1 space-y-[0.3rem] overflow-y-auto pr-[0.2rem]">
-        {workTasks.map((task) => (
-          <SidebarTaskCard key={task.id} task={task} />
+        {sidebarTasks.map((task) => (
+          task.type === 'meeting'
+            ? <MeetingTaskCard key={task.id} task={task} />
+            : <SidebarTaskCard key={task.id} task={task} />
         ))}
       </TabsContent>
       <TabsContent value="personal" className="sidebar-scrollbar min-h-0 flex-1 space-y-[0.3rem] overflow-y-auto pr-[0.2rem]">

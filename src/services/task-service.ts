@@ -153,6 +153,7 @@ export function toggleTaskStatus(id: string): EventStatus | null {
 let cachedSnap: Task[] = []
 let workCache: Task[] = []
 let personalCache: Task[] = []
+let tasksTabCache: Task[] = []
 let allUnscheduledCache: Task[] = []
 let scheduledCache: CalendarEvent[] = []
 
@@ -162,8 +163,23 @@ function invalidateServiceCaches() {
   cachedSnap = snap
   workCache = snap.filter((t) => t.schedule == null && t.type === 'work')
   personalCache = snap.filter((t) => t.schedule == null && t.type === 'personal')
+  tasksTabCache = [
+    ...workCache,
+    ...snap.filter((t) => t.type === 'meeting'),
+  ]
   allUnscheduledCache = snap.filter((t) => t.schedule == null)
   scheduledCache = snap.filter((t) => t.schedule != null).map(toCalendarEvent)
+}
+
+/** Sidebar Tasks-tab list: unscheduled work tasks + all meeting tasks. */
+export function useSidebarTasksTabTasks(): Task[] {
+  return useSyncExternalStore(subscribe, () => {
+    invalidateServiceCaches()
+    return tasksTabCache
+  }, () => {
+    invalidateServiceCaches()
+    return tasksTabCache
+  })
 }
 
 /** Unscheduled tasks for the sidebar, optionally filtered by type. */

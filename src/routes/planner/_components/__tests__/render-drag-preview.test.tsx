@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderAsync, screen } from '@/test-utils'
 import { renderDragPreview } from '../drag-previews/render-drag-preview'
 import type { DragRenderState } from '@/features/calendar'
-import type { WorkDragMeta, PersonalDragMeta } from '../types'
+import type { WorkDragMeta, PersonalDragMeta, MeetingDragMeta } from '../types'
 
 const baseDrag: DragRenderState = {
   source: 'sidebar',
@@ -34,6 +34,28 @@ describe('renderDragPreview', () => {
     expect(screen.getByText('Test Event')).toBeInTheDocument()
     expect(screen.getByText('Acme Corp')).toBeInTheDocument()
     expect(screen.getByText('1:00h')).toBeInTheDocument()
+  })
+
+  it('renders MeetingDragPreview content for kind "meeting"', async () => {
+    const meta: MeetingDragMeta = {
+      kind: 'meeting',
+      durationLabel: '1:30h',
+      timeLabel: '11:00 AM - 12:30 PM',
+      provider: 'zoom',
+      providerLabel: 'Zoom Meeting',
+      participants: [
+        { id: 'u1', name: 'Alice' },
+        { id: 'u2', name: 'Bob' },
+        { id: 'u3', name: 'Carol' },
+      ],
+    }
+    const node = renderDragPreview({ ...baseDrag, dragMeta: meta })
+    expect(node).not.toBeNull()
+
+    await renderAsync(<>{node}</>)
+    expect(screen.getByText('Test Event')).toBeInTheDocument()
+    expect(screen.getByText('11:00 AM - 12:30 PM')).toBeInTheDocument()
+    expect(screen.getByText('Alice, Bob +1')).toBeInTheDocument()
   })
 
   it('renders PersonalDragPreview content for kind "personal"', async () => {

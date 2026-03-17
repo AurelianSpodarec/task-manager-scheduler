@@ -2,6 +2,7 @@ import type { EventColor, EventStatus, EventPriority, Participant } from '@/type
 import type { PersonalActivityType } from '@/lib/personal-activity'
 
 export type TaskType = 'work' | 'personal' | 'meeting'
+export type MeetingProvider = 'google' | 'zoom'
 
 export type TaskSchedule = {
   start: string   // ISO datetime
@@ -33,6 +34,8 @@ export type Task = {
 
   // Meeting fields
   participants?: Participant[]
+  meetingProvider?: MeetingProvider
+  meetingJoinUrl?: string | null
 
   schedule: TaskSchedule | null
 }
