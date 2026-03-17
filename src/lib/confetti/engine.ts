@@ -125,6 +125,7 @@ class CanvasConfettiEngine implements ConfettiEngineLike {
     const depthScale = 0.35 + 0.65 * Math.abs(flipSignal)
 
     context.save()
+    context.globalAlpha = particle.opacity
     context.translate(particle.drawX, particle.drawY)
     context.rotate(thetaRad * 0.16 * particle.axisY)
     context.scale(depthScale, 1)

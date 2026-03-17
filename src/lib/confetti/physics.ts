@@ -100,6 +100,11 @@ export function stepParticle(
 ): boolean {
   const delta = normalizeDelta(deltaMs)
   const deltaScale = delta / 16.6666666667
+
+  particle.ageMs += delta
+  const lifeProgress = Math.min(1, particle.ageMs / particle.lifeMs)
+  particle.opacity = Math.pow(Math.max(0, 1 - lifeProgress), particle.fadeCurve)
+
   particle.frame += delta
   particle.x += particle.dx * particle.velocity * deltaScale + particle.drift * deltaScale
   particle.y += particle.dy * particle.velocity * deltaScale + particle.gravity * deltaScale
@@ -112,5 +117,5 @@ export function stepParticle(
 
   particle.drawX = particle.x + rho * Math.cos(phi)
   particle.drawY = particle.y + rho * Math.sin(phi)
-  return particle.y <= viewportHeight + particle.deviation
+  return particle.ageMs < particle.lifeMs && particle.opacity > 0 && particle.y <= viewportHeight + particle.deviation
 }

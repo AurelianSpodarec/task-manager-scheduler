@@ -15,6 +15,7 @@ type BurstParticleInput = {
   spreadDeg: number
   speedScale: number
   scalar: number
+  distanceScale: number
   wind: number
   style: StylePreset
   physics: PhysicsPreset
@@ -86,13 +87,14 @@ function directionBias(direction: ConfettiDirection): number {
   }
 }
 
-function createReferenceParticle(
+function createParticle(
   x: number,
   y: number,
   direction: ConfettiDirection,
   spreadDeg: number,
   speedScale: number,
   scalar: number,
+  distanceScale: number,
   wind: number,
   style: StylePreset,
   physics: PhysicsPreset,
@@ -100,16 +102,27 @@ function createReferenceParticle(
   const directionRad = directionDegrees(direction) * DEG_TO_RAD
   const spreadRad = randomBetween(-spreadDeg / 2, spreadDeg / 2) * DEG_TO_RAD
   const launchRad = directionRad + spreadRad
-  const launchSpeed = (physics.dyMin + physics.dyRange * Math.random()) * speedScale * (0.9 + scalar * 0.1)
-  const launchDistance = randomBetween(0, 4 * scalar)
+  const launchSpeed = (
+    physics.dyMin
+    + physics.dyRange * Math.random()
+  ) * speedScale * scalar * distanceScale
+  const launchDistance = randomBetween(0, 4 * scalar * distanceScale)
+
   const baseDx = Math.sin(physics.dxThetaMin + physics.dxThetaRange * Math.random()) * 0.18
-  const dx = Math.cos(launchRad) + baseDx + physics.directionalDx + wind * 0.15 + directionBias(direction) * 0.03
+  const dx = (
+    Math.cos(launchRad)
+    + baseDx
+    + physics.directionalDx
+    + wind * 0.15
+    + directionBias(direction) * 0.03
+  )
   const dy = Math.sin(launchRad)
 
   const width = (style.sizeMin + style.sizeVariance * Math.random()) * scalar
   const height = (style.sizeMin + style.sizeVariance * Math.random()) * scalar
   const splineX = createPoissonSpline(physics.eccentricity)
-  const splineY = createSplineY(splineX, physics.deviation)
+  const orbitDeviation = Math.max(6, physics.deviation * (0.45 + scalar * 0.55) * distanceScale)
+  const splineY = createSplineY(splineX, orbitDeviation)
 
   return {
     x: x + Math.cos(launchRad) * launchDistance,
@@ -124,10 +137,14 @@ function createReferenceParticle(
     drift: physics.drift + wind * 0.9,
     theta: 360 * Math.random(),
     dTheta: physics.dThetaMin + physics.dThetaRange * Math.random(),
+    ageMs: 0,
+    lifeMs: 2000,
+    fadeCurve: randomBetween(0.8, 1.35),
+    opacity: 1,
     frame: 0,
     splineX,
     splineY,
-    deviation: physics.deviation,
+    deviation: orbitDeviation,
     oscillationPeriodMs: physics.oscillationPeriodMs,
     width,
     height,
@@ -142,13 +159,14 @@ export function createBurstParticles(input: BurstParticleInput): ConfettiParticl
   const particles: ConfettiParticle[] = []
 
   for (let i = 0; i < input.count; i++) {
-    particles.push(createReferenceParticle(
+    particles.push(createParticle(
       input.originX,
       input.originY,
       input.direction,
       input.spreadDeg,
       input.speedScale,
       input.scalar,
+      input.distanceScale,
       input.wind,
       input.style,
       input.physics,
@@ -166,13 +184,14 @@ export function createRainParticles(input: RainParticleInput): ConfettiParticle[
   const maxX = centerX + halfSpan
 
   for (let i = 0; i < input.count; i++) {
-    particles.push(createReferenceParticle(
+    particles.push(createParticle(
       randomBetween(minX, maxX),
       input.sourceY - Math.random() * input.physics.deviation,
       'down',
       22,
       0.85,
       input.scalar,
+      1,
       input.wind,
       input.style,
       input.physics,

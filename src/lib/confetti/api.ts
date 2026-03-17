@@ -85,6 +85,7 @@ export function fireConfetti(x: number, y: number, input: FireConfettiInput = 'p
         spreadDeg: burst.spreadDeg,
         speedScale: burst.speedScale,
         scalar: options.scalar,
+        distanceScale: options.distanceScale,
         wind: options.wind,
         style,
         physics,

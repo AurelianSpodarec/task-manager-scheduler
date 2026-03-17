@@ -4,77 +4,55 @@ function color(r: number, g: number, b: number): string {
   return `rgb(${r},${g},${b})`
 }
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(min + Math.random() * (max - min + 1))
+function randomInt(max: number): number {
+  return Math.floor(Math.random() * max)
 }
 
-function fromPalette(palette: readonly [number, number, number][]): string {
-  const [r, g, b] = palette[Math.floor(Math.random() * palette.length)]
-  return color(r, g, b)
+const vibrantPalette = [
+  color(255, 82, 82),
+  color(255, 179, 0),
+  color(102, 187, 106),
+  color(66, 165, 245),
+  color(171, 71, 188),
+  color(255, 112, 67),
+  color(38, 198, 218),
+]
+
+const streamerPalette = [
+  color(255, 99, 132),
+  color(255, 205, 86),
+  color(54, 162, 235),
+  color(75, 192, 192),
+]
+
+const metallicPalette = [
+  color(245, 245, 245),
+  color(224, 224, 224),
+  color(255, 241, 118),
+  color(207, 216, 220),
+]
+
+const bananaPalette = [
+  color(255, 235, 59),
+  color(255, 202, 40),
+  color(255, 245, 157),
+  color(255, 213, 79),
+]
+
+function pick(palette: string[]): string {
+  return palette[randomInt(palette.length)]
 }
 
-const vibrantPalette: readonly [number, number, number][] = [
-  [255, 64, 129],
-  [255, 107, 0],
-  [255, 214, 10],
-  [82, 255, 87],
-  [0, 210, 255],
-  [88, 101, 242],
-  [192, 96, 255],
-  [255, 52, 179],
-]
-
-const streamerPalette: readonly [number, number, number][] = [
-  [255, 56, 56],
-  [255, 140, 0],
-  [255, 220, 0],
-  [20, 224, 120],
-  [0, 198, 255],
-  [96, 124, 255],
-  [191, 90, 255],
-]
-
-const metallicPalette: readonly [number, number, number][] = [
-  [255, 255, 255],
-  [235, 238, 245],
-  [225, 231, 242],
-  [255, 239, 194],
-  [250, 224, 140],
-]
-
-const bananaPalette: readonly [number, number, number][] = [
-  [255, 220, 70],
-  [255, 235, 120],
-  [255, 198, 40],
-  [255, 170, 55],
-]
-
-const colorThemes: ColorTheme[] = [
-  () => fromPalette(vibrantPalette),
-  () => color(255, randomInt(80, 170), randomInt(80, 170)),
-  () => color(randomInt(80, 170), 255, randomInt(80, 170)),
-  () => color(randomInt(80, 170), randomInt(80, 170), 255),
-  () => color(255, randomInt(120, 185), randomInt(120, 255)),
-  () => color(randomInt(120, 255), 255, 255),
-  () => fromPalette(metallicPalette),
-  () => colorThemes[Math.random() < 0.5 ? 1 : 2](),
-  () => colorThemes[Math.random() < 0.5 ? 3 : 5](),
-  () => fromPalette(bananaPalette),
-]
+const colorThemes: Record<ConfettiStyle, ColorTheme> = {
+  colorful: () => pick(vibrantPalette),
+  party: () => pick(vibrantPalette),
+  metallic: () => pick(metallicPalette),
+  streamers: () => pick(streamerPalette),
+  banana: () => pick(bananaPalette),
+}
 
 export function getStyleTheme(style: ConfettiStyle): ColorTheme {
-  switch (style) {
-    case 'metallic':
-      return colorThemes[6]
-    case 'streamers':
-      return () => (Math.random() < 0.75 ? fromPalette(streamerPalette) : colorThemes[8]())
-    case 'banana':
-      return colorThemes[9]
-    case 'party':
-    case 'colorful':
-    default:
-      return () => (Math.random() < 0.8 ? fromPalette(vibrantPalette) : colorThemes[0]())
-  }
+  return colorThemes[style] ?? colorThemes.colorful
 }
 
 export function sampleThemeColor(style: ConfettiStyle): string {

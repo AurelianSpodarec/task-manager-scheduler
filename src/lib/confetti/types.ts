@@ -56,6 +56,7 @@ export type FireConfettiOptions = {
   physics?: ConfettiPhysics
   shot?: ConfettiShot
   scalar?: number
+  distanceScale?: number
   wind?: number
   burstCount?: number
 }
@@ -67,6 +68,7 @@ export type NormalizedFireConfettiOptions = {
   physics: ConfettiPhysics
   shot: ConfettiShot
   scalar: number
+  distanceScale: number
   wind: number
   burstCount: number
 }
@@ -106,6 +108,10 @@ export type ConfettiParticle = {
   drift: number
   theta: number
   dTheta: number
+  ageMs: number
+  lifeMs: number
+  fadeCurve: number
+  opacity: number
   frame: number
   splineX: number[]
   splineY: number[]

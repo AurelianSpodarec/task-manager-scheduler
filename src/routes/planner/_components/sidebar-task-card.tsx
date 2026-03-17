@@ -57,10 +57,11 @@ export function SidebarTaskCard({ task }: { task: Task }) {
                 const rect = e.currentTarget.getBoundingClientRect()
                 fireConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, {
                   style: 'party',
-                  physics: 'balanced',
+                  physics: 'floaty',
                   shot: 'pop',
-                  burstCount: 150,
-                  scalar: 1,
+                  burstCount: 22,
+                  scalar: 0.45,
+                  distanceScale: 0.52,
                 })
               }
             }}

@@ -179,13 +179,14 @@ const PHYSICS_PRESETS: Record<ConfettiPhysics, PhysicsPreset> = {
     dThetaRange: 0.3,
     oscillationPeriodMs: 6400,
     directionalDx: 0.05,
+
   },
 }
 
 const SHOT_PRESETS: Record<ConfettiShot, ShotPreset> = {
   pop: {
     bursts: [
-      { delayMs: 0, direction: 'top', spreadDeg: 60, countScale: 1, speedScale: 1 },
+      { delayMs: 0, direction: 'top', spreadDeg: 42, countScale: 1, speedScale: 1 },
     ],
   },
   doubleTap: {
@@ -244,6 +245,7 @@ export function normalizeFireInput(input: FireConfettiInput): NormalizedFireConf
       physics: DEFAULT_FIRE_PHYSICS,
       shot: DEFAULT_FIRE_SHOT,
       scalar: 1,
+      distanceScale: 1,
       wind: 0,
       burstCount: DEFAULT_BURST_COUNT,
     }
@@ -254,6 +256,7 @@ export function normalizeFireInput(input: FireConfettiInput): NormalizedFireConf
     physics: input.physics ?? DEFAULT_FIRE_PHYSICS,
     shot: input.shot ?? DEFAULT_FIRE_SHOT,
     scalar: toPositive(input.scalar, 1),
+    distanceScale: clamp(toPositive(input.distanceScale, 1), 0.25, 2.5),
     wind: clamp(toFinite(input.wind, 0), -3, 3),
     burstCount: Math.max(1, Math.round(toPositive(input.burstCount, DEFAULT_BURST_COUNT))),
   }
