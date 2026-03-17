@@ -32,7 +32,16 @@ export function PlannerContent() {
         },
         onIconClick: (id, e) => {
           const status = toggleTaskStatus(id)
-          if (status === 'completed') fireConfetti(e.clientX, e.clientY)
+          if (status === 'completed') {
+            const rect = e.currentTarget.getBoundingClientRect()
+            fireConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, {
+              style: 'party',
+              physics: 'balanced',
+              shot: 'pop',
+              burstCount: 150,
+              scalar: 1,
+            })
+          }
         },
       },
     }} />

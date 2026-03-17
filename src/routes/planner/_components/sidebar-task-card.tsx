@@ -53,7 +53,16 @@ export function SidebarTaskCard({ task }: { task: Task }) {
               e.stopPropagation()
               const next = toggleTaskStatus(task.id)
               setJustCompleted(next === 'completed')
-              if (next === 'completed') fireConfetti(e.clientX, e.clientY)
+              if (next === 'completed') {
+                const rect = e.currentTarget.getBoundingClientRect()
+                fireConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, {
+                  style: 'party',
+                  physics: 'balanced',
+                  shot: 'pop',
+                  burstCount: 150,
+                  scalar: 1,
+                })
+              }
             }}
             className="relative z-10 mt-0.5 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
             aria-label={`Toggle ${task.title} completion`}
