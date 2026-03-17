@@ -4,6 +4,7 @@ import { makeEventDragData } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
 import { getConfig } from '../config'
 import { useCalendarDragSource } from '../hooks/use-dnd-behaviors'
+import { useDragState } from '../calendar-store'
 
 type EventBlockProps = {
   layout: EventLayoutRect
@@ -29,12 +30,15 @@ export function EventBlock({ layout }: EventBlockProps) {
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon
+  const dragState = useDragState()
   const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLButtonElement>({
     createDragData: ({ element, event: pointerEvent }) => ({
       ...makeEventDragData(event),
       grabOffsetY: Math.max(0, pointerEvent.clientY - element.getBoundingClientRect().top),
     }),
   })
+  const isSourceDragging = dragState?.source === 'calendar' && dragState.eventId === event.id
+  const isCardDragging = isDragging || isSourceDragging
 
   const onStatusPointerDown = useCallback((e: React.PointerEvent<HTMLSpanElement>) => {
     e.stopPropagation()
@@ -56,13 +60,14 @@ export function EventBlock({ layout }: EventBlockProps) {
     <button
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-1.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-[opacity,color,border-color,box-shadow] duration-200 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${event.className ?? 'border-zinc-200 bg-white hover:border-zinc-300'} ${isCompleted ? 'opacity-60' : 'opacity-100'} ${isDragging ? 'pointer-events-none opacity-10' : ''}`}
+      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-[3px] text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-[opacity,color,border-color,box-shadow] duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${event.className ?? 'border-zinc-200 bg-white hover:border-zinc-300'} ${isCompleted ? 'opacity-60' : 'opacity-100'} ${isCardDragging ? 'pointer-events-none' : ''}`}
       style={{
         top: `${top + verticalInsetPx}px`,
         height: `${renderedHeightPx}px`,
         width: `calc(${widthPercent}% - ${horizontalInsetPx * 2}px)`,
         left: `calc(${leftPercent}% + ${horizontalInsetPx}px)`,
         ...event.style,
+        opacity: isCardDragging ? 0.2 : undefined,
       }}
       aria-label={`${event.title}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
     >

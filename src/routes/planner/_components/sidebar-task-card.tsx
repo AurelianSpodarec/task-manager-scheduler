@@ -17,11 +17,12 @@ export function SidebarTaskCard({ task }: { task: Task }) {
     createDragData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
       className: 'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]',
       style: { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
-      icon: PendingStatusIcon,
+      icon: task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
       dragMeta: {
         kind: 'task' as const,
         clientName: task.clientName ?? '',
         dueDateLabel: task.dueDateLabel ?? null,
+        isCompleted: task.status === 'completed',
         isRecurring: !!task.isRecurring,
         recurringType: task.recurringType,
         durationLabel: roundedDurationLabel,

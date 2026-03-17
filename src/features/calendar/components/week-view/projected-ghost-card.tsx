@@ -71,7 +71,7 @@ export function ProjectedGhostCard({ projected }: { projected: ProjectedCard }) 
 
   return (
     <div
-      className={`pointer-events-none absolute z-20 flex min-h-4 ${isCompact ? 'flex-row items-center' : 'flex-row items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50 ${projected.className ?? 'border-zinc-200 bg-white'}`}
+      className={`pointer-events-none absolute z-20 flex min-h-4 ${isCompact ? 'flex-row items-center' : 'flex-row items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 py-[3px] opacity-80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ring-1 ring-zinc-200/50 ${projected.className ?? 'border-zinc-200 bg-white'}`}
       style={{
         top: `${projected.top + verticalInsetPx}px`,
         height: `${renderedHeightPx}px`,

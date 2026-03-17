@@ -4,6 +4,7 @@ export type WorkDragMeta = {
   kind: 'task'
   clientName: string
   dueDateLabel: string | null
+  isCompleted?: boolean
   isRecurring: boolean
   recurringType?: 'standard' | 'retainer'
   durationLabel: string

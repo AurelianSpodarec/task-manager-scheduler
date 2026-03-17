@@ -1,4 +1,5 @@
 import type { DragRenderState } from '@/features/calendar'
+import { CompletedStatusIcon, PendingStatusIcon } from '@/lib/task-status-icons'
 import type { WorkDragMeta } from '../types'
 import { TaskCardContent } from '../task-card-content'
 
@@ -15,9 +16,17 @@ export function TaskDragPreview({ drag, meta }: { drag: DragRenderState; meta: W
         durationLabel={meta.durationLabel}
         clientName={meta.clientName}
         dueDateLabel={meta.dueDateLabel}
+        isCompleted={!!meta.isCompleted}
         priorityBorderColor={meta.priorityBorderColor}
         isRecurring={meta.isRecurring}
         recurringType={meta.recurringType}
+        statusSlot={
+          <span className="mt-0.5 inline-flex shrink-0 items-center justify-center rounded-[4px]">
+            {meta.isCompleted
+              ? <CompletedStatusIcon className="size-3.5" />
+              : <PendingStatusIcon className="size-3.5" />}
+          </span>
+        }
       />
     </div>
   )
