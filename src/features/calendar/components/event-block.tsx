@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { EventLayoutRect } from '../types'
 import { makeEventDragData } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
@@ -19,6 +19,13 @@ export function EventBlock({ layout }: EventBlockProps) {
   const isCompact = height < 40
   const isCompleted = Boolean(event.isCompleted)
   const [justCompleted, setJustCompleted] = useState(false)
+
+  // Release GPU compositing layers created by the checkmark fill-mode animations
+  useEffect(() => {
+    if (!justCompleted) return
+    const id = setTimeout(() => setJustCompleted(false), 350)
+    return () => clearTimeout(id)
+  }, [justCompleted])
 
   const { formatEventTime } = useFormatTime()
   const Icon = event.icon

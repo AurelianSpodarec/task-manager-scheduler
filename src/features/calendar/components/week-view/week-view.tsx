@@ -54,7 +54,7 @@ export function WeekView() {
       </div>
 
       {/* Scrollable time grid */}
-      <div ref={scrollRef} role="rowgroup" className="sidebar-scrollbar relative min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} role="rowgroup" className="sidebar-scrollbar relative min-h-0 flex-1 overflow-y-auto" style={{ willChange: 'scroll-position' }}>
         {/* Desktop: full 7-day grid */}
         <div role="row" className="cal-week-grid hidden md:grid">
           <TimeGutter />
