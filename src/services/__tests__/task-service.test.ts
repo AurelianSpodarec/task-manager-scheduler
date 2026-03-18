@@ -4,6 +4,7 @@ import {
   moveScheduledTask,
   scheduleTask,
   unscheduleTask,
+  syncElapsedScheduledTaskStatuses,
   getSidebarTasksTabTasksSnapshot,
   toggleTaskStatus,
 } from '../task-service'
@@ -276,6 +277,68 @@ describe('moveScheduledTask', () => {
     expect(getTask(id)?.status).toBe('completed')
 
     deleteTask(id)
+  })
+})
+
+describe('syncElapsedScheduledTaskStatuses', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('marks elapsed personal tasks completed while leaving future personal tasks pending', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-18T16:40:00.000Z'))
+
+    const elapsedId = 'personal-sync-elapsed'
+    const futureId = 'personal-sync-future'
+    upsertTask({
+      ...makePersonalTask('dentist'),
+      id: elapsedId,
+      status: 'pending',
+      schedule: { start: '2026-03-18T11:15:00.000Z', end: '2026-03-18T12:15:00.000Z', isAllDay: false },
+    })
+    upsertTask({
+      ...makePersonalTask('lunch'),
+      id: futureId,
+      status: 'pending',
+      schedule: { start: '2026-03-18T17:00:00.000Z', end: '2026-03-18T18:00:00.000Z', isAllDay: false },
+    })
+
+    syncElapsedScheduledTaskStatuses()
+
+    expect(getTask(elapsedId)?.status).toBe('completed')
+    expect(getTask(futureId)?.status).toBe('pending')
+
+    deleteTask(elapsedId)
+    deleteTask(futureId)
+  })
+
+  it('locks meeting status to elapsed schedule position during reconciliation', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-18T16:40:00.000Z'))
+
+    const elapsedMeetingId = 'meeting-sync-elapsed'
+    const futureMeetingId = 'meeting-sync-future'
+    upsertTask({
+      ...makeMeetingTask(),
+      id: elapsedMeetingId,
+      status: 'pending',
+      schedule: { start: '2026-03-18T10:00:00.000Z', end: '2026-03-18T11:00:00.000Z', isAllDay: false },
+    })
+    upsertTask({
+      ...makeMeetingTask(),
+      id: futureMeetingId,
+      status: 'completed',
+      schedule: { start: '2026-03-18T18:00:00.000Z', end: '2026-03-18T19:00:00.000Z', isAllDay: false },
+    })
+
+    syncElapsedScheduledTaskStatuses()
+
+    expect(getTask(elapsedMeetingId)?.status).toBe('completed')
+    expect(getTask(futureMeetingId)?.status).toBe('pending')
+
+    deleteTask(elapsedMeetingId)
+    deleteTask(futureMeetingId)
   })
 })
 

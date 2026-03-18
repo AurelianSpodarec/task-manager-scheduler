@@ -158,6 +158,29 @@ function getScheduledStatus(task: Task, nextEnd: Date): EventStatus {
   }
   return shouldAutoCompletePersonalTask(task, nextEnd) ? 'completed' : task.status
 }
+/**
+ * Reconciles scheduled task statuses against elapsed time.
+ * - Personal tasks auto-complete once their scheduled end has elapsed.
+ * - Meetings are always locked to elapsed-time status.
+ */
+export function syncElapsedScheduledTaskStatuses(now = new Date()): void {
+  const nowMs = now.getTime()
+
+  for (const task of getAllTasks()) {
+    if (!task.schedule) continue
+
+    const endMs = new Date(task.schedule.end).getTime()
+    const nextStatus: EventStatus | null = task.type === 'meeting'
+      ? (endMs <= nowMs ? 'completed' : 'pending')
+      : task.type === 'personal' && task.status !== 'completed' && endMs <= nowMs
+        ? 'completed'
+        : null
+
+    if (nextStatus && nextStatus !== task.status) {
+      upsertTask({ ...task, status: nextStatus })
+    }
+  }
+}
 
 /** Remove a spawned calendar clone — personal drags back to sidebar just delete the copy. */
 export function deleteScheduledTask(id: string): void {

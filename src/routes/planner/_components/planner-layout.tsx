@@ -7,6 +7,7 @@ import {
   useSidebarPosition,
 } from '@/features/calendar'
 import { CalendarSettingsPanel } from '@/components/calendar-settings/calendar-settings-panel'
+import { syncElapsedScheduledTaskStatuses } from '@/services/task-service'
 import { PlannerSidebar } from './planner-sidebar'
 import { PlannerContent } from './planner-content'
 
@@ -24,6 +25,14 @@ export function PlannerLayout() {
     if (!element) return
     return registerSidebarDropzone(instanceId, element)
   }, [instanceId])
+
+  useEffect(() => {
+    syncElapsedScheduledTaskStatuses()
+    const interval = setInterval(() => {
+      syncElapsedScheduledTaskStatuses()
+    }, 60_000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200/80 bg-card md:flex-row">

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { CalendarRoot, setDataSource } from '@/features/calendar'
+import { setDataSource } from '@/features/calendar'
 import { SyncDbDataSource } from '@/services/sync-db-data-source'
-import { PlannerLayout } from './planner/_components/planner-layout'
+import { PlannerPage } from './planner/_components/planner-page'
 
 // Wire the data source before any calendar component mounts
 setDataSource(new SyncDbDataSource())
@@ -9,11 +9,3 @@ setDataSource(new SyncDbDataSource())
 export const Route = createFileRoute('/planner')({
   component: PlannerPage,
 })
-
-function PlannerPage() {
-  return (
-    <CalendarRoot>
-      <PlannerLayout />
-    </CalendarRoot>
-  )
-}
