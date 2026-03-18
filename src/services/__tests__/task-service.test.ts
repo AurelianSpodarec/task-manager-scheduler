@@ -48,7 +48,7 @@ function makeMeetingTask(overrides: Partial<Task> = {}): Task {
     title: 'Design Jam',
     type: 'meeting',
     durationMinutes: 90,
-    priority: 'high',
+    priority: 'none',
     status: 'pending',
     color: 'blue',
     meetingProvider: 'zoom',

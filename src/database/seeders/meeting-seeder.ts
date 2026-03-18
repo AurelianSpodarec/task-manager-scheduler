@@ -46,7 +46,7 @@ export const MeetingSeeder: Seeder = {
         title: 'Design Jam',
         type: 'meeting',
         durationMinutes: 90,
-        priority: 'high',
+        priority: 'none',
         status: 'pending',
         color: 'blue',
         participants: teamAvatars,
@@ -59,7 +59,7 @@ export const MeetingSeeder: Seeder = {
         title: 'Design Jam',
         type: 'meeting',
         durationMinutes: 90,
-        priority: 'high',
+        priority: 'none',
         status: 'pending',
         color: 'blue',
         participants: teamAvatars,
@@ -69,17 +69,17 @@ export const MeetingSeeder: Seeder = {
       },
 
       // Daily standups
-      { id: 'mon-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'medium', status: 'completed', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(mon, 9, 15), end: at(mon, 9, 45), isAllDay: false } },
-      { id: 'tue-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'medium', status: 'completed', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(tue, 9, 15), end: at(tue, 9, 45), isAllDay: false } },
-      { id: 'wed-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'medium', status: 'completed', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(wed, 9, 15), end: at(wed, 9, 45), isAllDay: false } },
-      { id: 'thu-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'medium', status: 'pending', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(thu, 9, 15), end: at(thu, 9, 45), isAllDay: false } },
-      { id: 'fri-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'medium', status: 'pending', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(fri, 9, 15), end: at(fri, 9, 45), isAllDay: false } },
+      { id: 'mon-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'none', status: 'completed', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(mon, 9, 15), end: at(mon, 9, 45), isAllDay: false } },
+      { id: 'tue-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'none', status: 'completed', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(tue, 9, 15), end: at(tue, 9, 45), isAllDay: false } },
+      { id: 'wed-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'none', status: 'completed', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(wed, 9, 15), end: at(wed, 9, 45), isAllDay: false } },
+      { id: 'thu-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'none', status: 'pending', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(thu, 9, 15), end: at(thu, 9, 45), isAllDay: false } },
+      { id: 'fri-standup', title: 'Morning Standup', type: 'meeting', durationMinutes: 30, priority: 'none', status: 'pending', color: 'blue', participants: teamAvatars, meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-standup', schedule: { start: at(fri, 9, 15), end: at(fri, 9, 45), isAllDay: false } },
 
       // One-off meetings
       { id: 'tue-client', title: 'Client Call', type: 'meeting', durationMinutes: 60, priority: 'none', status: 'completed', color: 'emerald', participants: [teamAvatars[0], teamAvatars[1]], meetingProvider: 'zoom', meetingJoinUrl: 'https://zoom.us/j/9805557712', schedule: { start: at(tue, 13, 30), end: at(tue, 14, 30), isAllDay: false } },
-      { id: 'thu-insights', title: 'Weekly Insights Sync', type: 'meeting', durationMinutes: 45, priority: 'high', status: 'pending', color: 'blue', participants: [teamAvatars[0], teamAvatars[2]], meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-insights', schedule: { start: at(thu, 13, 30), end: at(thu, 14, 15), isAllDay: false } },
-      { id: 'fri-meeting', title: 'Team Meeting', type: 'meeting', durationMinutes: 30, priority: 'medium', status: 'pending', color: 'blue', participants: teamAvatars, meetingProvider: 'zoom', meetingJoinUrl: 'https://zoom.us/j/9854421188', schedule: { start: at(fri, 13, 30), end: at(fri, 14), isAllDay: false } },
-      { id: 'thu-roadmap-review', title: 'Roadmap Review', type: 'meeting', durationMinutes: 75, priority: 'high', status: 'pending', color: 'blue', participants: [teamAvatars[0], teamAvatars[1], teamAvatars[2], teamAvatars[3], teamAvatars[4], teamAvatars[5]], meetingProvider: 'zoom', meetingJoinUrl: 'https://zoom.us/j/9134488101', schedule: { start: at(thu, 16), end: at(thu, 17, 15), isAllDay: false } },
+      { id: 'thu-insights', title: 'Weekly Insights Sync', type: 'meeting', durationMinutes: 45, priority: 'none', status: 'pending', color: 'blue', participants: [teamAvatars[0], teamAvatars[2]], meetingProvider: 'google', meetingJoinUrl: 'https://meet.google.com/fivecast-insights', schedule: { start: at(thu, 13, 30), end: at(thu, 14, 15), isAllDay: false } },
+      { id: 'fri-meeting', title: 'Team Meeting', type: 'meeting', durationMinutes: 30, priority: 'none', status: 'pending', color: 'blue', participants: teamAvatars, meetingProvider: 'zoom', meetingJoinUrl: 'https://zoom.us/j/9854421188', schedule: { start: at(fri, 13, 30), end: at(fri, 14), isAllDay: false } },
+      { id: 'thu-roadmap-review', title: 'Roadmap Review', type: 'meeting', durationMinutes: 75, priority: 'none', status: 'pending', color: 'blue', participants: [teamAvatars[0], teamAvatars[1], teamAvatars[2], teamAvatars[3], teamAvatars[4], teamAvatars[5]], meetingProvider: 'zoom', meetingJoinUrl: 'https://zoom.us/j/9134488101', schedule: { start: at(thu, 16), end: at(thu, 17, 15), isAllDay: false } },
     ]
   },
 }

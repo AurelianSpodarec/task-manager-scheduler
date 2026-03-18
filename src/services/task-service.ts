@@ -25,6 +25,7 @@ export function toCalendarEvent(task: Task): CalendarEvent {
   const isCompleted = isMeeting ? isMeetingElapsed : task.status === 'completed'
   const workBaseClass =
     'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]'
+  const meetingBaseClass = 'border-zinc-200 bg-white hover:border-zinc-300'
 
   return {
     id: task.id,
@@ -36,8 +37,10 @@ export function toCalendarEvent(task: Task): CalendarEvent {
     color: task.color,
     className: isPersonal && activityType
       ? personalActivityStyles[activityType]
-      : workBaseClass,
-    style: isPersonal
+      : isMeeting
+        ? meetingBaseClass
+        : workBaseClass,
+    style: isPersonal || isMeeting
       ? undefined
       : { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
     icon: activityType
