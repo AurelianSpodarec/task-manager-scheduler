@@ -2,13 +2,14 @@ import type { DragRenderState } from '@/features/calendar'
 import { CompletedStatusIcon, PendingStatusIcon } from '@/lib/task-status-icons'
 import type { WorkDragMeta } from '../types'
 import { TaskCardContent } from '../task-card-content'
+import { dragPreviewCardShellClass } from '../card-shell'
 
 const MIN_PREVIEW_WIDTH = 224
 
 export function TaskDragPreview({ drag, meta }: { drag: DragRenderState; meta: WorkDragMeta }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[8px] border border-zinc-200 bg-card px-[0.6rem] py-[0.6rem] shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
+      className={dragPreviewCardShellClass('light')}
       style={{ width: Math.max(drag.elementSize.width, MIN_PREVIEW_WIDTH) }}
     >
       <TaskCardContent

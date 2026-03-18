@@ -17,18 +17,18 @@ export function getMeetingProviderBadge(provider: MeetingProvider | null | undef
   if (provider === 'google') {
     return {
       shortLabel: 'G',
-      className: 'border-emerald-400/40 bg-emerald-400/15 text-emerald-100',
+      className: 'border-emerald-300 bg-emerald-100 text-emerald-700',
     }
   }
   if (provider === 'zoom') {
     return {
       shortLabel: 'Z',
-      className: 'border-blue-400/40 bg-blue-400/15 text-blue-100',
+      className: 'border-blue-300 bg-blue-100 text-blue-700',
     }
   }
   return {
     shortLabel: 'M',
-    className: 'border-zinc-500/50 bg-zinc-500/20 text-zinc-100',
+    className: 'border-zinc-300 bg-zinc-100 text-zinc-700',
   }
 }
 

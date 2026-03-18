@@ -28,7 +28,7 @@ export const MeetingSeeder: Seeder = {
     const nearEnd = addMinutes(nearStart, 90)
 
     return [
-      // Sidebar meeting states (provider-only + join-window)
+      // Sidebar meeting templates (provider-only + participant-heavy)
       {
         id: 'provider-google-office-hours',
         title: 'Google Meet Office Hours',
@@ -42,7 +42,20 @@ export const MeetingSeeder: Seeder = {
         schedule: null,
       },
       {
-        id: 'live-design-jam',
+        id: 'live-design-jam-template',
+        title: 'Design Jam',
+        type: 'meeting',
+        durationMinutes: 90,
+        priority: 'high',
+        status: 'pending',
+        color: 'blue',
+        participants: teamAvatars,
+        meetingProvider: 'zoom',
+        meetingJoinUrl: 'https://zoom.us/j/9751397531',
+        schedule: null,
+      },
+      {
+        id: 'live-design-jam-scheduled',
         title: 'Design Jam',
         type: 'meeting',
         durationMinutes: 90,

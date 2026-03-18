@@ -4,6 +4,7 @@ import type { Task } from '@/database/schema'
 import { MeetingCardContent } from './meeting-card-content'
 import { getMeetingProviderLabel, isMeetingJoinWindow } from './meeting-card-utils'
 import { roundUpDurationMinutes, formatDurationLabel } from './utils'
+import { sidebarCardShellClass } from './card-shell'
 
 export function MeetingTaskCard({ task }: { task: Task }) {
   const { formatEventTime } = useFormatTime()
@@ -28,7 +29,7 @@ export function MeetingTaskCard({ task }: { task: Task }) {
   const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLElement>({
     createDragData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
       color: task.color,
-      className: 'border-zinc-700/60 bg-zinc-900 hover:border-zinc-600',
+      className: 'border-zinc-200 bg-gradient-to-br from-white via-zinc-50/45 to-zinc-100/65 hover:border-zinc-300',
       dragMeta: {
         kind: 'meeting' as const,
         durationLabel: roundedDurationLabel,
@@ -44,7 +45,7 @@ export function MeetingTaskCard({ task }: { task: Task }) {
     <article
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`relative w-full cursor-grab overflow-hidden rounded-[9px] border border-zinc-700/60 bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 px-[0.62rem] py-[0.62rem] shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-colors hover:border-zinc-600 ${isDragging ? 'opacity-40' : ''}`}
+      className={sidebarCardShellClass('light', isDragging)}
     >
       <MeetingCardContent
         title={task.title}

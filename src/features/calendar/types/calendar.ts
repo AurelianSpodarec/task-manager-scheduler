@@ -1,5 +1,5 @@
 import type { ComponentType, CSSProperties } from 'react'
-import type { EventColor } from '@/types/shared'
+import type { EventColor, Participant } from '@/types/shared'
 export type { EventColor }
 
 export type WorkHoursConfig = {
@@ -15,6 +15,10 @@ export type ViewMode = 'week' | 'month'
 
 export type SlotDuration = 15 | 30 | 60
 
+export type MeetingEventMeta = {
+  provider: 'google' | 'zoom' | null
+  participants: Participant[]
+}
 /**
  * Calendar-level event — layout + consumer-provided visuals.
  * Domain fields (status, priority, etc.) live in the consumer's data model
@@ -35,6 +39,8 @@ export type CalendarEvent = {
   style?: CSSProperties
   /** Consumer-provided leading icon component */
   icon?: ComponentType<{ className?: string; animate?: boolean }>
+  /** Optional meeting-specific payload for rich meeting rendering. */
+  meetingMeta?: MeetingEventMeta
 }
 
 export type TimeSlot = {

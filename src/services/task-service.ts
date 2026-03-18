@@ -19,8 +19,10 @@ import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
 export function toCalendarEvent(task: Task): CalendarEvent {
   const s = task.schedule!
   const isPersonal = task.personalActivityType != null
+  const isMeeting = task.type === 'meeting'
   const activityType = task.personalActivityType as PersonalActivityType | undefined
-  const isCompleted = task.status === 'completed'
+  const isMeetingElapsed = isMeeting && new Date(s.end).getTime() <= Date.now()
+  const isCompleted = isMeeting ? isMeetingElapsed : task.status === 'completed'
   const workBaseClass =
     'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]'
 
@@ -40,7 +42,15 @@ export function toCalendarEvent(task: Task): CalendarEvent {
       : { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
     icon: activityType
       ? personalActivityIcons[activityType]
-      : task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
+      : isMeeting
+        ? undefined
+        : task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
+    meetingMeta: isMeeting
+      ? {
+          provider: task.meetingProvider ?? null,
+          participants: task.participants ?? [],
+        }
+      : undefined,
   }
 }
 
@@ -62,6 +72,13 @@ export function getScheduledCalendarEvents(): CalendarEvent[] {
   return getScheduledTasks().map(toCalendarEvent)
 }
 
+/** Sidebar Tasks-tab list: unscheduled work tasks + unscheduled meeting tasks. */
+export function getSidebarTasksTabTasksSnapshot(): Task[] {
+  return getAllTasks().filter(
+    (t) => t.schedule == null && (t.type === 'work' || t.type === 'meeting'),
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
@@ -74,7 +91,7 @@ export function scheduleTask(
 ): void {
   const task = getTask(id)
   if (!task) return
-  const status = shouldAutoCompletePersonalTask(task, end) ? 'completed' : task.status
+  const status = getScheduledStatus(task, end)
   upsertTask({
     ...task,
     status,
@@ -96,7 +113,7 @@ export function moveScheduledTask(
 ): void {
   const task = getTask(id)
   if (!task) return
-  const status = shouldAutoCompletePersonalTask(task, end) ? 'completed' : task.status
+  const status = getScheduledStatus(task, end)
   upsertTask({
     ...task,
     status,
@@ -131,6 +148,14 @@ function shouldAutoCompletePersonalTask(task: Task, nextEnd: Date): boolean {
     && nextEnd.getTime() <= Date.now()
 }
 
+function getScheduledStatus(task: Task, nextEnd: Date): EventStatus {
+  // Meetings are completion-locked to elapsed calendar time.
+  if (task.type === 'meeting') {
+    return nextEnd.getTime() <= Date.now() ? 'completed' : 'pending'
+  }
+  return shouldAutoCompletePersonalTask(task, nextEnd) ? 'completed' : task.status
+}
+
 /** Remove a spawned calendar clone — personal drags back to sidebar just delete the copy. */
 export function deleteScheduledTask(id: string): void {
   deleteTask(id)
@@ -140,6 +165,7 @@ export function deleteScheduledTask(id: string): void {
 export function toggleTaskStatus(id: string): EventStatus | null {
   const task = getTask(id)
   if (!task) return null
+  if (task.type === 'meeting') return null
   const status: EventStatus = task.status === 'completed' ? 'pending' : 'completed'
   upsertTask({ ...task, status })
   return status
@@ -165,13 +191,13 @@ function invalidateServiceCaches() {
   personalCache = snap.filter((t) => t.schedule == null && t.type === 'personal')
   tasksTabCache = [
     ...workCache,
-    ...snap.filter((t) => t.type === 'meeting'),
+    ...snap.filter((t) => t.schedule == null && t.type === 'meeting'),
   ]
   allUnscheduledCache = snap.filter((t) => t.schedule == null)
   scheduledCache = snap.filter((t) => t.schedule != null).map(toCalendarEvent)
 }
 
-/** Sidebar Tasks-tab list: unscheduled work tasks + all meeting tasks. */
+/** Sidebar Tasks-tab list: unscheduled work tasks + unscheduled meeting tasks. */
 export function useSidebarTasksTabTasks(): Task[] {
   return useSyncExternalStore(subscribe, () => {
     invalidateServiceCaches()

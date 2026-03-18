@@ -7,6 +7,7 @@ import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
 import { fireConfetti } from '@/lib/confetti'
 import { TaskCardContent } from './task-card-content'
 import { roundUpDurationMinutes, formatDurationLabel } from './utils'
+import { sidebarCardShellClass } from './card-shell'
 
 export function SidebarTaskCard({ task }: { task: Task }) {
   const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
@@ -35,7 +36,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
     <article
       ref={ref}
       onPointerDown={onPointerDown}
-      className={`relative w-full cursor-grab overflow-hidden rounded-[8px] border border-zinc-200 bg-card px-[0.6rem] py-[0.6rem] shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-zinc-300 ${isDragging ? 'opacity-40' : ''}`}
+      className={sidebarCardShellClass('light', isDragging)}
     >
       <TaskCardContent
         title={task.title}

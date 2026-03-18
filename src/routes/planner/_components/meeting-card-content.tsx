@@ -39,15 +39,15 @@ export function MeetingCardContent({
     <>
       <div className="flex items-start justify-between gap-[0.5rem]">
         <div className="min-w-0">
-          <p className="text-[9px] font-medium tracking-[0.01em] text-zinc-400">
+          <p className="text-[9px] font-medium tracking-[0.01em] text-zinc-500">
             {timeLabel}
           </p>
-          <h3 className="mt-[0.15rem] line-clamp-2 text-[11.2px] leading-[1rem] font-semibold text-zinc-50">
+          <h3 className="mt-[0.15rem] line-clamp-2 text-[11.2px] leading-[1rem] font-semibold text-zinc-900">
             {title}
           </h3>
         </div>
         <span
-          className={`inline-flex shrink-0 items-center rounded-full border px-[0.38rem] py-[0.13rem] text-[8.2px] font-semibold ${providerBadge.className}`}
+          className={`inline-flex size-[1rem] shrink-0 items-center justify-center rounded-full border text-[8.2px] font-semibold ${providerBadge.className}`}
           title={providerLabel}
         >
           {providerBadge.shortLabel}
@@ -60,7 +60,7 @@ export function MeetingCardContent({
               {visible.map((participant, index) => (
                 <span
                   key={participant.id}
-                  className={`inline-flex size-[1rem] items-center justify-center overflow-hidden rounded-full bg-zinc-600 text-[7px] font-semibold text-zinc-100 ring-1 ring-zinc-900 ${index === 0 ? '' : '-ml-[0.28rem]'}`}
+                  className={`inline-flex size-[1rem] items-center justify-center overflow-hidden rounded-full bg-zinc-300 text-[7px] font-semibold text-zinc-700 ring-1 ring-zinc-100 ${index === 0 ? '' : '-ml-[0.28rem]'}`}
                   title={participant.name}
                 >
                   {participant.avatarUrl
@@ -69,17 +69,17 @@ export function MeetingCardContent({
                 </span>
               ))}
               {overflowCount > 0 && (
-                <span className="-ml-[0.28rem] inline-flex size-[1rem] items-center justify-center rounded-full border border-zinc-500/80 bg-zinc-800 text-[7px] font-semibold text-zinc-200 ring-1 ring-zinc-900">
+                <span className="-ml-[0.28rem] inline-flex size-[1rem] items-center justify-center rounded-full border border-zinc-300 bg-zinc-200 text-[7px] font-semibold text-zinc-700 ring-1 ring-zinc-100">
                   +{overflowCount}
                 </span>
               )}
             </span>
-            <span className="truncate text-[9px] font-medium text-zinc-300" title={participantsLabel}>
+            <span className="truncate text-[9px] font-medium text-zinc-600" title={participantsLabel}>
               {participantsLabel}
             </span>
           </div>
         ) : (
-          <span className="truncate text-[9px] font-medium text-zinc-300">
+          <span className="truncate text-[9px] font-medium text-zinc-600">
             {providerLabel}
           </span>
         )}
@@ -91,7 +91,7 @@ export function MeetingCardContent({
               event.stopPropagation()
               onJoin?.()
             }}
-            className="inline-flex h-[1.2rem] shrink-0 items-center rounded-[0.35rem] border border-blue-400/40 bg-blue-500/20 px-[0.42rem] text-[8.6px] font-semibold text-blue-100 transition-colors hover:bg-blue-500/30"
+            className="inline-flex h-[1.2rem] shrink-0 items-center rounded-[0.35rem] border border-blue-300 bg-blue-50 px-[0.42rem] text-[8.6px] font-semibold text-blue-700 transition-colors hover:bg-blue-100"
           >
             Join
           </button>
