@@ -33,7 +33,7 @@ export function PersonalTaskCard({ task }: { task: Task }) {
       className={cn(
         'flex w-full min-h-[2.2rem] cursor-grab items-center gap-[0.4rem] rounded-[8px] border px-[0.6rem] py-[0.5rem] transition-colors',
         personalActivityStyles[activityType],
-        isDragging && 'opacity-40'
+        isDragging && 'opacity-40',
       )}
     >
       <PersonalCardContent

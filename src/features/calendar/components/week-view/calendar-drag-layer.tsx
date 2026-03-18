@@ -45,7 +45,7 @@ export function CalendarDragLayer() {
   // Only constrain dimensions for the default fallback — consumer previews own their sizing.
   return (
     <div
-      className="pointer-events-none fixed z-[80] select-none opacity-80"
+      className="pointer-events-none fixed z-[80] select-none"
       style={{ left, top, ...(consumerPreview ? {} : { width, height }) }}
       aria-hidden="true"
     >

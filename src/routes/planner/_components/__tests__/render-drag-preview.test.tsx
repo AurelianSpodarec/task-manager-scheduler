@@ -30,7 +30,12 @@ describe('renderDragPreview', () => {
     const node = renderDragPreview({ ...baseDrag, dragMeta: meta })
     expect(node).not.toBeNull()
 
-    await renderAsync(<>{node}</>)
+    const { container } = await renderAsync(<>{node}</>)
+    const preview = container.firstElementChild as HTMLElement
+    expect(preview.className).toContain('via-zinc-50')
+    expect(preview.className).toContain('to-zinc-100')
+    expect(preview.className).not.toContain('via-zinc-50/45')
+    expect(preview.className).not.toContain('to-zinc-100/65')
     expect(screen.getByText('Test Event')).toBeInTheDocument()
     expect(screen.getByText('Acme Corp')).toBeInTheDocument()
     expect(screen.getByText('1:00h')).toBeInTheDocument()
@@ -52,7 +57,12 @@ describe('renderDragPreview', () => {
     const node = renderDragPreview({ ...baseDrag, dragMeta: meta })
     expect(node).not.toBeNull()
 
-    await renderAsync(<>{node}</>)
+    const { container } = await renderAsync(<>{node}</>)
+    const preview = container.firstElementChild as HTMLElement
+    expect(preview.className).toContain('via-zinc-50')
+    expect(preview.className).toContain('to-zinc-100')
+    expect(preview.className).not.toContain('via-zinc-50/45')
+    expect(preview.className).not.toContain('to-zinc-100/65')
     expect(screen.getByText('Test Event')).toBeInTheDocument()
     expect(screen.getByText('11:00 AM - 12:30 PM')).toBeInTheDocument()
     expect(screen.getByText('Alice, Bob +1')).toBeInTheDocument()

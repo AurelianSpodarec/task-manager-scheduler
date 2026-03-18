@@ -108,7 +108,7 @@ function DroppableAllDayCell({
       {children}
       {ghostColor && (
         <div
-          className="pointer-events-none mb-0.5 truncate rounded-[var(--cal-radius-pill)] px-1.5 py-0.5 text-[11px] font-semibold opacity-50"
+          className="pointer-events-none mb-0.5 truncate rounded-[var(--cal-radius-pill)] px-1.5 py-0.5 text-[11px] font-semibold"
           style={{ backgroundColor: ghostColor.bg, color: ghostColor.text }}
           aria-hidden="true"
         >

@@ -29,7 +29,7 @@ export function MeetingTaskCard({ task }: { task: Task }) {
   const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLElement>({
     createDragData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
       color: task.color,
-      className: 'border-zinc-200 bg-gradient-to-br from-white via-zinc-50/45 to-zinc-100/65 hover:border-zinc-300',
+      className: 'border-zinc-200 bg-gradient-to-br from-white via-zinc-50 to-zinc-100 hover:border-zinc-300',
       dragMeta: {
         kind: 'meeting' as const,
         durationLabel: roundedDurationLabel,
