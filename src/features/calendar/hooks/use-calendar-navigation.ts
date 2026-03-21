@@ -2,7 +2,7 @@ import {
   useCalendarView, useActiveDate,
   setActiveDate, setView, navigateToToday,
 } from '../calendar-store'
-import { navigateWeek, navigateMonth } from '../utils/date'
+import { navigateDay, navigateWeek, navigateMonth } from '../utils/date'
 import type { ViewMode } from '../types'
 
 type CalendarNavigation = {
@@ -21,9 +21,11 @@ export function useCalendarNavigation(): CalendarNavigation {
   const activeDate = useActiveDate()
 
   function navigate(direction: 'prev' | 'next') {
-    const next = view === 'week'
-      ? navigateWeek(activeDate, direction)
-      : navigateMonth(activeDate, direction)
+    const next = view === 'day'
+      ? navigateDay(activeDate, direction)
+      : view === 'week'
+        ? navigateWeek(activeDate, direction)
+        : navigateMonth(activeDate, direction)
     setActiveDate(next)
   }
 

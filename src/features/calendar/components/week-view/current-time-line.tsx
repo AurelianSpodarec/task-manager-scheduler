@@ -1,4 +1,5 @@
 import { useCurrentTime } from '../../hooks/use-current-time'
+import { useWithCurrentTimeIndicator } from '../../calendar-store'
 import { dateToPixelOffset, isToday } from '../../utils/date'
 import { HOUR_HEIGHT_PX } from '../../constants'
 
@@ -8,8 +9,9 @@ type CurrentTimeLineProps = {
 
 export function CurrentTimeLine({ day }: CurrentTimeLineProps) {
   const now = useCurrentTime()
+  const withCurrentTimeIndicator = useWithCurrentTimeIndicator()
 
-  if (!isToday(day)) return null
+  if (!withCurrentTimeIndicator || !isToday(day)) return null
 
   const top = dateToPixelOffset(now, HOUR_HEIGHT_PX)
 

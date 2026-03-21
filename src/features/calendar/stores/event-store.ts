@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { CalendarEvent } from '../types'
 import { getDataSource } from '../data'
+import { getConfig, subscribeConfig } from '../config'
 import { addDays } from '../utils/date'
 
 // ---------------------------------------------------------------------------
@@ -10,9 +11,18 @@ let cachedSnapshotRef: CalendarEvent[] = []
 let scheduledEventsCache: CalendarEvent[] = []
 const dayEventsCache = new Map<string, CalendarEvent[]>()
 let allDayCache: { key: string; result: CalendarEvent[] } | null = null
+function getSnapshotFromConfigOrDataSource(): CalendarEvent[] {
+  const override = getConfig().events
+  if (override) return override
+  try {
+    return getDataSource().getSnapshot()
+  } catch {
+    return []
+  }
+}
 
 function invalidateDerivedCaches() {
-  const snap = getDataSource().getSnapshot()
+  const snap = getSnapshotFromConfigOrDataSource()
   if (snap !== cachedSnapshotRef) {
     cachedSnapshotRef = snap
     scheduledEventsCache = snap
@@ -52,7 +62,17 @@ function getAllDayEventsInRange(weekStart: Date, weekEnd: Date): CalendarEvent[]
 // Subscribe helper — delegates to the active data source
 // ---------------------------------------------------------------------------
 function dsSubscribe(cb: () => void) {
-  return getDataSource().subscribe(cb)
+  const unsubConfig = subscribeConfig(cb)
+  let unsubDataSource = () => {}
+  try {
+    unsubDataSource = getDataSource().subscribe(cb)
+  } catch {
+    // Intentionally noop when no data source is registered and config.events is used.
+  }
+  return () => {
+    unsubDataSource()
+    unsubConfig()
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +113,12 @@ export function useAllDayEvents(weekStart: Date, weekEnd: Date): CalendarEvent[]
 
 /** Data source loading/error state — always resolved for sync adapter. */
 export function useCalendarDataState(): { loading: boolean; error: Error | null } {
-  const ds = getDataSource()
-  return { loading: ds.loading, error: ds.error }
+  const override = getConfig().events
+  if (override) return { loading: false, error: null }
+  try {
+    const ds = getDataSource()
+    return { loading: ds.loading, error: ds.error }
+  } catch {
+    return { loading: false, error: null }
+  }
 }

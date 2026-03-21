@@ -1,5 +1,12 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { useAllDayEvents, useDragRender } from '../../calendar-store'
+import { getConfig } from '../../config'
+import {
+  useAllDayEvents,
+  useDragRender,
+  useExternalEventDrop,
+  useMode,
+  useWithEventsDragAndDrop,
+} from '../../calendar-store'
 import { isSameDay } from '../../utils/date'
 import { EVENT_COLOR_MAP } from '../../constants'
 import type { CalendarEvent } from '../../types'
@@ -7,6 +14,7 @@ import { isCalendarDrag, makeAllDaySlotData, makeEventDragData } from '../../dnd
 import { useCalendarDragSource, useCalendarDropTarget } from '../../hooks/use-dnd-behaviors'
 import { registerAllDayRow } from '../../dnd/region-registry'
 import { useCalendarInstanceId } from '../../core/calendar-instance'
+import { formatDateTimeValue } from '../../utils/schedule'
 
 type AllDayRowProps = {
   weekDays: Date[]
@@ -58,9 +66,12 @@ export function AllDayRow({ weekDays }: AllDayRowProps) {
 }
 
 function AllDayEventChip({ event }: { event: CalendarEvent }) {
+  const mode = useMode()
+  const withEventsDragAndDrop = useWithEventsDragAndDrop()
   const colors = EVENT_COLOR_MAP[event.color]
   const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLDivElement>({
     createDragData: () => makeEventDragData(event),
+    disabled: mode === 'static' || !withEventsDragAndDrop,
   })
 
   return (
@@ -84,9 +95,12 @@ function DroppableAllDayCell({
   children: ReactNode
   eventIds: string[]
 }) {
+  const mode = useMode()
+  const onExternalEventDrop = useExternalEventDrop()
   const isoDay = day.toISOString().split('T')[0]
   const dragRender = useDragRender()
   const { ref, isOver: pragmaticOver } = useCalendarDropTarget<HTMLDivElement, ReturnType<typeof makeAllDaySlotData>>({
+    enabled: mode !== 'static',
     canDrop: isCalendarDrag,
     getData: () => makeAllDaySlotData(isoDay),
   })
@@ -104,6 +118,21 @@ function DroppableAllDayCell({
     <div
       ref={ref}
       className={`min-w-0 border-r border-cal-grid-line p-0.5 transition-colors ${isOver ? 'bg-cal-hover-bg' : ''}`}
+      onDragOver={(e) => {
+        if (mode === 'static' || !onExternalEventDrop) return
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'copy'
+      }}
+      onDrop={(e) => {
+        if (mode === 'static' || !onExternalEventDrop) return
+        e.preventDefault()
+        const dropDate = new Date(`${isoDay}T00:00:00`)
+        onExternalEventDrop(e.dataTransfer, formatDateTimeValue(dropDate))
+      }}
+      onClick={(e) => {
+        if (mode === 'static') return
+        getConfig().onAllDaySlotClick?.(isoDay, e)
+      }}
     >
       {children}
       {ghostColor && (

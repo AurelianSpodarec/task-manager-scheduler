@@ -2,7 +2,13 @@ import { HOUR_HEIGHT_PX } from '../../constants'
 import { dateToPixelOffset } from '../../utils/date'
 import { useCurrentTime } from '../../hooks/use-current-time'
 import { useFormatTime } from '../../hooks/use-format-time'
-import { setTimeChevronHovered, toggleTimeGuidePinned, useDayStartHour, useDayEndHour } from '../../calendar-store'
+import {
+  setTimeChevronHovered,
+  toggleTimeGuidePinned,
+  useDayStartHour,
+  useDayEndHour,
+  useWithCurrentTimeIndicator,
+} from '../../calendar-store'
 
 export function TimeGutter() {
   const now = useCurrentTime()
@@ -10,6 +16,7 @@ export function TimeGutter() {
   const { formatHour } = useFormatTime()
   const dayStartHour = useDayStartHour()
   const dayEndHour = useDayEndHour()
+  const withCurrentTimeIndicator = useWithCurrentTimeIndicator()
 
   const hours: number[] = []
   for (let h = dayStartHour; h < dayEndHour; h++) {
@@ -39,19 +46,20 @@ export function TimeGutter() {
         </div>
       ))}
 
-      {/* Filled triangle at current time — triggers dashed guide line on hover */}
-      <button
-        type="button"
-        className="absolute left-0 z-20 flex size-6 cursor-pointer items-center justify-start"
-        style={{ top: `${chevronTop}px`, transform: 'translateY(calc(-50% + 1px))' }}
-        onClick={() => toggleTimeGuidePinned()}
-        onMouseEnter={() => setTimeChevronHovered(true)}
-        onMouseLeave={() => setTimeChevronHovered(false)}
-      >
-        <svg width="10" height="12" viewBox="0 0 10 12" style={{ fill: 'var(--cal-time-indicator)' }}>
-          <path d="M0 0 L10 6 L0 12Z" />
-        </svg>
-      </button>
+      {withCurrentTimeIndicator && (
+        <button
+          type="button"
+          className="absolute left-0 z-20 flex size-6 cursor-pointer items-center justify-start"
+          style={{ top: `${chevronTop}px`, transform: 'translateY(calc(-50% + 1px))' }}
+          onClick={() => toggleTimeGuidePinned()}
+          onMouseEnter={() => setTimeChevronHovered(true)}
+          onMouseLeave={() => setTimeChevronHovered(false)}
+        >
+          <svg width="10" height="12" viewBox="0 0 10 12" style={{ fill: 'var(--cal-time-indicator)' }}>
+            <path d="M0 0 L10 6 L0 12Z" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }

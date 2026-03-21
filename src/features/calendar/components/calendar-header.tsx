@@ -10,9 +10,10 @@ export function CalendarHeader() {
   const weekStartsOn = useWeekStartsOn()
   const visibleDays = useVisibleDays()
   const { formatWeekRange, formatMonthLabel } = useFormatTime()
-
-  const dateLabel = view === 'week'
-    ? formatWeekRange(getVisibleWeekDays(activeDate, weekStartsOn, visibleDays))
+  const dateLabel = view === 'day'
+    ? formatMonthLabel(activeDate) + ' ' + activeDate.getDate().toString()
+    : view === 'week'
+      ? formatWeekRange(getVisibleWeekDays(activeDate, weekStartsOn, visibleDays))
     : formatMonthLabel(activeDate)
 
   return (

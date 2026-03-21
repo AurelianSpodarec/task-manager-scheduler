@@ -1,6 +1,13 @@
 import { useEffect } from 'react'
-import { type CalendarConfigUpdate, useCalendarView, useSettingsPanelOpen, applyConfig } from '../calendar-store'
+import {
+  type CalendarConfigUpdate,
+  useCalendarView,
+  useSettingsPanelOpen,
+  useWithHeader,
+  applyConfig,
+} from '../calendar-store'
 import { CalendarHeader } from './calendar-header'
+import { DayView } from './day-view/day-view'
 import { WeekView } from './week-view/week-view'
 import { MonthView } from './month-view/month-view'
 import { CalendarSettingsPanel } from '@/components/calendar-settings/calendar-settings-panel'
@@ -15,6 +22,7 @@ type CalendarShellProps = {
 export function CalendarShell({ config, showSettingsPanel = true }: CalendarShellProps) {
   const view = useCalendarView()
   const settingsOpen = useSettingsPanelOpen()
+  const withHeader = useWithHeader()
 
   useEffect(() => {
     if (config) applyConfig(config)
@@ -24,7 +32,8 @@ export function CalendarShell({ config, showSettingsPanel = true }: CalendarShel
     <div className="flex h-full min-h-0 overflow-hidden bg-cal-bg">
       {/* Calendar area — header + grid */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <CalendarHeader />
+        {withHeader && <CalendarHeader />}
+        {view === 'day' && <DayView />}
         {view === 'week' && <WeekView />}
         {view === 'month' && <MonthView />}
       </div>

@@ -4,7 +4,13 @@ import { makeEventDragData } from '../dnd'
 import { useFormatTime } from '../hooks/use-format-time'
 import { getConfig } from '../config'
 import { useCalendarDragSource } from '../hooks/use-dnd-behaviors'
-import { useDragState } from '../calendar-store'
+import {
+  useDragState,
+  useMode,
+  useRenderEventBody,
+  useRenderEvent,
+  useWithEventsDragAndDrop,
+} from '../calendar-store'
 
 type EventBlockProps = {
   layout: EventLayoutRect
@@ -35,8 +41,8 @@ function getParticipantInitials(name: string): string {
 
 /**
  * Pure layout shell — positions the event in the grid and handles drag initiation.
- * All visual treatment (borders, icons, colors) comes from the consumer via
- * event.className / event.style / event.icon.
+ * Visual treatment defaults to the existing UI and can be customized with
+ * config `renderEventBody` and `renderEvent` hooks.
  */
 export function EventBlock({ layout }: EventBlockProps) {
   const { event, column, totalColumns, top, height } = layout
@@ -53,8 +59,12 @@ export function EventBlock({ layout }: EventBlockProps) {
   const overflowParticipants = Math.max(0, participants.length - visibleParticipants.length)
   const showMeetingMeta = meetingMeta != null
   const [justCompleted, setJustCompleted] = useState(false)
+  const mode = useMode()
+  const withEventsDragAndDrop = useWithEventsDragAndDrop()
+  const renderEventBody = useRenderEventBody()
+  const renderEvent = useRenderEvent()
 
-  // Release GPU compositing layers created by the checkmark fill-mode animations
+  // Release GPU compositing layers created by the checkmark fill-mode animations.
   useEffect(() => {
     if (!justCompleted) return
     const id = setTimeout(() => setJustCompleted(false), 350)
@@ -69,6 +79,7 @@ export function EventBlock({ layout }: EventBlockProps) {
       ...makeEventDragData(event),
       grabOffsetY: Math.max(0, pointerEvent.clientY - element.getBoundingClientRect().top),
     }),
+    disabled: mode === 'static' || !withEventsDragAndDrop,
   })
   const isSourceDragging = dragState?.source === 'calendar' && dragState.eventId === event.id
   const isCardDragging = isDragging || isSourceDragging
@@ -89,21 +100,8 @@ export function EventBlock({ layout }: EventBlockProps) {
   const verticalInsetPx = 2
   const renderedHeightPx = Math.max(height - verticalInsetPx * 2, 16)
 
-  return (
-    <button
-      ref={ref}
-      onPointerDown={onPointerDown}
-      className={`group/event absolute z-10 flex cursor-grab active:cursor-grabbing flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 ${isFifteenMinuteEvent ? 'py-[2px]' : 'py-[5px]'} text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-[opacity,color,border-color,box-shadow] duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${event.className ?? 'border-zinc-200 bg-white hover:border-zinc-300'} ${isCompleted ? 'opacity-60' : 'opacity-100'} ${isCardDragging ? 'pointer-events-none' : ''}`}
-      style={{
-        top: `${top + verticalInsetPx}px`,
-        height: `${renderedHeightPx}px`,
-        width: `calc(${widthPercent}% - ${horizontalInsetPx * 2}px)`,
-        left: `calc(${leftPercent}% + ${horizontalInsetPx}px)`,
-        ...event.style,
-        opacity: isCardDragging ? 0.2 : undefined,
-      }}
-      aria-label={`${event.title}${providerLabel ? `, ${providerLabel}` : ''}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`}
-    >
+  const defaultBody = (
+    <>
       {Icon && (
         <span
           onPointerDown={onStatusPointerDown}
@@ -168,6 +166,37 @@ export function EventBlock({ layout }: EventBlockProps) {
           </div>
         )}
       </div>
-    </button>
+    </>
   )
+
+  const children = renderEventBody?.(event) ?? defaultBody
+
+  const className = `group/event absolute z-10 flex flex-row ${isCompact ? 'items-center' : 'items-start'} gap-1.5 overflow-hidden rounded-[7px] border px-2 ${isFifteenMinuteEvent ? 'py-[2px]' : 'py-[5px]'} text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-[opacity,color,border-color,box-shadow] duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--cal-focus-ring)] ${mode === 'static' ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${event.className ?? 'border-zinc-200 bg-white hover:border-zinc-300'} ${isCompleted ? 'opacity-60' : 'opacity-100'} ${isCardDragging ? 'pointer-events-none' : ''}`
+
+  const style: React.CSSProperties = {
+    top: `${top + verticalInsetPx}px`,
+    height: `${renderedHeightPx}px`,
+    width: `calc(${widthPercent}% - ${horizontalInsetPx * 2}px)`,
+    left: `calc(${leftPercent}% + ${horizontalInsetPx}px)`,
+    ...event.style,
+    opacity: isCardDragging ? 0.2 : undefined,
+  }
+
+  const rootProps = {
+    ref,
+    onPointerDown: mode === 'static' ? undefined : onPointerDown,
+    onClick: mode === 'static' ? undefined : (e: React.MouseEvent<HTMLButtonElement>) => {
+      getConfig().onEventClick?.(event, e)
+    },
+    className,
+    style,
+    'aria-label': `${event.title}${providerLabel ? `, ${providerLabel}` : ''}, ${formatEventTime(event.start)} to ${formatEventTime(event.end)}`,
+    children,
+  } satisfies React.ComponentPropsWithoutRef<'button'> & { children: React.ReactNode }
+
+  if (renderEvent) {
+    return renderEvent(event, rootProps)
+  }
+
+  return <button {...rootProps} />
 }

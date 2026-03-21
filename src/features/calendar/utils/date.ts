@@ -55,6 +55,9 @@ export function getMonthGrid(date: Date, weekStartsOn: WeekStartDay = 1): Date[]
 export function navigateWeek(date: Date, direction: 'prev' | 'next'): Date {
   return direction === 'next' ? addWeeks(date, 1) : subWeeks(date, 1)
 }
+export function navigateDay(date: Date, direction: 'prev' | 'next'): Date {
+  return direction === 'next' ? addDays(date, 1) : addDays(date, -1)
+}
 
 export function navigateMonth(date: Date, direction: 'prev' | 'next'): Date {
   return direction === 'next' ? addMonths(date, 1) : subMonths(date, 1)

@@ -1,5 +1,15 @@
 import { useRef, useEffect } from 'react'
-import { useActiveDate, useMobileFocusDay, useTimeGuideVisible, useWeekStartsOn, useVisibleStartHour, useConfigLocale, useVisibleDays } from '../../calendar-store'
+import {
+  useActiveDate,
+  useMobileFocusDay,
+  useTimeGuideVisible,
+  useWeekStartsOn,
+  useVisibleStartHour,
+  useConfigLocale,
+  useVisibleDays,
+  useWithAllDaySlot,
+  useWithCurrentTimeIndicator,
+} from '../../calendar-store'
 import { getVisibleWeekDays, formatWeekOfYear, dateToPixelOffset } from '../../utils/date'
 import { HOUR_HEIGHT_PX } from '../../constants'
 import { useCurrentTime } from '../../hooks/use-current-time'
@@ -19,6 +29,8 @@ export function WeekView() {
   const weekLabel = formatWeekOfYear(activeDate, weekStartsOn, locale)
   const mobileFocus = useMobileFocusDay()
   const visibleStartHour = useVisibleStartHour()
+  const withAllDaySlot = useWithAllDaySlot()
+  const withCurrentTimeIndicator = useWithCurrentTimeIndicator()
   const dayCount = weekDays.length
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -27,7 +39,7 @@ export function WeekView() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = visibleStartHour * HOUR_HEIGHT_PX - 8
     }
-  }, [activeDate])
+  }, [activeDate, visibleStartHour])
 
   // Measure the actual scrollbar width and sync with the header spacer column
   useEffect(() => {
@@ -49,9 +61,11 @@ export function WeekView() {
       </div>
 
       {/* Desktop: all-day row */}
-      <div role="rowgroup" className="hidden md:block">
-        <AllDayRow weekDays={weekDays} />
-      </div>
+      {withAllDaySlot && (
+        <div role="rowgroup" className="hidden md:block">
+          <AllDayRow weekDays={weekDays} />
+        </div>
+      )}
 
       {/* Scrollable time grid */}
       <div ref={scrollRef} role="rowgroup" className="sidebar-scrollbar relative min-h-0 flex-1 overflow-y-auto" style={{ willChange: 'scroll-position' }}>
@@ -63,7 +77,7 @@ export function WeekView() {
           ))}
         </div>
 
-        <CurrentTimeHoverGuide />
+        {withCurrentTimeIndicator && <CurrentTimeHoverGuide />}
 
         {/* Mobile: gutter + single active day */}
         <div role="row" className="cal-week-grid grid md:hidden">

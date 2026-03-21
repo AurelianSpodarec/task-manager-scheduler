@@ -1,7 +1,14 @@
-import type { ReactNode } from 'react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 import type { Locale } from 'date-fns'
 import { enUS } from 'date-fns/locale'
-import type { SlotDuration, WorkHoursConfig, WeekStartDay, DragRenderState } from '../types'
+import type {
+  CalendarEvent,
+  ScheduleMode,
+  SlotDuration,
+  WorkHoursConfig,
+  WeekStartDay,
+  DragRenderState,
+} from '../types'
 import type { DragPointer } from '../types'
 import type { CalendarDragData, SlotDropData } from '../dnd/types'
 import { createStore } from '../stores/create-store'
@@ -43,6 +50,13 @@ export type CalendarDragMonitors = {
   onDragEnd?: () => void
 }
 
+export type CalendarRenderEventBody = (event: CalendarEvent) => ReactNode
+
+export type CalendarRenderEvent = (
+  event: CalendarEvent,
+  props: ComponentPropsWithoutRef<'button'> & { children: ReactNode },
+) => ReactNode
+
 export type CalendarConfigUpdate = Omit<Partial<CalendarConfig>, 'interaction'> & {
   interaction?: Partial<CalendarInteractionConfig>
 }
@@ -56,6 +70,7 @@ const NOOP_HANDLERS: CalendarEventHandlers = {
 export type CalendarConfig = {
   locale: Locale
   use24HourTime: boolean
+  mode: ScheduleMode
   weekStartsOn: WeekStartDay
   visibleDays: number[]
   workHours: WorkHoursConfig
@@ -64,9 +79,31 @@ export type CalendarConfig = {
   dayEndHour: number
   visibleStartHour: number
   sidebarPosition: SidebarPosition
+  withEventsDragAndDrop: boolean
+  withHeader: boolean
+  withAllDaySlot: boolean
+  withCurrentTimeIndicator: boolean
   interaction: CalendarInteractionConfig
   dragMonitors: CalendarDragMonitors
   eventHandlers: CalendarEventHandlers
+  /** Optional event array override used by the public Schedule facade. */
+  events?: CalendarEvent[]
+  /** HTML5 external drop hook (e.g. sidebar/native draggables). */
+  onExternalEventDrop?: (dataTransfer: DataTransfer, dropDateTime: string) => void
+  /** Called when an event card is clicked. */
+  onEventClick?: (event: CalendarEvent, e: React.MouseEvent<HTMLButtonElement>) => void
+  /** Called when a timed slot is clicked. */
+  onTimeSlotClick?: (
+    slotStart: string,
+    slotEnd: string,
+    event: React.MouseEvent<HTMLDivElement>,
+  ) => void
+  /** Called when an all-day cell is clicked. */
+  onAllDaySlotClick?: (date: string, event: React.MouseEvent<HTMLDivElement>) => void
+  /** Consumer-provided event-body renderer. */
+  renderEventBody?: CalendarRenderEventBody
+  /** Consumer-provided full event renderer. */
+  renderEvent?: CalendarRenderEvent
   /** Consumer-provided floating drag preview. Calendar falls back to a minimal default. */
   renderDragPreview?: (drag: DragRenderState) => ReactNode
 }
@@ -86,6 +123,7 @@ const DEFAULT_INTERACTION: CalendarInteractionConfig = {
 export const DEFAULT_CONFIG: CalendarConfig = {
   locale: enUS,
   use24HourTime: false,
+  mode: 'default',
   weekStartsOn: 1,
   visibleDays: [0, 1, 2, 3, 4, 5, 6],
   workHours: { startHour: 9, endHour: 17, daysOfWeek: [1, 2, 3, 4, 5] },
@@ -94,6 +132,10 @@ export const DEFAULT_CONFIG: CalendarConfig = {
   dayEndHour: 24,
   visibleStartHour: 7,
   sidebarPosition: 'left',
+  withEventsDragAndDrop: true,
+  withHeader: true,
+  withAllDaySlot: true,
+  withCurrentTimeIndicator: true,
   interaction: DEFAULT_INTERACTION,
   dragMonitors: {},
   eventHandlers: NOOP_HANDLERS,
@@ -243,6 +285,11 @@ export function getInteractionSettings(): CalendarInteractionConfig {
   return getState().interaction
 }
 
+/** Subscribe to any config change. Intended for cross-store integrations. */
+export function subscribeConfig(listener: () => void) {
+  return _subscribe(listener)
+}
+
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
@@ -252,6 +299,10 @@ export function useConfigLocale(): Locale {
 
 export function useUse24HourTime(): boolean {
   return useSelector((s) => s.use24HourTime)
+}
+
+export function useMode(): ScheduleMode {
+  return useSelector((s) => s.mode)
 }
 
 export function useWeekStartsOn(): WeekStartDay {
@@ -288,4 +339,36 @@ export function useInteractionSettings(): CalendarInteractionConfig {
 
 export function useSidebarPosition(): SidebarPosition {
   return useSelector((s) => s.sidebarPosition)
+}
+
+export function useWithEventsDragAndDrop(): boolean {
+  return useSelector((s) => s.withEventsDragAndDrop)
+}
+
+export function useWithHeader(): boolean {
+  return useSelector((s) => s.withHeader)
+}
+
+export function useWithAllDaySlot(): boolean {
+  return useSelector((s) => s.withAllDaySlot)
+}
+
+export function useWithCurrentTimeIndicator(): boolean {
+  return useSelector((s) => s.withCurrentTimeIndicator)
+}
+
+export function useConfigEvents(): CalendarEvent[] | undefined {
+  return useSelector((s) => s.events)
+}
+
+export function useExternalEventDrop() {
+  return useSelector((s) => s.onExternalEventDrop)
+}
+
+export function useRenderEventBody() {
+  return useSelector((s) => s.renderEventBody)
+}
+
+export function useRenderEvent() {
+  return useSelector((s) => s.renderEvent)
 }

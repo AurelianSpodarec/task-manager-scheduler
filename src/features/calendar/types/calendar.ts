@@ -10,15 +10,15 @@ export type WorkHoursConfig = {
 }
 
 export type WeekStartDay = 0 | 1
-
-export type ViewMode = 'week' | 'month'
-
+export type ViewMode = 'day' | 'week' | 'month'
+export type ScheduleMode = 'default' | 'static'
 export type SlotDuration = 15 | 30 | 60
 
 export type MeetingEventMeta = {
   provider: 'google' | 'zoom' | null
   participants: Participant[]
 }
+
 /**
  * Calendar-level event — layout + consumer-provided visuals.
  * Domain fields (status, priority, etc.) live in the consumer's data model
@@ -26,6 +26,8 @@ export type MeetingEventMeta = {
  */
 export type CalendarEvent = {
   id: string
+  /** Original consumer-provided id; internal `id` remains a string key. */
+  sourceId?: string | number
   title: string
   start: Date
   end: Date
@@ -39,6 +41,12 @@ export type CalendarEvent = {
   style?: CSSProperties
   /** Consumer-provided leading icon component */
   icon?: ComponentType<{ className?: string; animate?: boolean }>
+  /** Optional display hint for non-interactive background blocks. */
+  display?: 'default' | 'background'
+  /** Optional variant hint for custom renderers. */
+  variant?: 'filled' | 'light'
+  /** Opaque consumer payload passed through render hooks/callbacks. */
+  payload?: Record<PropertyKey, unknown>
   /** Optional meeting-specific payload for rich meeting rendering. */
   meetingMeta?: MeetingEventMeta
 }
@@ -49,7 +57,7 @@ export type TimeSlot = {
   minute: number
 }
 
-/** Positioned rect for rendering an event in the week view grid */
+/** Positioned rect for rendering an event in the week/day grid */
 export type EventLayoutRect = {
   event: CalendarEvent
   /** Fractional column index (0-based) within overlapping group */

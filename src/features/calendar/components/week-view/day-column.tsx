@@ -6,7 +6,8 @@ import { layoutEventsForDay } from '../../utils/layout'
 import { EventBlock } from '../event-block'
 import { CurrentTimeLine } from './current-time-line'
 import { DroppableSlot } from './droppable-slot'
-import { ProjectedGhostCard, getProjectedCard } from './projected-ghost-card'
+import { getProjectedCard } from './projected-card'
+import { ProjectedGhostCard } from './projected-ghost-card'
 import { registerDayColumn } from '../../dnd/region-registry'
 import { useCalendarInstanceId } from '../../core/calendar-instance'
 
@@ -76,6 +77,7 @@ export function DayColumn({ day }: DayColumnProps) {
               isoDay={isoDay}
               hour={hour}
               minute={minute}
+              slotDuration={slotDuration}
               isDragging={isDragging}
               isOffHours={!isWithinWorkHours(dayOfWeek, hour, workHours)}
               height={(HOUR_HEIGHT_PX / 60) * slotDuration}
@@ -89,8 +91,7 @@ export function DayColumn({ day }: DayColumnProps) {
         {layouts.map((layout) => (
           <EventBlock key={layout.event.id} layout={layout} />
         ))}
-
-      {projected && (
+        {projected && (
           <ProjectedGhostCard projected={projected} />
         )}
 

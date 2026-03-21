@@ -2,6 +2,9 @@
 
 // Components
 export { CalendarShell } from './components/calendar-shell'
+export { Schedule } from './components/schedule/schedule'
+export { DayView } from './components/schedule/day-view'
+export { WeekView } from './components/schedule/week-view'
 export { CalendarRoot } from './core/calendar-root'
 export { useCalendarInstanceId } from './core/calendar-instance'
 export { CalendarDragSourcePrimitive, CalendarDropTargetPrimitive } from './components/headless/dnd-primitives'
@@ -20,6 +23,8 @@ export {
   type CalendarEventHandlers,
   type CalendarInteractionConfig,
   type CalendarDragMonitors,
+  type CalendarRenderEventBody,
+  type CalendarRenderEvent,
   applyConfig,
   setVisibleDays,
   setUse24HourTime,
@@ -45,6 +50,11 @@ export {
   useDayStartHour,
   useDayEndHour,
   useVisibleStartHour,
+  useMode,
+  useWithHeader,
+  useWithEventsDragAndDrop,
+  useWithAllDaySlot,
+  useWithCurrentTimeIndicator,
   useInteractionSettings,
   setSidebarPosition,
   useSidebarPosition,
@@ -57,6 +67,7 @@ export {
   useCalendarDataState,
   useDragRender,
   calendarSlices,
+  subscribeConfig,
   type CalendarDataSource,
   setDataSource,
   US_CONFIG,
@@ -79,6 +90,7 @@ export { getOrderedWeekDays } from './utils/date'
 // Types
 export type {
   CalendarEvent,
+  ScheduleMode,
   ViewMode,
   WeekStartDay,
   SlotDuration,
@@ -86,4 +98,13 @@ export type {
   EventLayoutRect,
   EventColor,
   DragRenderState,
+  DateStringValue,
+  DateTimeStringValue,
+  ScheduleViewLevel,
+  ScheduleEventData,
+  DayViewProps,
+  WeekViewProps,
+  ScheduleProps,
+  RenderEventBody,
+  RenderEvent,
 } from './types'
