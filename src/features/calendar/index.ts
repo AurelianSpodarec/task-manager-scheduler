@@ -13,6 +13,7 @@ export { CalendarDragSourcePrimitive, CalendarDropTargetPrimitive } from './comp
 export { useCalendarNavigation } from './hooks/use-calendar-navigation'
 export { useDay } from './hooks/use-day'
 export { useTimeSlot } from './hooks/use-time-slot'
+export { useCurrentTime } from './hooks/use-current-time'
 export { useFormatTime } from './hooks/use-format-time'
 export { useCalendarDragSource, useCalendarDropTarget } from './hooks/use-dnd-behaviors'
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderAsync, screen } from '@/test-utils'
-import { TaskCardContent } from '../task-card-content'
+import { TaskCardContent } from '../task-cards/variants/work/content'
 
 const baseProps = {
   title: 'Brand Refresh Workshop',

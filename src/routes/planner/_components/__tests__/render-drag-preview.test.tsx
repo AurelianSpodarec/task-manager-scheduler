@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderAsync, screen } from '@/test-utils'
-import { renderDragPreview } from '../drag-previews/render-drag-preview'
+import { renderDragPreview } from '../task-cards/render-drag-preview'
 import type { DragRenderState } from '@/features/calendar'
-import type { WorkDragMeta, PersonalDragMeta, MeetingDragMeta } from '../types'
+import type { WorkDragMeta, PersonalDragMeta, MeetingDragMeta } from '../task-cards/shared/drag-meta'
 
 const baseDrag: DragRenderState = {
   source: 'sidebar',

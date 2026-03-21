@@ -4,10 +4,10 @@ import { toggleTaskStatus } from '@/services/task-service'
 import type { Task } from '@/database/schema'
 import { priorityLeftBorderColor } from '@/lib/priority'
 import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
-import { fireConfetti } from '@/lib/confetti'
-import { TaskCardContent } from './task-card-content'
-import { roundUpDurationMinutes, formatDurationLabel } from './utils'
-import { sidebarCardShellClass } from './card-shell'
+import { TaskCardContent } from './content'
+import { roundUpDurationMinutes, formatDurationLabel } from '../../shared/duration'
+import { sidebarCardShellClass } from '../../shared/card-shell'
+import { firePlannerCompletionConfetti } from '../../../shared/completion-confetti'
 
 export function SidebarTaskCard({ task }: { task: Task }) {
   const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
@@ -56,15 +56,7 @@ export function SidebarTaskCard({ task }: { task: Task }) {
               const next = toggleTaskStatus(task.id)
               setJustCompleted(next === 'completed')
               if (next === 'completed') {
-                const rect = e.currentTarget.getBoundingClientRect()
-                fireConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, {
-                  style: 'party',
-                  physics: 'floaty',
-                  shot: 'pop',
-                  burstCount: 22,
-                  scalar: 0.45,
-                  distanceScale: 0.52,
-                })
+                firePlannerCompletionConfetti(e.currentTarget)
               }
             }}
             className="relative z-10 mt-[0.1rem] inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[4px]"

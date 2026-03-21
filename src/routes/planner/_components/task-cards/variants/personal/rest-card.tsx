@@ -6,8 +6,8 @@ import {
   personalActivityIcons,
   type PersonalActivityType,
 } from '@/lib/personal-activity'
-import { PersonalCardContent } from './personal-card-content'
-import { roundUpDurationMinutes, formatDurationLabel } from './utils'
+import { PersonalCardContent } from './content'
+import { roundUpDurationMinutes, formatDurationLabel } from '../../shared/duration'
 
 export function PersonalTaskCard({ task }: { task: Task }) {
   const activityType = task.personalActivityType as PersonalActivityType

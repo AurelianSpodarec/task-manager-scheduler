@@ -1,12 +1,11 @@
 import type { MeetingProvider } from '@/database/schema'
 import type { Participant } from '@/types/shared'
 import {
+  getParticipantSummary,
   getMeetingProviderBadge,
   getMeetingProviderLabel,
   getParticipantInitials,
-  getParticipantsLabel,
-  splitVisibleParticipants,
-} from './meeting-card-utils'
+} from './utils'
 
 type MeetingCardContentProps = {
   title: string
@@ -31,9 +30,8 @@ export function MeetingCardContent({
 }: MeetingCardContentProps) {
   const providerLabel = getMeetingProviderLabel(provider)
   const providerBadge = getMeetingProviderBadge(provider)
-  const { visible, overflowCount } = splitVisibleParticipants(participants)
-  const participantsLabel = getParticipantsLabel(participants)
-  const showParticipants = participants.length > 0
+  const participantsSummary = getParticipantSummary(participants)
+  const showParticipants = participantsSummary.all.length > 0
 
   return (
     <>
@@ -57,7 +55,7 @@ export function MeetingCardContent({
         {showParticipants ? (
           <div className="min-w-0 flex items-center gap-[0.3rem]">
             <span className="flex shrink-0 items-center">
-              {visible.map((participant, index) => (
+              {participantsSummary.visible.map((participant, index) => (
                 <span
                   key={participant.id}
                   className={`inline-flex size-[1rem] items-center justify-center overflow-hidden rounded-full bg-zinc-300 text-[7px] font-semibold text-zinc-700 ring-1 ring-zinc-100 ${index === 0 ? '' : '-ml-[0.28rem]'}`}
@@ -68,14 +66,14 @@ export function MeetingCardContent({
                     : getParticipantInitials(participant.name)}
                 </span>
               ))}
-              {overflowCount > 0 && (
+              {participantsSummary.overflowCount > 0 && (
                 <span className="-ml-[0.28rem] inline-flex size-[1rem] items-center justify-center rounded-full border border-zinc-300 bg-zinc-200 text-[7px] font-semibold text-zinc-700 ring-1 ring-zinc-100">
-                  +{overflowCount}
+                  +{participantsSummary.overflowCount}
                 </span>
               )}
             </span>
-            <span className="truncate text-[9px] font-medium text-zinc-600" title={participantsLabel}>
-              {participantsLabel}
+            <span className="truncate text-[9px] font-medium text-zinc-600" title={participantsSummary.label}>
+              {participantsSummary.label}
             </span>
           </div>
         ) : (

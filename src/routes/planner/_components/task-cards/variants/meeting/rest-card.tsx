@@ -1,19 +1,16 @@
-import { useEffect, useState } from 'react'
 import { makeSidebarDragData, useCalendarDragSource, useFormatTime } from '@/features/calendar'
 import type { Task } from '@/database/schema'
-import { MeetingCardContent } from './meeting-card-content'
-import { getMeetingProviderLabel, isMeetingJoinWindow } from './meeting-card-utils'
-import { roundUpDurationMinutes, formatDurationLabel } from './utils'
-import { sidebarCardShellClass } from './card-shell'
-
-export function MeetingTaskCard({ task }: { task: Task }) {
+import { MeetingCardContent } from './content'
+import { getMeetingProviderLabel, isMeetingJoinWindow } from './utils'
+import { roundUpDurationMinutes, formatDurationLabel } from '../../shared/duration'
+import { sidebarCardShellClass } from '../../shared/card-shell'
+export function MeetingTaskCard({ task, now }: { task: Task; now: Date }) {
   const { formatEventTime } = useFormatTime()
   const roundedDurationMinutes = roundUpDurationMinutes(task.durationMinutes)
   const roundedDurationLabel = formatDurationLabel(roundedDurationMinutes)
   const provider = task.meetingProvider ?? null
   const providerLabel = getMeetingProviderLabel(provider)
   const participants = task.participants ?? []
-  const [now, setNow] = useState(() => new Date())
   const showJoinAction = isMeetingJoinWindow(task.schedule?.start, now)
   const scheduleStart = task.schedule?.start ? new Date(task.schedule.start) : null
   const scheduleEnd = task.schedule?.end ? new Date(task.schedule.end) : null
@@ -21,11 +18,6 @@ export function MeetingTaskCard({ task }: { task: Task }) {
     ? `${formatEventTime(scheduleStart)} - ${formatEventTime(scheduleEnd)}`
     : roundedDurationLabel
   const joinUrl = task.meetingJoinUrl?.trim() || ''
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => setNow(new Date()), 60_000)
-    return () => window.clearInterval(intervalId)
-  }, [])
   const { ref, isDragging, onPointerDown } = useCalendarDragSource<HTMLElement>({
     createDragData: () => makeSidebarDragData(task.id, task.title, roundedDurationMinutes, {
       color: task.color,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { formatDurationLabel, roundUpDurationMinutes } from '../utils'
+import { formatDurationLabel, roundUpDurationMinutes } from '../task-cards/shared/duration'
 
 vi.mock('@/features/calendar', () => ({
   getSlotDuration: () => 15,

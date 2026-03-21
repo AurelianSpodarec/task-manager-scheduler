@@ -10,6 +10,48 @@ import {
   type PersonalActivityType,
 } from '@/lib/personal-activity'
 import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
+const WORK_EVENT_BASE_CLASS =
+  'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]'
+const MEETING_EVENT_BASE_CLASS = 'border-zinc-200 bg-white hover:border-zinc-300'
+
+type TaskEventVisualKind = 'work' | 'personal' | 'meeting'
+type TaskEventVisual = Pick<CalendarEvent, 'className' | 'style' | 'icon' | 'meetingMeta'>
+
+const EVENT_VISUAL_BY_KIND: Record<
+  TaskEventVisualKind,
+  (task: Task, activityType?: PersonalActivityType) => TaskEventVisual
+> = {
+  work: (task) => ({
+    className: WORK_EVENT_BASE_CLASS,
+    style: { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
+    icon: task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
+    meetingMeta: undefined,
+  }),
+  personal: (_, activityType) => ({
+    className: activityType ? personalActivityStyles[activityType] : WORK_EVENT_BASE_CLASS,
+    style: undefined,
+    icon: activityType ? personalActivityIcons[activityType] : undefined,
+    meetingMeta: undefined,
+  }),
+  meeting: (task) => ({
+    className: MEETING_EVENT_BASE_CLASS,
+    style: undefined,
+    icon: undefined,
+    meetingMeta: {
+      provider: task.meetingProvider ?? null,
+      participants: task.participants ?? [],
+    },
+  }),
+}
+
+function getTaskEventVisualKind(
+  task: Task,
+  activityType: PersonalActivityType | undefined,
+): TaskEventVisualKind {
+  if (activityType) return 'personal'
+  if (task.type === 'meeting') return 'meeting'
+  return 'work'
+}
 
 // ---------------------------------------------------------------------------
 // Task → CalendarEvent adapter
@@ -18,14 +60,11 @@ import { PendingStatusIcon, CompletedStatusIcon } from '@/lib/task-status-icons'
 /** Maps a scheduled Task into the CalendarEvent shape — consumer owns all visual treatment. */
 export function toCalendarEvent(task: Task): CalendarEvent {
   const s = task.schedule!
-  const isPersonal = task.personalActivityType != null
-  const isMeeting = task.type === 'meeting'
   const activityType = task.personalActivityType as PersonalActivityType | undefined
-  const isMeetingElapsed = isMeeting && new Date(s.end).getTime() <= Date.now()
-  const isCompleted = isMeeting ? isMeetingElapsed : task.status === 'completed'
-  const workBaseClass =
-    'border-zinc-200 bg-white hover:border-zinc-300 before:absolute before:left-0 before:inset-y-0 before:w-[3px] before:bg-[var(--evt-border)]'
-  const meetingBaseClass = 'border-zinc-200 bg-white hover:border-zinc-300'
+  const visualKind = getTaskEventVisualKind(task, activityType)
+  const visuals = EVENT_VISUAL_BY_KIND[visualKind](task, activityType)
+  const isMeetingElapsed = task.type === 'meeting' && new Date(s.end).getTime() <= Date.now()
+  const isCompleted = task.type === 'meeting' ? isMeetingElapsed : task.status === 'completed'
 
   return {
     id: task.id,
@@ -35,25 +74,10 @@ export function toCalendarEvent(task: Task): CalendarEvent {
     isAllDay: s.isAllDay,
     isCompleted,
     color: task.color,
-    className: isPersonal && activityType
-      ? personalActivityStyles[activityType]
-      : isMeeting
-        ? meetingBaseClass
-        : workBaseClass,
-    style: isPersonal || isMeeting
-      ? undefined
-      : { '--evt-border': priorityLeftBorderColor[task.priority] } as React.CSSProperties,
-    icon: activityType
-      ? personalActivityIcons[activityType]
-      : isMeeting
-        ? undefined
-        : task.status === 'completed' ? CompletedStatusIcon : PendingStatusIcon,
-    meetingMeta: isMeeting
-      ? {
-          provider: task.meetingProvider ?? null,
-          participants: task.participants ?? [],
-        }
-      : undefined,
+    className: visuals.className,
+    style: visuals.style,
+    icon: visuals.icon,
+    meetingMeta: visuals.meetingMeta,
   }
 }
 
@@ -85,6 +109,43 @@ export function getSidebarTasksTabTasksSnapshot(): Task[] {
 // ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
+function withTaskById(id: string, mutate: (task: Task) => void): void {
+  const task = getTask(id)
+  if (!task) return
+  mutate(task)
+}
+
+function getElapsedStatusForScheduledTask(
+  task: Task,
+  scheduleEndMs: number,
+  nowMs: number,
+): EventStatus | null {
+  if (task.type === 'meeting') {
+    return scheduleEndMs <= nowMs ? 'completed' : 'pending'
+  }
+  if (task.type === 'personal' && task.status !== 'completed' && scheduleEndMs <= nowMs) {
+    return 'completed'
+  }
+  return null
+}
+
+function getScheduledStatus(task: Task, nextEnd: Date, nowMs: number = Date.now()): EventStatus {
+  const elapsedStatus = getElapsedStatusForScheduledTask(task, nextEnd.getTime(), nowMs)
+  return elapsedStatus ?? task.status
+}
+
+function writeScheduledTask(
+  task: Task,
+  start: Date,
+  end: Date,
+  isAllDay: boolean,
+): void {
+  upsertTask({
+    ...task,
+    status: getScheduledStatus(task, end),
+    schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
+  })
+}
 
 export function scheduleTask(
   id: string,
@@ -92,20 +153,15 @@ export function scheduleTask(
   end: Date,
   isAllDay: boolean,
 ): void {
-  const task = getTask(id)
-  if (!task) return
-  const status = getScheduledStatus(task, end)
-  upsertTask({
-    ...task,
-    status,
-    schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
+  withTaskById(id, (task) => {
+    writeScheduledTask(task, start, end, isAllDay)
   })
 }
 
 export function unscheduleTask(id: string): void {
-  const task = getTask(id)
-  if (!task) return
-  upsertTask({ ...task, schedule: null, status: 'pending' })
+  withTaskById(id, (task) => {
+    upsertTask({ ...task, schedule: null, status: 'pending' })
+  })
 }
 
 export function moveScheduledTask(
@@ -114,13 +170,8 @@ export function moveScheduledTask(
   end: Date,
   isAllDay: boolean,
 ): void {
-  const task = getTask(id)
-  if (!task) return
-  const status = getScheduledStatus(task, end)
-  upsertTask({
-    ...task,
-    status,
-    schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
+  withTaskById(id, (task) => {
+    writeScheduledTask(task, start, end, isAllDay)
   })
 }
 
@@ -133,30 +184,15 @@ export function spawnScheduledTask(
   end: Date,
   isAllDay: boolean,
 ): void {
-  const template = getTask(templateId)
-  if (!template) return
-  const clone: Task = {
-    ...template,
-    id: `${templateId}-spawn-${Date.now()}-${++spawnCounter}`,
-    status: shouldAutoCompletePersonalTask(template, end) ? 'completed' : template.status,
-    schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
-  }
-  upsertTask(clone)
-}
-
-function shouldAutoCompletePersonalTask(task: Task, nextEnd: Date): boolean {
-  // Personal activities moved/scheduled into elapsed time are assumed done.
-  return task.type === 'personal'
-    && task.status !== 'completed'
-    && nextEnd.getTime() <= Date.now()
-}
-
-function getScheduledStatus(task: Task, nextEnd: Date): EventStatus {
-  // Meetings are completion-locked to elapsed calendar time.
-  if (task.type === 'meeting') {
-    return nextEnd.getTime() <= Date.now() ? 'completed' : 'pending'
-  }
-  return shouldAutoCompletePersonalTask(task, nextEnd) ? 'completed' : task.status
+  withTaskById(templateId, (template) => {
+    const clone: Task = {
+      ...template,
+      id: `${templateId}-spawn-${Date.now()}-${++spawnCounter}`,
+      status: getScheduledStatus(template, end),
+      schedule: { start: start.toISOString(), end: end.toISOString(), isAllDay },
+    }
+    upsertTask(clone)
+  })
 }
 /**
  * Reconciles scheduled task statuses against elapsed time.
@@ -170,11 +206,7 @@ export function syncElapsedScheduledTaskStatuses(now = new Date()): void {
     if (!task.schedule) continue
 
     const endMs = new Date(task.schedule.end).getTime()
-    const nextStatus: EventStatus | null = task.type === 'meeting'
-      ? (endMs <= nowMs ? 'completed' : 'pending')
-      : task.type === 'personal' && task.status !== 'completed' && endMs <= nowMs
-        ? 'completed'
-        : null
+    const nextStatus = getElapsedStatusForScheduledTask(task, endMs, nowMs)
 
     if (nextStatus && nextStatus !== task.status) {
       upsertTask({ ...task, status: nextStatus })
@@ -209,6 +241,16 @@ let tasksTabCache: Task[] = []
 let allUnscheduledCache: Task[] = []
 let scheduledCache: CalendarEvent[] = []
 
+function useTaskStoreSelector<T>(selector: () => T): T {
+  return useSyncExternalStore(subscribe, () => {
+    invalidateServiceCaches()
+    return selector()
+  }, () => {
+    invalidateServiceCaches()
+    return selector()
+  })
+}
+
 function invalidateServiceCaches() {
   const snap = getSnapshot()
   if (snap === cachedSnap) return
@@ -225,24 +267,12 @@ function invalidateServiceCaches() {
 
 /** Sidebar Tasks-tab list: unscheduled work tasks + unscheduled meeting tasks. */
 export function useSidebarTasksTabTasks(): Task[] {
-  return useSyncExternalStore(subscribe, () => {
-    invalidateServiceCaches()
-    return tasksTabCache
-  }, () => {
-    invalidateServiceCaches()
-    return tasksTabCache
-  })
+  return useTaskStoreSelector(() => tasksTabCache)
 }
 
 /** Unscheduled tasks for the sidebar, optionally filtered by type. */
 export function useUnscheduledTasks(type?: TaskType): Task[] {
-  return useSyncExternalStore(subscribe, () => {
-    invalidateServiceCaches()
-    if (type === 'work') return workCache
-    if (type === 'personal') return personalCache
-    return allUnscheduledCache
-  }, () => {
-    invalidateServiceCaches()
+  return useTaskStoreSelector(() => {
     if (type === 'work') return workCache
     if (type === 'personal') return personalCache
     return allUnscheduledCache
@@ -251,11 +281,5 @@ export function useUnscheduledTasks(type?: TaskType): Task[] {
 
 /** All scheduled tasks as CalendarEvent[] — re-renders on any DB change. */
 export function useScheduledEvents(): CalendarEvent[] {
-  return useSyncExternalStore(subscribe, () => {
-    invalidateServiceCaches()
-    return scheduledCache
-  }, () => {
-    invalidateServiceCaches()
-    return scheduledCache
-  })
+  return useTaskStoreSelector(() => scheduledCache)
 }

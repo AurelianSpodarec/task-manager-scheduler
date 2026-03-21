@@ -1,15 +1,14 @@
 import type { DragRenderState } from '@/features/calendar'
-import type { MeetingDragMeta } from '../types'
-import { MeetingCardContent } from '../meeting-card-content'
-import { dragPreviewCardShellClass } from '../card-shell'
-
-const MIN_PREVIEW_WIDTH = 224
+import type { MeetingDragMeta } from '../../shared/drag-meta'
+import { MeetingCardContent } from './content'
+import { dragPreviewCardShellClass } from '../../shared/card-shell'
+import { getDragPreviewWidth } from '../../shared/preview'
 
 export function MeetingDragPreview({ drag, meta }: { drag: DragRenderState; meta: MeetingDragMeta }) {
   return (
     <div
       className={dragPreviewCardShellClass('light')}
-      style={{ width: Math.max(drag.elementSize.width, MIN_PREVIEW_WIDTH) }}
+      style={{ width: getDragPreviewWidth(drag) }}
     >
       <MeetingCardContent
         title={drag.title ?? ''}

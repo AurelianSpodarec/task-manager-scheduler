@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderAsync, screen } from '@/test-utils'
-import { PersonalCardContent } from '../personal-card-content'
+import { PersonalCardContent } from '../task-cards/variants/personal/content'
 import type { PersonalActivityType } from '@/lib/personal-activity'
 
 describe('PersonalCardContent', () => {

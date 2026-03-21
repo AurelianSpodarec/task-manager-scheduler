@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderAsync, screen } from '@/test-utils'
-import { MeetingCardContent } from '../meeting-card-content'
+import { MeetingCardContent } from '../task-cards/variants/meeting/content'
 
 const attendees = [
   { id: 'u1', name: 'Alice' },
