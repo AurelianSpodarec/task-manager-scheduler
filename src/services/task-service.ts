@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { addDays, startOfWeek } from 'date-fns'
 import type { Task, TaskType } from '@/database/schema'
 import type { CalendarEvent } from '@/features/calendar'
 import type { EventStatus } from '@/types/shared'
@@ -282,4 +283,26 @@ export function useUnscheduledTasks(type?: TaskType): Task[] {
 /** All scheduled tasks as CalendarEvent[] — re-renders on any DB change. */
 export function useScheduledEvents(): CalendarEvent[] {
   return useTaskStoreSelector(() => scheduledCache)
+}
+
+export function completeScheduledTasksInWeek(anchorDate: Date): number {
+  const weekStart = startOfWeek(anchorDate, { weekStartsOn: 1 })
+  const weekEnd = addDays(weekStart, 7)
+  let updatedCount = 0
+
+  for (const task of getAllTasks()) {
+    if (!task.schedule) continue
+    if (task.type === 'meeting') continue
+    if (task.status === 'completed') continue
+
+    const taskStart = new Date(task.schedule.start)
+    const taskEnd = new Date(task.schedule.end)
+    const overlapsWeek = taskStart < weekEnd && taskEnd > weekStart
+    if (!overlapsWeek) continue
+
+    upsertTask({ ...task, status: 'completed' })
+    updatedCount += 1
+  }
+
+  return updatedCount
 }

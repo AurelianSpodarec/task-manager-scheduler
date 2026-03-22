@@ -5,7 +5,13 @@ import { cn } from '@/lib/utils'
 import crystalSplash from '@/assets/crystal-splash.gif'
 import type { Task } from '@/database/schema'
 import type { EventColor, EventPriority } from '@/types/shared'
-import { scheduleTask, spawnScheduledTask, getUnscheduledTasks } from '@/services/task-service'
+import {
+  scheduleTask,
+  spawnScheduledTask,
+  getUnscheduledTasks,
+  completeScheduledTasksInWeek,
+} from '@/services/task-service'
+import { useActiveDate } from '@/features/calendar'
 import './chat.css'
 
 type ChatMessage = {
@@ -180,8 +186,8 @@ type ScheduleAction =
  * - Personal activities are spawned from their templates
  * - Work tasks are pulled from the unscheduled sidebar pool
  */
-function generateWeekSchedule(): ScheduleAction[] {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
+function generateWeekSchedule(anchorDate: Date): ScheduleAction[] {
+  const weekStart = startOfWeek(anchorDate, { weekStartsOn: 1 })
   const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i))
 
   const schoolDayIdx = Math.floor(Math.random() * 4)
@@ -290,6 +296,7 @@ function StreamingText({ tokens, visibleCount }: { tokens: string[]; visibleCoun
 }
 
 export function ChatWidget() {
+  const activeDate = useActiveDate()
   const [open, setOpen] = useState(false)
   const [splash, setSplash] = useState<'visible' | 'fading' | 'done'>('done')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -383,7 +390,7 @@ export function ChatWidget() {
       setInput('')
 
       if (chatPhase === 'greeting') {
-        const actions = generateWeekSchedule()
+        const actions = generateWeekSchedule(activeDate)
 
         // Show thinking indicator immediately
         setIsThinking(true)
@@ -403,6 +410,16 @@ export function ChatWidget() {
           streamReply('Your week has been organised.')
           setChatPhase('planned')
         }, 2500)
+      } else if (chatPhase === 'planned') {
+        const completedCount = completeScheduledTasksInWeek(activeDate)
+        const taskLabel = completedCount === 1 ? 'task' : 'tasks'
+        const message = completedCount > 0
+          ? `Done. I completed ${completedCount} ${taskLabel} in your selected week.`
+          : 'There were no incomplete tasks in your selected week.'
+        setTimeout(() => {
+          streamReply(message)
+          setChatPhase('limit')
+        }, 250)
       } else {
         // Any subsequent message hits the token gate
         setTimeout(() => {
@@ -411,7 +428,7 @@ export function ChatWidget() {
         }, 400)
       }
     },
-    [input, streamingMsgId, chatPhase, streamReply],
+    [input, streamingMsgId, chatPhase, streamReply, activeDate],
   )
 
   return (
